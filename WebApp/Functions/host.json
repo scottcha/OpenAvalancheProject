@@ -1,0 +1,7 @@
+{
+  "queues": {
+    "batchSize": 4,
+    "newBatchThreshold": 2 
+  }
+
+}
