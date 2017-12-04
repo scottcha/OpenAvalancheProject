@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TestFiles\checkfornullapcp.grib2" />
     <None Include="TestFiles\dateover12.grib2" />
     <None Include="TestFiles\expected_fields_hour2.grib2" />
     <None Include="TestFiles\expected_fields.grib2" />

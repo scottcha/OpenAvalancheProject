@@ -30,6 +30,16 @@ namespace OpenAvalancheProject.Pipeline
             return (Direction, Speed);
         }
 
+        public static List<string> DumpGribFile(GribFile file)
+        {
+            var returnList = new List<string>();
+            foreach(GribMessage msg in file)
+            {
+                returnList.Add(msg.ParameterName + " " ); 
+            }
+            return returnList;
+        }
+
         /// <summary>
         /// From a grib file decode it in to an object representing a row in our output file
         /// </summary>
@@ -55,21 +65,21 @@ namespace OpenAvalancheProject.Pipeline
                     {
                         throw new Exception($"Unable to parse start step variable: {msg.StartStep} from grib file");
                     }
-
+                    /*
                     if(startStep != 0)
                     {
                         //some forecasts have sub intervals, ignore these
                         //if we start using forecasts other than the one produced at time 00 then we might need to modify this to account for different start steps
                         continue;
                     }
-
+                    */
                     success = Int32.TryParse(msg.EndStep, out endStep);
                     if (!success)
                     {
                         throw new Exception($"Unable to parse end step variable: {msg.EndStep} from grib file");
                     }
-                    tmpTime = tmpTime.AddHours(endStep);
                     stepSize = endStep - startStep;
+                    tmpTime = tmpTime.AddHours(stepSize);
                 }
 
                 foreach (var val in msg.GridCoordinateValues)
@@ -116,23 +126,23 @@ namespace OpenAvalancheProject.Pipeline
                         {
                             if (column.ParameterName == "Total precipitation")
                             {
-                                newRow.APCPsurface = column.Value;
+                                newRow.APCPSurface = column.Value;
                                 newRow.APCPStepSize = column.StepSize;
                                 continue;
                             }
                             else if (column.ParameterName == "195")
                             {
-                                newRow.CSNOWsurface = (int)column.Value;
+                                newRow.CSNOWSurface = (int)column.Value;
                                 continue;
                             }
                             else if (column.ParameterName == "192")
                             {
-                                newRow.CRAINsurface = (int)column.Value;
+                                newRow.CRAINSurface = (int)column.Value;
                                 continue;
                             }
                             else if (column.ParameterName == "Temperature")
                             {
-                                newRow.TMPsurface = column.Value;
+                                newRow.TMPSurface = column.Value;
                                 continue;
                             }
                         }

@@ -76,5 +76,20 @@ namespace OpenAvalancheProject.Pipeline.Tests
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
             }
         }
+
+        [TestMethod]
+        public void TestForOffsetStepStart()
+        {
+            //if an exception is thrown one cause it there were messaged in the file we didn't expect
+            using (GribFile file = new GribFile(@"..\..\TestFiles\checkfornullapcp.grib2"))
+            {
+                var rowList = Utilities.ParseNamGribFile(file);
+                Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
+                var secondRow = rowList[1];
+                Assert.AreEqual(secondRow.APCPStepSize.Value, 11, "Incorrect step size.");
+                Assert.AreEqual(Math.Round(secondRow.APCPSurface.Value, 4), .0625, "Incorrect APCPSurface value");
+                Assert.AreEqual(secondRow.Date, new DateTime(2017, 12, 4, 23, 0, 0), "Incorrect date");
+            }
+        }
     }
 }
