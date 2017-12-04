@@ -24,11 +24,11 @@ namespace OpenAvalancheProject.Pipeline
         public DateTime Date{ get; set; }
         public double Lat { get; set; }
         public double Lon { get; set; }
-        public double? APCPsurface { get; set; }
+        public double? APCPSurface { get; set; }
         public int? APCPStepSize { get; set; }
-        public int? CSNOWsurface { get; set; }
-        public int? CRAINsurface { get; set; }
-        public double? TMPsurface { get; set; }
+        public int? CSNOWSurface { get; set; }
+        public int? CRAINSurface { get; set; }
+        public double? TMPSurface { get; set; }
         public double? TMP2mAboveGround { get; set; }
         public double? RH2mAboveGround { get; set; }
         public double? TMP80mAboveGround { get; set; }
@@ -91,7 +91,7 @@ namespace OpenAvalancheProject.Pipeline
         {
             get
             {
-                return ("Date, Lat, Lon, APCPsurface, APCPStepSize, CSNOWsurface, CRAINsurface, TMPsurface, TMP2mAboveGround, RH2mAboveGround, TMP80mAboveGround, TMPTrop, WindSpeed10m, WindDirection10m, WindSpeed80m, WindDirection80m, WindSpeedTrop, WindDirectionTrop");
+                return ("Date, Lat, Lon, APCPSurface, APCPStepSize, CSNOWSurface, CRAINSurface, TMPSurface, TMP2mAboveGround, RH2mAboveGround, TMP80mAboveGround, TMPTrop, WindSpeed10m, WindDirection10m, WindSpeed80m, WindDirection80m, WindSpeedTrop, WindDirectionTrop");
             }
         }
         public override string ToString()
@@ -99,8 +99,8 @@ namespace OpenAvalancheProject.Pipeline
             var sb = new StringBuilder();
             sb = sb.Append(Date.ToString("yyyyMMdd HH:00") + ", ");
             sb = sb.Append(Lat + ", " + Lon + ", ");
-            sb = sb.Append(APCPsurface + ", " + APCPStepSize + ", " + CSNOWsurface + ", " + CRAINsurface + ", ");
-            sb = sb.Append(TMPsurface + ", " + TMP2mAboveGround + ", " + RH2mAboveGround + ", " + TMP80mAboveGround + ", " + TMPTrop + ", ");
+            sb = sb.Append(APCPSurface + ", " + APCPStepSize + ", " + CSNOWSurface + ", " + CRAINSurface + ", ");
+            sb = sb.Append(TMPSurface + ", " + TMP2mAboveGround + ", " + RH2mAboveGround + ", " + TMP80mAboveGround + ", " + TMPTrop + ", ");
             sb = sb.Append(WindSpeed10m + ", " + WindDirection10m + ", ");
             sb = sb.Append(WindSpeed80m + ", " + WindDirection80m + ", ");
             sb = sb.Append(WindSpeedTrop + ", " + WindDirectionTrop);

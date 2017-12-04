@@ -1,0 +1,44 @@
+﻿USE DATABASE [nam-westus-v1];
+
+@rs =
+    EXTRACT 
+        DateString   string,
+        Lat    double,
+        Lon    double,
+        APCPsurface double?,
+        APCPStepSite int?,
+        CSNOWsurface int,
+        CRAINsurface int,
+        TMPsurface double,
+        Tmp2mAboveGround double,
+        RH2mAboveGround double,
+        TMP80mAboveGround double,
+        TMPTrop double,
+        WindSpeed10m double,
+        WindDirection10m double,
+        WindSpeed80m double,
+        WindDirection80m double,
+        WindSpeedTrop double,
+        WindDirectionTrop double,
+        __forecastHour int,
+        __filedate DateTime
+    FROM 
+        "/nam-csv-westus-v1/{__filedate:yyyy}{__filedate:MM}{__filedate:dd}T{__forecastHour}forecastHour00.csv"
+    USING Extractors.Csv(skipFirstNRows:1, silent:true);
+
+@rs =
+    SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date, 
+           *
+    FROM @rs
+    WHERE __forecastHour < 24;
+
+CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
+( 
+    INDEX idx  
+    CLUSTERED(Date ASC)
+    DISTRIBUTED BY HASH(Date) 
+) AS SELECT * FROM @rs;
+//
+//OUTPUT @rs
+//  TO "/output/output.csv"
+//  USING Outputters.Csv();
