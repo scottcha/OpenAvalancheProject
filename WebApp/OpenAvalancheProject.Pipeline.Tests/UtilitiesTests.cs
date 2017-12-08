@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Grib.Api;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline.Tests
 {
@@ -13,7 +14,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             //if an exception is thrown one cause it there were messaged in the file we didn't expect
             using (GribFile file = new GribFile(@"..\..\TestFiles\expected_fields.grib2"))
             {
-                var rowList = Utilities.ParseNamGribFile(file);
+                var rowList = GribUtilities.ParseNamGribFile(file);
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
                 var firstRow = rowList[0];
                 Assert.AreEqual(Math.Round(firstRow.RH2mAboveGround.Value, 2), 98.37, "Expected first element returned to have RH at 2m of this value.");
@@ -29,7 +30,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             {
                 try
                 {
-                    var rowList = Utilities.ParseNamGribFile(file);
+                    var rowList = GribUtilities.ParseNamGribFile(file);
                 }
                 catch(Exception e)
                 {
@@ -46,7 +47,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             //if an exception is thrown one cause it there were messaged in the file we didn't expect
             using (GribFile file = new GribFile(@"..\..\TestFiles\expected_fields_hour2.grib2"))
             {
-                var rowList = Utilities.ParseNamGribFile(file);
+                var rowList = GribUtilities.ParseNamGribFile(file);
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
                 var firstRow = rowList[0];
                 Assert.AreEqual(Math.Round(firstRow.RH2mAboveGround.Value, 2), 76.8, "Expected first element returned to have RH at 2m of this value.");
@@ -60,7 +61,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             //if an exception is thrown one cause it there were messaged in the file we didn't expect
             using (GribFile file = new GribFile(@"..\..\TestFiles\unexpected_fields2.grib2"))
             {
-                var rowList = Utilities.ParseNamGribFile(file);
+                var rowList = GribUtilities.ParseNamGribFile(file);
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
             }
         }
@@ -71,7 +72,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             //if an exception is thrown one cause it there were messaged in the file we didn't expect
             using (GribFile file = new GribFile(@"..\..\TestFiles\dateover12.grib2"))
             {
-                var rowList = Utilities.ParseNamGribFile(file);
+                var rowList = GribUtilities.ParseNamGribFile(file);
                 Assert.AreEqual("20171130T84forecastHour00", rowList[0].PartitionKey, "Incorrect date processing accounting for incorrect hours");
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
             }
@@ -83,7 +84,7 @@ namespace OpenAvalancheProject.Pipeline.Tests
             //if an exception is thrown one cause it there were messaged in the file we didn't expect
             using (GribFile file = new GribFile(@"..\..\TestFiles\checkfornullapcp.grib2"))
             {
-                var rowList = Utilities.ParseNamGribFile(file);
+                var rowList = GribUtilities.ParseNamGribFile(file);
                 Assert.AreEqual(31313, rowList.Count, "Expected count to be equal to 31313");
                 var secondRow = rowList[1];
                 Assert.AreEqual(secondRow.APCPStepSize.Value, 11, "Incorrect step size.");
