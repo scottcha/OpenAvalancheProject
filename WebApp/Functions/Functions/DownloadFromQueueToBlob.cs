@@ -20,37 +20,31 @@ namespace OpenAvalancheProject.Pipeline.Functions
         static DownloadFromQueueToBlob()
         {
             client = new HttpClient();
+            client.Timeout = TimeSpan.FromMinutes(5);
         }
         
         [FunctionName("DownloadFromQueueToBlob")]
         [StorageAccount("AzureWebJobsStorage")]
         public static void Run([QueueTrigger("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")]FileReadyToDownloadQueueMessage myQueueItem,
-                          [Blob("nam-grib-westus-v1/{UniqueFileName}", FileAccess.Write)] Stream myOutputBlob,
+                          [Blob("{FileType}/{UniqueFileName}", FileAccess.Write)] Stream myOutputBlob,
                           TraceWriter log)
         {
-            string partitionName = "nam-grib-westus-v1";
+            string partitionName = myQueueItem.Filetype; 
 
             log.Info($"C# DownloadFromQueueToBlob queue trigger function processing: {myQueueItem.UniqueFileName}");
 
-            if (myQueueItem.Filetype == partitionName)
-            {
-                var urlToDownload = myQueueItem.Url; 
-                log.Info($"Downloading Url {urlToDownload}");
-             
-                client.GetByteArrayAsync(urlToDownload).ContinueWith(
-                    (requestTask) =>
-                    {
-                        byte[] buffer = requestTask.Result;
-                        myOutputBlob.Write(buffer, 0, buffer.Length);
-                        myOutputBlob.Flush();
-                        myOutputBlob.Close();
-                    }
-                );
-            }
-            else
-            {
-                log.Info($"Have unknown filetype {myQueueItem.Filetype}");
-            }
+            var urlToDownload = myQueueItem.Url; 
+            log.Info($"Downloading Url {urlToDownload}");
+         
+            client.GetByteArrayAsync(urlToDownload).ContinueWith(
+                (requestTask) =>
+                {
+                    byte[] buffer = requestTask.Result;
+                    myOutputBlob.Write(buffer, 0, buffer.Length);
+                    myOutputBlob.Flush();
+                    myOutputBlob.Close();
+                }
+            );
         }
     }
 }
