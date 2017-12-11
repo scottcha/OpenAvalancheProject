@@ -1,20 +1,16 @@
 ﻿using Grib.Api;
-using Grib.Api.Interop;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OpenAvalancheProject.Pipeline
+namespace OpenAvalancheProject.Pipeline.Utilities
 {
     /// <summary>
     /// General utilities to help us work with grib files and their encodings
     /// </summary>
-    public static class Utilities
+    public static class GribUtilities
     {
         /// <summary>
         /// Decode the wind vectors from the grib model in to direction and speed as we want to treat these 

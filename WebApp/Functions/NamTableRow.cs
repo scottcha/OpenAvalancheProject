@@ -1,9 +1,7 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline
 {
@@ -44,7 +42,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRD10m == null || VGRD10m == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRD10m.Value, VGRD10m.Value).Speed;
+                return GribUtilities.DecodeWindVectors(UGRD10m.Value, VGRD10m.Value).Speed;
             }
         }
         public double? WindDirection10m {
@@ -52,7 +50,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRD10m == null || VGRD10m == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRD10m.Value, VGRD10m.Value).Direction;
+                return GribUtilities.DecodeWindVectors(UGRD10m.Value, VGRD10m.Value).Direction;
             }
         }
         public double? WindSpeed80m {
@@ -60,7 +58,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRD80m == null || UGRD80m == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRD80m.Value, VGRD80m.Value).Speed;
+                return GribUtilities.DecodeWindVectors(UGRD80m.Value, VGRD80m.Value).Speed;
             }
         }
         public double? WindDirection80m {
@@ -68,7 +66,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRD80m == null || UGRD80m == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRD80m.Value, VGRD80m.Value).Direction;
+                return GribUtilities.DecodeWindVectors(UGRD80m.Value, VGRD80m.Value).Direction;
             }
         }
         public double? WindSpeedTrop {
@@ -76,7 +74,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRDTrop == null || UGRDTrop == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRDTrop.Value, VGRDTrop.Value).Direction;
+                return GribUtilities.DecodeWindVectors(UGRDTrop.Value, VGRDTrop.Value).Direction;
             }
         }
         public double? WindDirectionTrop {
@@ -84,7 +82,7 @@ namespace OpenAvalancheProject.Pipeline
             {
                 if (UGRDTrop == null || UGRDTrop == null)
                     return null;
-                return Utilities.DecodeWindVectors(UGRDTrop.Value, VGRDTrop.Value).Speed;
+                return GribUtilities.DecodeWindVectors(UGRDTrop.Value, VGRDTrop.Value).Speed;
             }
         }
         public static string Columns
