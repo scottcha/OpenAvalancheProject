@@ -1,4 +1,3 @@
-/*
 using System;
 using System.Net;
 using Microsoft.Azure;
@@ -129,4 +128,3 @@ namespace OpenAvalancheProject.Pipeline.Functions
         }
     }
 }
-*/

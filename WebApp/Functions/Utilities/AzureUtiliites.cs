@@ -3,12 +3,7 @@ using Microsoft.Azure.Management.DataLake.Store;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest.Azure.Authentication;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OpenAvalancheProject.Pipeline.Utilities
 {
@@ -27,6 +22,9 @@ namespace OpenAvalancheProject.Pipeline.Utilities
             return localFileName;
         }
 
+        //https://github.com/dotnet/sdk/issues/1405 is blocking this from being refactored to a shared 
+        //function
+        /*
         public static void AuthenticateADLSFileSystemClient(out DataLakeStoreFileSystemManagementClient adlsFileSystemClient, out string adlsAccountName, TraceWriter log)
         {
             log.Info($"Attempting to sign in to ad for datalake upload");
@@ -43,5 +41,6 @@ namespace OpenAvalancheProject.Pipeline.Utilities
             adlsFileSystemClient = new DataLakeStoreFileSystemManagementClient(creds);
             //string subId = CloudConfigurationManager.GetSetting("SubscriptionId");
         }
+        */
     }
 }
