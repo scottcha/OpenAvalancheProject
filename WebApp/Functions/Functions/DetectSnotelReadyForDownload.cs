@@ -12,21 +12,21 @@ namespace OpenAvalancheProject.Pipeline.Functions
     {
         [FunctionName("DetectSnotelReadyForDownload")]
         [return: Queue("filereadytodownloadqueue")]
-        public static void Run([TimerTrigger("0 10 * * * *", RunOnStartup = true)]TimerInfo myTimer, 
+        public static void Run([TimerTrigger("0 20 * * * *", RunOnStartup = true)]TimerInfo myTimer, 
                                [Queue("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 
                                TraceWriter log)
         {
 #if DEBUG
             int numberOfDaysToCheck = 1;
 #else
-            int numberOfDaysToCheck = 2;
+            int numberOfDaysToCheck = 14;
 #endif
 
             log.Info($"C# DetectSnotelReadyForDownload Timer trigger function executed at: {DateTime.Now}");
             //%HOUR% & %STATE% to be populated
             string[] stateList = { "WA", "OR", "CA", "ID", "UT", "NV", "MT", "WY", "CO", "AZ", "NM", "AK" };
 
-            string partitionName = "snotel-westus-v1";
+            string partitionName = "snotel-csv-westus-v1";
 
             // Retrieve storage account from connection string.
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
@@ -55,34 +55,38 @@ namespace OpenAvalancheProject.Pipeline.Functions
             {
                 foreach(var state in stateList)
                 {
-                    string fileName = CreateSnotelFileDate(checkDate);
+                    string fileName = CreateSnotelFileDate(checkDate) + "." + state + ".snotel.csv";
                     if (results.Where(r => r.RowKey == fileName).Count() == 0)
                     {
                         //If file doesn't exist enter a new item
+                        log.Info($"backfill: adding item {fileName} to download queue");
                         CreateQueueItem(outputQueueItem, log, partitionName, checkDate, state);
+                    }
+                    else
+                    {
+                        log.Info($"Skipping item {fileName} as it already exists");
                     }
                 }
                 checkDate = checkDate.AddHours(1);
-            }
-
-            //2. Add the current hour to the queue
-            foreach(var state in stateList)
-            {
-                CreateQueueItem(outputQueueItem, log, partitionName, currentDate, state);
             }
         }
 
         private static void CreateQueueItem(ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 
                                             TraceWriter log, 
                                             string partitionName, 
-                                            DateTime readingDate, string state)
+                                            DateTime readingDateUtc, string state)
         {
-            string snotelTemplate = @"https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/hourly/start_of_period/state=%22%STATE%%22%20AND%20network=%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%222100-01-01%22%7Cname/-23,0:H%7C%HOUR%/name,elevation,latitude,longitude,WTEQ::value,PREC::value,SNWD::value,TOBS::value?fitToScreen=false";
+            string snotelTemplate = @"https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/hourly/start_of_period/state=%22%STATE%%22%20AND%20network=%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%222100-01-01%22%7Cname/%yyyy-MM-dd%,%yyyy-MM-dd%:H%7C%HOUR%/name,elevation,latitude,longitude,WTEQ::value,PREC::value,SNWD::value,TOBS::value";
             var snotelUrl = snotelTemplate.Replace("%STATE%", state);
+            //Date is utc, need to make it local to the request location
+            var readingDateLocal = readingDateUtc.ToLocalTime();
+            var tmpDate = readingDateLocal.ToString("yyyy-MM-dd");
+            snotelUrl = snotelUrl.Replace("%yyyy-MM-dd%", tmpDate);
             //odd case where you need to include a whitespace to get this to work per C# docs
-            var tmpHour = readingDate.ToString("H ").Trim(' ');
+            var tmpHour = readingDateLocal.ToString("H ").Trim(' ');
             snotelUrl = snotelUrl.Replace("%HOUR%", tmpHour);
-            var fileDate = CreateSnotelFileDate(readingDate);
+            //keep the file date utc; we'll correct the times in the file to UTC in the ADSL upload
+            var fileDate = CreateSnotelFileDate(readingDateUtc);
             log.Info($"Adding file {fileDate} with state {state} to download queue.");
             //enter a new queue item 
             outputQueueItem.Add(new FileReadyToDownloadQueueMessage { FileName = state + ".snotel.csv", FileDate = fileDate, Url = snotelUrl, Filetype = partitionName });

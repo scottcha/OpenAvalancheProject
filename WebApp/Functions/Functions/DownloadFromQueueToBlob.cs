@@ -1,14 +1,8 @@
 using System;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.Azure;
-using Microsoft.WindowsAzure.Storage.Blob;
-using System.Net;
 using System.IO;
-using System.Threading;
 using System.Net.Http;
-using System.Net.Http.Handlers;
 
 namespace OpenAvalancheProject.Pipeline.Functions
 {
@@ -20,7 +14,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         static DownloadFromQueueToBlob()
         {
             client = new HttpClient();
-            client.Timeout = TimeSpan.FromMinutes(5);
+            client.Timeout = TimeSpan.FromMinutes(10);
         }
         
         [FunctionName("DownloadFromQueueToBlob")]
@@ -39,10 +33,17 @@ namespace OpenAvalancheProject.Pipeline.Functions
             client.GetByteArrayAsync(urlToDownload).ContinueWith(
                 (requestTask) =>
                 {
-                    byte[] buffer = requestTask.Result;
-                    myOutputBlob.Write(buffer, 0, buffer.Length);
-                    myOutputBlob.Flush();
-                    myOutputBlob.Close();
+                    try
+                    {
+                        byte[] buffer = requestTask.Result;
+                        myOutputBlob.Write(buffer, 0, buffer.Length);
+                        myOutputBlob.Flush();
+                        myOutputBlob.Close();
+                    }
+                    catch(System.AggregateException e)
+                    {
+                        log.Error($"Got exception {e.ToString()} when processing file {myQueueItem.UniqueFileName}");
+                    }
                 }
             );
         }

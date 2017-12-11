@@ -1,4 +1,3 @@
-/*
 using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
@@ -47,10 +46,18 @@ namespace OpenAvalancheProject.Pipeline
             }
 
             //3. Format in correct table format
-            DataLakeStoreFileSystemManagementClient adlsFileSystemClient;
-            string adlsAccountName;
-            AzureUtilities.AuthenticateADLSFileSystemClient(out adlsFileSystemClient, out adlsAccountName, log);
+            log.Info($"Attempting to sign in to ad for datalake upload");
+            var adlsAccountName = CloudConfigurationManager.GetSetting("ADLSAccountName");
 
+            //auth secrets 
+            var domain = CloudConfigurationManager.GetSetting("Domain");
+            var webApp_clientId = CloudConfigurationManager.GetSetting("WebAppClientId");
+            var clientSecret = CloudConfigurationManager.GetSetting("ClientSecret");
+            var clientCredential = new ClientCredential(webApp_clientId, clientSecret);
+            var creds = ApplicationTokenProvider.LoginSilentAsync(domain, clientCredential).Result;
+
+            // Create client objects and set the subscription ID
+            var adlsFileSystemClient = new DataLakeStoreFileSystemManagementClient(creds);
             try
             {
                 adlsFileSystemClient.FileSystem.UploadFile(adlsAccountName, localFileName, "/nam-grib-westus-v1/" + name, uploadAsBinary: true, overwrite: true);
@@ -94,8 +101,5 @@ namespace OpenAvalancheProject.Pipeline
             DateTime date = DateTime.ParseExact(name.Split('.')[0], "yyyyMMdd", null);
             return new FileProcessedTracker { ForecastDate = date, PartitionKey = "nam-grib-westus-v1", RowKey = name, Url = "unknown" };
         }
-
-       
     }
 }
-*/
