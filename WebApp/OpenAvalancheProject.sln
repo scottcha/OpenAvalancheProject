@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAvalancheProject.WebApp", "OpenAvalancheProjectWebApp\OpenAvalancheProject.WebApp.csproj", "{13B6F1CD-3E2F-4AE2-8F25-76C4983065DD}"
 EndProject

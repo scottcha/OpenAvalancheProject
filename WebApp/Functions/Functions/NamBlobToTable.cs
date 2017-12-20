@@ -27,10 +27,10 @@ namespace OpenAvalancheProject.Pipeline
             string attemptPath = "";
             GribUtilities.TryFindBootstrapLibrary(out attemptPath);
             log.Info($"Attemping to find lib: {attemptPath}");
+            GribEnvironment.Init();
 #if DEBUG == false
             GribEnvironment.DefinitionsPath = @"D:\home\site\wwwroot\bin\Grib.Api\definitions";
 #endif
-            GribEnvironment.Init();
 
             //1. Download stream to temp
             //TODO: there is supposedly now an ability to read a stream direction in GRIBAPI.Net; investigate to see if its better than storing a temp file

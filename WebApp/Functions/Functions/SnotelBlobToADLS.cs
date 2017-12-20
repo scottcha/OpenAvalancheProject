@@ -40,8 +40,8 @@ namespace OpenAvalancheProject.Pipeline.Functions
                         if (firstLine == false && splitLine.Length > 1)
                         {
                             var localTimeOfForecast = DateTime.Parse(splitLine[0]);
-                            var localTimeZone = TimeZone.CurrentTimeZone;
-                            var utcTimeOfForecast = localTimeZone.ToUniversalTime(localTimeOfForecast);
+                            var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+                            var utcTimeOfForecast = TimeZoneInfo.ConvertTimeToUtc(localTimeOfForecast, localTimeZone);
                             splitLine[0] = utcTimeOfForecast.ToString("yyyyMMdd HH:00");
                             line = String.Join(",", splitLine);
                         }
