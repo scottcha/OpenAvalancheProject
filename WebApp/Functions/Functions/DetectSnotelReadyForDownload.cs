@@ -19,7 +19,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 #if DEBUG
             int numberOfDaysToCheck = 1;
 #else
-            int numberOfDaysToCheck = 14;
+            int numberOfDaysToCheck = 23;
 #endif
 
             log.Info($"C# DetectSnotelReadyForDownload Timer trigger function executed at: {DateTime.Now}");
@@ -46,8 +46,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             var results = table.ExecuteQuery(dateQuery);
 
             //1. Are there any missing dates for the last n days we should backfill
-            var currentDate = DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck);
-            var checkDate = currentDate;
+            var checkDate = DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck);;
 #if DEBUG
             stateList = new string[] { stateList[0] };
 #endif
@@ -77,19 +76,26 @@ namespace OpenAvalancheProject.Pipeline.Functions
                                             DateTime readingDateUtc, string state)
         {
             string snotelTemplate = @"https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/hourly/start_of_period/state=%22%STATE%%22%20AND%20network=%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%222100-01-01%22%7Cname/%yyyy-MM-dd%,%yyyy-MM-dd%:H%7C%HOUR%/name,elevation,latitude,longitude,WTEQ::value,PREC::value,SNWD::value,TOBS::value";
-            var snotelUrl = snotelTemplate.Replace("%STATE%", state);
-            //Date is utc, need to make it local to the request location
-            var readingDateLocal = readingDateUtc.ToLocalTime();
-            var tmpDate = readingDateLocal.ToString("yyyy-MM-dd");
-            snotelUrl = snotelUrl.Replace("%yyyy-MM-dd%", tmpDate);
-            //odd case where you need to include a whitespace to get this to work per C# docs
-            var tmpHour = readingDateLocal.ToString("H ").Trim(' ');
-            snotelUrl = snotelUrl.Replace("%HOUR%", tmpHour);
+            string snotelUrl = CreateSnotelUrl(readingDateUtc, state, snotelTemplate);
             //keep the file date utc; we'll correct the times in the file to UTC in the ADSL upload
             var fileDate = CreateSnotelFileDate(readingDateUtc);
             log.Info($"Adding file {fileDate} with state {state} to download queue.");
             //enter a new queue item 
             outputQueueItem.Add(new FileReadyToDownloadQueueMessage { FileName = state + ".snotel.csv", FileDate = fileDate, Url = snotelUrl, Filetype = partitionName });
+        }
+
+        public static string CreateSnotelUrl(DateTime readingDateUtc, string state, string snotelTemplate)
+        {
+            var snotelUrl = snotelTemplate.Replace("%STATE%", state);
+            //Date is utc, need to make it local to the request location
+            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            var readingDateLocal = TimeZoneInfo.ConvertTimeFromUtc(readingDateUtc, timeInfo);
+            var tmpDate = readingDateLocal.ToString("yyyy-MM-dd");
+            snotelUrl = snotelUrl.Replace("%yyyy-MM-dd%", tmpDate);
+            //odd case where you need to include a whitespace to get this to work per C# docs
+            var tmpHour = readingDateLocal.ToString("H ").Trim(' ');
+            snotelUrl = snotelUrl.Replace("%HOUR%", tmpHour);
+            return snotelUrl;
         }
 
         private static string CreateSnotelFileDate(DateTime checkDate)
