@@ -7,6 +7,7 @@ using System;
 using Microsoft.Azure;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest.Azure.Authentication;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline.Functions
 {
@@ -17,7 +18,13 @@ namespace OpenAvalancheProject.Pipeline.Functions
         public static FileProcessedTracker Run([BlobTrigger("snotel-csv-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
         {
             log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
-
+            log.Info($"Double Checking if {name} already exists.");
+            var exists = AzureUtilities.CheckIfFileProcessedRowExistsInTableStorage(Constants.SnotelTrackerTable, Constants.SnotelTrackerPartitionKey, name, log);
+            if(exists)
+            {
+                log.Info($"{name} Already exists in double check, skipping");
+                return null;
+            }
             //1. Remove header from stream 
             var s = new MemoryStream();
             StreamWriter csvWriter = new StreamWriter(s, Encoding.UTF8);

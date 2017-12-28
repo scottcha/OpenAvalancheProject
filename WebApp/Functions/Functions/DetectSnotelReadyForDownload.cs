@@ -5,6 +5,7 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Linq;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline.Functions
 {
@@ -19,7 +20,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 #if DEBUG
             int numberOfDaysToCheck = 1;
 #else
-            int numberOfDaysToCheck = 23;
+            int numberOfDaysToCheck = 5;
 #endif
 
             log.Info($"C# DetectSnotelReadyForDownload Timer trigger function executed at: {DateTime.Now}");
