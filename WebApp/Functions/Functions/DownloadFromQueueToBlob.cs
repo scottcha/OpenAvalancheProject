@@ -13,8 +13,10 @@ namespace OpenAvalancheProject.Pipeline.Functions
         private static readonly HttpClient client;
         static DownloadFromQueueToBlob()
         {
-            client = new HttpClient();
-            client.Timeout = TimeSpan.FromMinutes(10);
+            client = new HttpClient
+            {
+                Timeout = TimeSpan.FromMinutes(10)
+            };
         }
         
         [FunctionName("DownloadFromQueueToBlob")]

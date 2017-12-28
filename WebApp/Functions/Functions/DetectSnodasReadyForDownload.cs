@@ -1,4 +1,3 @@
-/*
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -57,7 +56,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             var listOfDatesToDownload = new List<DateTime>();
             while (checkDate < DateTime.UtcNow)
             {
-                string fileName = "SNODAS_" + checkDate.ToString("yyyyMMdd") + ".tar";
+                string fileName =  checkDate.ToString("yyyyMMdd") + "Snodas.csv";
                 if (results.Where(r => r.RowKey == fileName).Count() == 0)
                 {
                     //If file doesn't exist enter a new item
@@ -75,12 +74,9 @@ namespace OpenAvalancheProject.Pipeline.Functions
             {
                 // Get the object used to communicate with the server.  
                 var urlBase = @"ftp://sidads.colorado.edu/pub/DATASETS/NOAA/G02158/masked/";
-                var dateUrlPart = listOfDatesToDownload.Select(d => d.Year).Distinct();
-                var months = listOfDatesToDownload.Select(d => d.Month).Distinct();
-                var currentDateTime = DateTime.UtcNow;
-                urlBase += currentDateTime.ToString("yyyy/");
-                urlBase += currentDateTime.ToString("MM_MMM/");
-                urlBase += "SNODAS_" + currentDateTime.ToString("yyyyMMdd") + ".tar";
+                urlBase += date.ToString("yyyy/");
+                urlBase += date.ToString("MM_MMM/");
+                urlBase += "SNODAS_" + date.ToString("yyyyMMdd") + ".tar";
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(urlBase);
                 request.Method = WebRequestMethods.Ftp.GetDateTimestamp;
 
@@ -128,4 +124,3 @@ namespace OpenAvalancheProject.Pipeline.Functions
         }
     }
 }
-*/

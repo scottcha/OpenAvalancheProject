@@ -5,6 +5,8 @@
     <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
   <ItemGroup>    
+    <PackageReference Include="GDAL" Version="1.11.1" />    
+    <PackageReference Include="GDAL.Native" Version="1.11.1" />    
     <PackageReference Include="Grib.Api" Version="1.0.0-beta4" />    
     <PackageReference Include="Microsoft.Azure.Management.DataLake.Store" Version="2.2.1" />    
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />    
