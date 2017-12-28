@@ -21,16 +21,22 @@ namespace OpenAvalancheProject.Pipeline
         public static FileProcessedTracker Run([BlobTrigger("nam-grib-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
         {
             log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
-
+            log.Info($"Double Checking if {name} already exists.");
+            var exists = AzureUtilities.CheckIfFileProcessedRowExistsInTableStorage(Constants.NamTrackerTable, Constants.NamTrackerPartitionKey, name, log);
+            if (exists)
+            {
+                log.Info($"{name} Already exists in double check, skipping");
+                return null;
+            }
             log.Info($"Have env: {Environment.GetEnvironmentVariable("GRIB_API_DIR_ROOT")}");
             log.Info($"In dir: {Assembly.GetExecutingAssembly().Location}");
             string attemptPath = "";
             GribUtilities.TryFindBootstrapLibrary(out attemptPath);
             log.Info($"Attemping to find lib: {attemptPath}");
+            GribEnvironment.Init();
 #if DEBUG == false
             GribEnvironment.DefinitionsPath = @"D:\home\site\wwwroot\bin\Grib.Api\definitions";
 #endif
-            GribEnvironment.Init();
 
             //1. Download stream to temp
             //TODO: there is supposedly now an ability to read a stream direction in GRIBAPI.Net; investigate to see if its better than storing a temp file
@@ -71,6 +77,11 @@ namespace OpenAvalancheProject.Pipeline
             MemoryStream s = new MemoryStream();
             StreamWriter csvWriter = new StreamWriter(s, Encoding.UTF8);
             csvWriter.WriteLine(NamTableRow.Columns);
+
+            MemoryStream sLocations = new MemoryStream();
+            StreamWriter csvLocationsWriter = new StreamWriter(sLocations, Encoding.UTF8);
+            csvLocationsWriter.WriteLine("Lat, Lon");
+
             string fileName = null;
             foreach (var row in rowList)
             {
@@ -78,10 +89,17 @@ namespace OpenAvalancheProject.Pipeline
                 {
                     fileName = row.PartitionKey + ".csv";
                 }
+                csvLocationsWriter.WriteLine(row.Lat + "," + row.Lon);
                 csvWriter.WriteLine(row.ToString());
             }
             csvWriter.Flush();
+            csvLocationsWriter.Flush();
             s.Position = 0;
+            sLocations.Position = 0;
+
+            AzureUtilities.UploadLocationsFile(sLocations, log);
+            sLocations.Flush();
+            sLocations.Close();
 
             log.Info($"Completed csv creation--attempting to upload to ADLS");
 
@@ -94,6 +112,9 @@ namespace OpenAvalancheProject.Pipeline
             {
                 log.Info($"Upload failed: {e.Message}");
             }
+
+            s.Flush();
+            s.Close();
 
             //delete local temp file
             File.Delete(localFileName);

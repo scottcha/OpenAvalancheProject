@@ -9,6 +9,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline.Functions
 {
@@ -22,13 +23,13 @@ namespace OpenAvalancheProject.Pipeline.Functions
                                [Queue("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 
                                TraceWriter log)
         {
-            string partitionName = "nam-grib-westus-v1";
+            string partitionName = Constants.NamTrackerPartitionKey;
             log.Info($"DetectNAMGribReadyForDownload Timer trigger function executed at UTC: {DateTime.UtcNow}");
             
             // Retrieve storage account from connection string.
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-            CloudTable table = tableClient.GetTableReference("filedownloadtracker");
+            CloudTable table = tableClient.GetTableReference(Constants.NamTrackerTable);
             table.CreateIfNotExists();
 
             //look back eight days and fill in any missing values; I beleive they store files on this server for 7 days
@@ -96,7 +97,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             log.Info($"Have list of {fileList.Count} nam files to compare");
 #if DEBUG == true
             //shorten list for debugging 
-            fileList = fileList.GetRange(0, 2);
+            fileList = fileList.GetRange(0, 1);
 #endif
             //compare fileList to existing files
             foreach(var file in fileList)
