@@ -13,13 +13,13 @@ namespace OpenAvalancheProject.Pipeline.Tests
             var dateString = date.ToString("yyyyMMdd HH:00");
             NamTableRow row = new NamTableRow(date, date, new Tuple<double, double>(1.0, 2.0));
             row.APCPStepSize = 1;
-            row.APCPsurface = 1.0;
-            row.CRAINsurface = 1;
-            row.CSNOWsurface = 1;
+            row.APCPSurface = 1.0;
+            row.CRAINSurface = 1;
+            row.CSNOWSurface = 1;
             row.RH2mAboveGround = 1.0;
             row.TMP2mAboveGround = 1.0;
             row.TMP80mAboveGround = 1.0;
-            row.TMPsurface = 1.0;
+            row.TMPSurface = 1.0;
             row.TMPTrop = 1.0;
             row.UGRD10m = 1.0;
             row.UGRD80m = 1.0;
