@@ -28,6 +28,7 @@
 
 @rs =
     SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date, 
+           DateTime.ParseExact(DateString, "yyyyMMdd", null) AS DatePart,
            *
     FROM @rs
     WHERE __forecastHour < 24;
@@ -35,8 +36,8 @@
 CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 ( 
     INDEX idx  
-    CLUSTERED(Date ASC)
-    DISTRIBUTED BY HASH(Date) 
+    CLUSTERED(DatePart ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @rs;
 //
 //OUTPUT @rs
