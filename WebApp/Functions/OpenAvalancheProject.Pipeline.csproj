@@ -8,6 +8,7 @@
     <PackageReference Include="GDAL" Version="1.11.1" />    
     <PackageReference Include="GDAL.Native" Version="1.11.1" />    
     <PackageReference Include="Grib.Api" Version="1.0.0-beta4" />    
+    <PackageReference Include="Microsoft.Azure.Management.DataFactory" Version="0.3.0-preview" />    
     <PackageReference Include="Microsoft.Azure.Management.DataLake.Store" Version="2.2.1" />    
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />    
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.3.1" />    

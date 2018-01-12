@@ -1,47 +1,78 @@
 ﻿USE DATABASE [nam-westus-v1];
-
-DECLARE @inputFile string = @"/nam-csv-westus-v1/{__filedate:yyyy}{__filedate:MM}{__filedate:dd}T{__fileHour}forecastHour00.csv";
+//DECLARE @inputFileDate string = "20180101";
+//DECLARE @inputFile string = @"/nam-csv-westus-v1/{__filedate:yyyy}{__filedate:MM}{__filedate:dd}T{__fileHour}forecastHour00.csv";
+DECLARE @inputFile string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileHour}forecastHour00.csv";
+@rs =
+    EXTRACT DateString string,
+            Lat double,
+            Lon double,
+            APCPsurface double?,
+            APCPStepSite int?,
+            CSNOWsurface int,
+            CRAINsurface int,
+            TMPsurface double,
+            Tmp2mAboveGround double,
+            RH2mAboveGround double,
+            TMP80mAboveGround double,
+            TMPTrop double,
+            WindSpeed10m double,
+            WindDirection10m double,
+            WindSpeed80m double,
+            WindDirection80m double,
+            WindSpeedTrop double,
+            WindDirectionTrop double,
+            __fileHour int,
+            __filedate DateTime
+    FROM @inputFile
+    USING Extractors.Csv(skipFirstNRows : 1, silent : true);
 
 @rs =
-    EXTRACT 
-        DateString   string,
-        Lat    double,
-        Lon    double,
-        APCPsurface double?,
-        APCPStepSite int?,
-        CSNOWsurface int,
-        CRAINsurface int,
-        TMPsurface double,
-        Tmp2mAboveGround double,
-        RH2mAboveGround double,
-        TMP80mAboveGround double,
-        TMPTrop double,
-        WindSpeed10m double,
-        WindDirection10m double,
-        WindSpeed80m double,
-        WindDirection80m double,
-        WindSpeedTrop double,
-        WindDirectionTrop double,
-        __fileHour int,
-        __filedate DateTime
-    FROM 
-        @inputFile 
-    USING Extractors.Csv(skipFirstNRows:1, silent:true);
-
-@rs =
-    SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date, 
-           DateTime.ParseExact(DateString, "yyyyMMdd", null) AS DatePart,
+    SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
            *
-    FROM @rs
-    WHERE __fileHour < 24;
+    FROM @rs;
+    //WHERE __filedate > DateTime.UtcNow.AddDays(-2);
 
+@rs =
+    SELECT Date.Date AS DatePart,
+           *
+    FROM @rs;
+
+INSERT INTO dbo.HourlyWeatherForecast
+(
+    DatePart,
+    Date,
+    DateString,
+    Lat,
+    Lon,
+    APCPsurface,
+    APCPStepSite,
+    CSNOWsurface,
+    CRAINsurface,
+    TMPsurface,
+    Tmp2mAboveGround,
+    RH2mAboveGround,
+    TMP80mAboveGround,
+    TMPTrop,
+    WindSpeed10m,
+    WindDirection10m,
+    WindSpeed80m,
+    WindDirection80m,
+    WindSpeedTrop,
+    WindDirectionTrop,
+    __fileHour,
+    __filedate
+)
+SELECT *
+FROM @rs;
+
+/*
 CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 ( 
     INDEX idx  
     CLUSTERED(DatePart ASC, Lat, Lon)
     DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @rs;
-//
+*/
 //OUTPUT @rs
 //  TO "/output/output.csv"
 //  USING Outputters.Csv();
