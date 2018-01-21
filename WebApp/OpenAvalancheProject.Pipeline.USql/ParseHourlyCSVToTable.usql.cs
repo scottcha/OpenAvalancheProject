@@ -12,7 +12,14 @@ namespace OpenAvalancheProject.Pipeline.USql
     [SqlUserDefinedCombiner(Mode=CombinerMode.Left)]
     public class CombinerNearestStation: ICombiner
     {
-        private const int DistanceThresholdKm = 160;
+        private const float DistanceThresholdKm = 160.0F;
+        /// <summary>
+        /// Combine is called once per match on the join clause; its not prefiltered to left or right but gives the full data sets for each maching the join clause
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
         public override IEnumerable<IRow> Combine(IRowset left, IRowset right, IUpdatableRow output)
         {
             var theRight = (from row in right.Rows
@@ -30,23 +37,22 @@ namespace OpenAvalancheProject.Pipeline.USql
                                 AirTemperatureObservedF = row.Get<int?>("AirTemperatureObservedF"),
                                 SnotelState = row.Get<string>("SnotelState")
                             }).ToList();
-
-            System.Diagnostics.Debug.Assert(left.Rows.Count() == 1, "Expected only one left row");
+            
             foreach (var row in left.Rows)
             {
                 var Lat = row.Get<double>("Lat");
                 var Lon = row.Get<double>("Lon");
 
                 string closestStation = "None";
-                double distanceToStation = 0;
+                double distanceToStation = DistanceThresholdKm + 1; //default is just longer than distance threshold 
                 SnotelRow closestRow = null; 
                 //narrow the search range down to just ones within 1 degree lat/lon of the current value
-                foreach(var subRow in theRight.Where(a => (Lat > a.GridLat-1 && Lat < a.GridLat+1 && Lon > a.GridLon-1 && Lon < a.GridLon + 1)))
+                foreach(var subRow in theRight.Where(a => (Lat > a.GridLat-2 && Lat < a.GridLat+2 && Lon > a.GridLon-2 && Lon < a.GridLon + 2)))
                 {
                     //Calculate distance
                     var tmpDistance = DistanceBetweenCoordinates(Lat, Lon, subRow.Lat, subRow.Lon);
                     //Store value if its bigger than the previous value
-                    if(tmpDistance < DistanceThresholdKm && tmpDistance > distanceToStation)
+                    if(tmpDistance < DistanceThresholdKm && tmpDistance < distanceToStation)
                     {
                         closestStation = subRow.StationName;
                         distanceToStation = tmpDistance;
@@ -56,6 +62,7 @@ namespace OpenAvalancheProject.Pipeline.USql
             
                 if(closestRow == null)
                 {
+                    distanceToStation = 0;
                     closestRow = new SnotelRow()
                     {
                         StationName = "None",
@@ -69,7 +76,9 @@ namespace OpenAvalancheProject.Pipeline.USql
                         SnotelState = "None"
                     };
                 }
+
                 output.Set<DateTime>("DatePart", row.Get<DateTime>("DatePart"));
+                output.Set<DateTime>("Date", row.Get<DateTime>("Date"));
                 output.Set<string>("DateString", row.Get<string>("DateString"));
                 output.Set<double>("Lat", row.Get<double>("Lat")); 
                 output.Set<double>("Lon", row.Get<double>("Lon"));

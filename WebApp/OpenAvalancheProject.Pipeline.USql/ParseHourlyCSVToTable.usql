@@ -32,7 +32,7 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            *,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @namData
-    WHERE __fileHour < 2; //was 85
+    WHERE __fileHour < 3; //was 85
 
 @namData =
     SELECT Date.Date AS DatePart,
@@ -71,7 +71,7 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            __fileHour,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @snotelData
-    WHERE __fileHour < 2 AND __SnotelState IN ("WA"); //was 25 and ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
+    WHERE __fileHour < 3 AND __SnotelState IN ("WA", "CO"); //was 25 and ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
 
 @snotelData =
     SELECT Date.Date AS DatePart,
@@ -79,17 +79,6 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            (int)Lat AS GridLat, //used to narrow matching criteria so we don't have to examine all sites
            (int)Lon AS GridLon 
     FROM @snotelData;
-
-//3. Find unique snotel locations
-//@uniqueSnotelLocations =
-//    SELECT DISTINCT SnotelState,
-//                    StationName,
-//                    ElevationFt,
-//                    Lat,
-//                    Lon,
-//                    (int)Lat AS GridLat, //used to narrow matching criteria so we don't have to examine all sites
-//                    (int)Lon AS GridLon 
-//    FROM @snotelData;
 
 @namWithStations =
     COMBINE @namData AS nam 
@@ -135,10 +124,6 @@ OUTPUT @namWithStations
     TO @"/debug-out/namwithstations.csv"
     USING Outputters.Csv(quoting:false, dateTimeFormat:null);
 
-//OUTPUT @uniqueSnotelLocations
-//    TO @"/debug-out/debugsnotellocations.csv"
-//    USING Outputters.Csv(quoting:false, dateTimeFormat:null);
-
 OUTPUT @snotelData
     TO @"/debug-out/snoteldata.csv"
     USING Outputters.Csv(quoting:false, dateTimeFormat:null);
@@ -147,8 +132,21 @@ OUTPUT @namData
     TO @"/debug-out/namdata.csv"
     USING Outputters.Csv(quoting:false, dateTimeFormat:null);
 
-//4. Find the closest station to the forecast point
-
+@dailyTable = 
+    SELECT 
+        MAX(TMPsurface) AS MaxTMPsurfaceF,
+        MAX(TMP2mAboveGround) AS MaxTMP2mAboveGroundF,
+        MAX(TMPTrop) AS MaxTMPTropF,
+        MIN(TMPsurface) AS MinTMPsurfaceF,
+        MIN(TMP2mAboveGround) AS MinTMP2mAboveGroundF,
+        MIN(TMPTrop) AS MinTMPTropF,
+        MAX(WindSpeed10m) AS MaxWindSpeed10m,
+        MAX(WindSpeed80m) AS MaxWindSpeed80m,
+        MAX(WindSpeedTrop) AS MaxWindSpeedTrop,
+        AVG(WindDirection10m) AS AvgWindDirection10m,
+        AVG(WindDirection80m) AS AvgWindDirection80m,
+        AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
+        
 
 //TODO: join and add snotel data before storing
 /*
@@ -190,23 +188,7 @@ CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 
 
 
-/*
-@dailyTable = 
-    SELECT 
-        MAX(TMPsurface) AS MaxTMPsurfaceF,
-        MAX(TMP2mAboveGround) AS MaxTMP2mAboveGroundF,
-        MAX(TMPTrop) AS MaxTMPTropF,
-        MIN(TMPsurface) AS MinTMPsurfaceF,
-        MIN(TMP2mAboveGround) AS MinTMP2mAboveGroundF,
-        MIN(TMPTrop) AS MinTMPTropF,
-        MAX(WindSpeed10m) AS MaxWindSpeed10m,
-        MAX(WindSpeed80m) AS MaxWindSpeed80m,
-        MAX(WindSpeedTrop) AS MaxWindSpeedTrop,
-        AVG(WindDirection10m) AS AvgWindDirection10m,
-        AVG(WindDirection80m) AS AvgWindDirection80m,
-        AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
-*/        
-        
+
            
 
 
