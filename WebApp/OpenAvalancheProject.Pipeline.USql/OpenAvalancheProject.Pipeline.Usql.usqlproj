@@ -20,10 +20,30 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Script Include="HourlyToDaily.usql" />
     <Script Include="ParseHourlyCSVToTable.usql" />
+    <Script Include="RegisterAssembley.usql" />
+    <Script Include="SnotelHourlyCSVToTable.usql" />
+    <ScriptCode Include="HourlyToDaily.usql.cs">
+      <DependentUpon>HourlyToDaily.usql</DependentUpon>
+    </ScriptCode>
     <ScriptCode Include="ParseHourlyCSVToTable.usql.cs">
       <DependentUpon>ParseHourlyCSVToTable.usql</DependentUpon>
     </ScriptCode>
+    <ScriptCode Include="RegisterAssembley.usql.cs">
+      <DependentUpon>RegisterAssembley.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="SnotelHourlyCSVToTable.usql.cs">
+      <DependentUpon>SnotelHourlyCSVToTable.usql</DependentUpon>
+    </ScriptCode>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="MathNet.Numerics">
+      <Name>MathNet.Numerics</Name>
+      <AssemblyName>MathNet.Numerics.dll</AssemblyName>
+      <HintPath>..\packages\MathNet.Numerics.3.20.2\lib\net40\MathNet.Numerics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <Import Project="$(AppData)\Microsoft\DataLake\MsBuild\1.0\Usql.targets" />
 </Project>
