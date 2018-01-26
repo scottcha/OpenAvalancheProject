@@ -1,0 +1,72 @@
+﻿USE DATABASE [westus-v1];
+DECLARE EXTERNAL @SliceStart = "20180111";
+DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__fileHour}.{__SnotelState}.snotel.csv";
+
+
+//2. Extract all snotel data
+@snotelData =
+    EXTRACT DateString string,
+            StationName string,
+            ElevationFt int,
+            Lat double,
+            Lon double,
+            SnowWaterEquivalentIn float?,
+            PrecipitationAccumulation float?,
+            SnowDepthIn int?,
+            AirTemperatureObservedF int?,
+            __SnotelState string,
+            __fileHour int
+    FROM @inputFileSnotel
+    USING Extractors.Csv(skipFirstNRows : 1, silent : true);
+
+@snotelData =
+    SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
+           DateString,           
+           StationName,
+           ElevationFt,
+           Lat,
+           Lon,
+           SnowWaterEquivalentIn,
+           PrecipitationAccumulation,
+           SnowDepthIn,
+           AirTemperatureObservedF,
+           __SnotelState AS SnotelState,
+           __fileHour,
+           DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
+    FROM @snotelData
+    WHERE __fileHour < 24 AND __SnotelState IN ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
+
+@snotelData =
+    SELECT Date.Date AS DatePart,
+           *,
+           (int)Lat AS GridLat, //used to narrow matching criteria so we don't have to examine all sites
+           (int)Lon AS GridLon 
+    FROM @snotelData;
+
+
+OUTPUT @snotelData
+    TO @"/debug-out/snoteldata.csv"
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+INSERT INTO dbo.HourlySnotelReadings
+(
+    DatePart,
+    Date,
+    DateString,
+    StationName,
+    ElevationFt,
+    Lat,
+    Lon,
+    SnowWaterEquivalentIn,
+    PrecipitationAccumulation,
+    SnowDepthIn,
+    AirTemperatureObservedF,
+    SnotelState,
+    __fileHour,
+    __fileDate,
+    GridLat,
+    GridLon
+
+)
+SELECT *
+FROM @snotelData;

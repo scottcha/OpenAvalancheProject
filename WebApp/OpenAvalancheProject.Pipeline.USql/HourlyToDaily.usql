@@ -1,0 +1,227 @@
+﻿USE DATABASE [westus-v1];
+REFERENCE ASSEMBLY [westus-v1].MathNet;
+
+SET @@FeaturePreviews = "DIAGNOSTICS:ON";
+
+DECLARE EXTERNAL @SliceStart = "20180112";
+DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
+
+
+//Read in data from nam for file date at forecast time (84 hours) & snotel (readings of previous 24 hours of forecast date)
+/*
+@namData =
+    SELECT *
+    FROM dbo.HourlyWeatherForecast
+    WHERE __fileDate == @ForecastDate AND __fileHour < 24; //TODO: this shold be 84 after debug
+*/
+//snotel data we need to take the previous 24 hours
+@snotelData =
+    SELECT *
+    FROM dbo.HourlySnotelReadings
+    WHERE (Date BETWEEN @ForecastDate.AddDays(-1) AND @ForecastDate) AND SnotelState IN("CO", "WA"); //TODO this should be all states after debug
+
+//remove snow outliers with hueristic (not more than 8 inches of snow in 1 hour or 12 inches in 2 hours)
+@detectSnowOutliers =
+    SELECT *,
+           LAG(SnowDepthIn, 1, -9999) OVER(PARTITION BY Lat, Lon ORDER BY Date ASC) AS DepthHourly,
+           LAG(SnowDepthIn, 2, -9999) OVER(PARTITION BY Lat, Lon ORDER BY Date ASC) AS DepthBiHourly
+    FROM @snotelData;
+
+@detectSnowOutliers =
+    SELECT *,
+           (DepthHourly == -9999 ? SnowDepthIn : DepthHourly) AS CorrectedDepthHourly,
+           (DepthBiHourly == -9999 ? SnowDepthIn : DepthBiHourly) AS CorrectedDepthBiHourly
+    FROM @detectSnowOutliers;
+
+@detectSnowOutliers =
+    SELECT *,
+           Math.Abs(CorrectedDepthHourly.GetValueOrDefault() - SnowDepthIn.GetValueOrDefault()) AS DiffDepthHourly,
+           Math.Abs(CorrectedDepthBiHourly.GetValueOrDefault() - SnowDepthIn.GetValueOrDefault()) AS DiffDepthBiHourly
+    FROM @detectSnowOutliers;
+
+DECLARE @hourlyThreshold int = 8;
+DECLARE @biHourlyThreshold int = 12;
+
+@detectSnowOutliers =
+    SELECT *,
+           (DiffDepthHourly - @hourlyThreshold < 0 ? true : false) AS SnowThresholdGoodHourly,
+           (DiffDepthBiHourly - @biHourlyThreshold < 0 ? true : false) AS SnowThresholdGoodBiHourly
+    FROM @detectSnowOutliers;
+
+OUTPUT @detectSnowOutliers 
+    TO @"/debug-out/detectsnowoutlierswithmetadata.csv"    
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+@detectSnowOutliers =
+    SELECT DatePart,
+           Date,
+           DateString,
+           StationName,
+           ElevationFt,
+           Lat,
+           Lon,
+           SnowWaterEquivalentIn,
+           PrecipitationAccumulation,
+           (!SnowThresholdGoodHourly || !SnowThresholdGoodBiHourly? null : SnowDepthIn) AS SnowDepthIn,
+           AirTemperatureObservedF,
+           SnotelState,
+           __fileHour,
+           __fileDate
+    FROM @detectSnowOutliers;
+
+//remove any negative snowdepth values
+@detectSnowOutliers =
+    SELECT DatePart,
+           Date,
+           DateString,
+           StationName,
+           ElevationFt,
+           Lat,
+           Lon,
+           SnowWaterEquivalentIn,
+           PrecipitationAccumulation,
+           (SnowDepthIn < 0 ? 0 : SnowDepthIn) AS SnowDepthIn,
+           AirTemperatureObservedF,
+           SnotelState,
+           __fileHour,
+           __fileDate
+    FROM @detectSnowOutliers;
+
+
+OUTPUT @detectSnowOutliers 
+    TO @"/debug-out/detectsnowoutliers.csv"    
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+//iterpolate missing values
+@interpolatedSnow =
+    REDUCE @detectSnowOutliers
+    PRESORT Date ASC 
+    ON Lat, Lon 
+    PRODUCE 
+        DatePart DateTime,
+        Date DateTime,
+        DateString string,
+        StationName string,
+        ElevationFt int,
+        Lat double,
+        Lon double,
+        SnowWaterEquivalentIn float?,
+        PrecipitationAccumulation float?,
+        SnowDepthIn int?,
+        AirTemperatureObservedF int?,
+        SnotelState string,
+        __fileHour int,
+        __fileDate DateTime
+    USING new OpenAvalancheProject.Pipeline.Usql.InterpolateMissingValuesReducer();
+
+OUTPUT @interpolatedSnow 
+    TO @"/debug-out/interpolatedSnow.csv"    
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+//convert snotel to daily; just the 24 hours leading up to the forecast time will result in just 1 row
+/*
+@snotelDaily =
+    SELECT AVG(SnowDepthIn) AS SnowDepthIn,
+           AVG(SnowWaterEquivalentIn) AS SnowWaterEquivalentIn,
+           AVG(PrecipitationAccu
+ */   
+ 
+//nam will continue to be hourly for that timeperiod and the next 84 hours
+//Group the nam values and snotel values for the feature creation
+//join the snotel and nam data
+//join the snodas data
+//Look back n days using lag
+/*
+@distinctNamLatLon =
+    SELECT DISTINCT DatePart,
+                    Lat,
+                    Lon
+    FROM @namData;
+
+@distinctSnotelStations =
+    SELECT DISTINCT DatePart, 
+                    StationName,
+                    Lat,
+                    Lon,
+                    GridLat,
+                    GridLon,
+                    ElevationFt,
+                    SnotelState
+    FROM @snotelData;
+
+@namLatLonToStations =
+    COMBINE @distinctNamLatLon AS nam 
+    WITH @distinctSnotelStations AS snotel 
+    ON 
+        nam.DatePart == snotel.DatePart //look at full day so we get the best match even if some hours are missing
+    PRODUCE 
+        DatePart DateTime,
+        Lat double,
+        Lon double,
+        DistanceToStationKm float,
+        StationName string,
+        ElevationFt int,
+        SnotelLat double,
+        SnotelLon double,
+        SnotelState string
+    USING new OpenAvalancheProject.Pipeline.USql.CombinerNearestStation();
+
+
+OUTPUT @namLatLonToStations
+    TO @"/debug-out/namLatLonToStations.csv"
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+@namWithStations =
+    SELECT @namData.*,
+           @namLatLonToStations.DistanceToStationKm,
+           @namLatLonToStations.StationName,
+           @namLatLonToStations.ElevationFt,
+           @namLatLonToStations.SnotelLat,
+           @namLatLonToStations.SnotelLon,
+           @namLatLonToStations.SnotelState
+    FROM @namData
+         INNER JOIN
+             @namLatLonToStations
+         ON @namData.Lat == @namLatLonToStations.Lat
+            AND @namData.Lon == @namLatLonToStations.Lon;
+
+
+OUTPUT @namWithStations
+    TO @"/debug-out/namwithstations.csv"
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+           
+
+@namWithStationsAndSnotel =
+    SELECT @namWithStations.*,
+           @snotelData.SnowWaterEquivalentIn,
+           @snotelData.PrecipitationAccumulation,
+           @snotelData.SnowDepthIn,
+           @snotelData.AirTemperatureObservedF
+    FROM @namWithStations
+         LEFT OUTER JOIN
+             @snotelData
+         ON @namWithStations.StationName == @snotelData.StationName 
+            AND @namWithStations.Date == @snotelData.Date
+    WHERE @namWithStations.StationName != "None";
+
+OUTPUT @namWithStationsAndSnotel
+    TO @"/debug-out/namwithstationsandsnotel.csv"
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+*/
+
+/*
+@dailyTable = 
+    SELECT 
+        MAX(TMPsurface) AS MaxTMPsurfaceF,
+        MAX(TMP2mAboveGround) AS MaxTMP2mAboveGroundF,
+        MAX(TMPTrop) AS MaxTMPTropF,
+        MIN(TMPsurface) AS MinTMPsurfaceF,
+        MIN(TMP2mAboveGround) AS MinTMP2mAboveGroundF,
+        MIN(TMPTrop) AS MinTMPTropF,
+        MAX(WindSpeed10m) AS MaxWindSpeed10m,
+        MAX(WindSpeed80m) AS MaxWindSpeed80m,
+        MAX(WindSpeedTrop) AS MaxWindSpeedTrop,
+        AVG(WindDirection10m) AS AvgWindDirection10m,
+        AVG(WindDirection80m) AS AvgWindDirection80m,
+        AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
+*/

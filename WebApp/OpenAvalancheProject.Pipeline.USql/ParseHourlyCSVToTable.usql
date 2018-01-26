@@ -1,7 +1,8 @@
-﻿//USE DATABASE [nam-westus-v1];
-DECLARE EXTERNAL @SliceStart = "20180112";
+﻿USE DATABASE [westus-v1];
+DECLARE EXTERNAL @SliceStart = "20180111";
 DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileHour}forecastHour00.csv";
-DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__fileHour}.{__SnotelState}.snotel.csv";
+//DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__fileHour}.{__SnotelState}.snotel.csv";
+
 
 //1. Extract hourly nam forecast data
 @namData =
@@ -32,14 +33,13 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            *,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @namData
-    WHERE __fileHour < 3; //was 85
+    WHERE __fileHour < 85; 
 
 @namData =
     SELECT Date.Date AS DatePart,
-           *,
-           0.0 AS DistanceToStationKm
+           *
     FROM @namData;
-
+/*
 //2. Extract all snotel data
 @snotelData =
     EXTRACT DateString string,
@@ -71,7 +71,7 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            __fileHour,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @snotelData
-    WHERE __fileHour < 3 AND __SnotelState IN ("WA", "CO"); //was 25 and ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
+    WHERE __fileHour < 24 AND __SnotelState IN ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
 
 @snotelData =
     SELECT Date.Date AS DatePart,
@@ -80,76 +80,16 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            (int)Lon AS GridLon 
     FROM @snotelData;
 
-@namWithStations =
-    COMBINE @namData AS nam 
-    WITH @snotelData AS snotel 
-    ON 
-        nam.Date == snotel.Date 
-    PRODUCE 
-        DatePart DateTime,
-        Date DateTime,
-        DateString string,
-        Lat double,
-        Lon double,
-        APCPsurface double?,
-        APCPStepSize int?,
-        CSNOWsurface int,
-        CRAINsurface int,
-        TMPsurface double,
-        Tmp2mAboveGround double,
-        RH2mAboveGround double,
-        TMP80mAboveGround double,
-        TMPTrop double,
-        WindSpeed10m double,
-        WindDirection10m double,
-        WindSpeed80m double,
-        WindDirection80m double,
-        WindSpeedTrop double,
-        WindDirectionTrop double,
-        DistanceToStationKm float,
-        StationName string,
-        ElevationFt int,
-        SnotelLat double,
-        SnotelLon double,
-        SnowWaterEquivalentIn float?,
-        PrecipitationAccumulation float?,
-        SnowDepthIn int?,
-        AirTemperatureObservedF int?,
-        SnotelState string,
-        __fileHour int,
-        __fileDate DateTime
-    USING new OpenAvalancheProject.Pipeline.USql.CombinerNearestStation();
-
-OUTPUT @namWithStations
-    TO @"/debug-out/namwithstations.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null);
 
 OUTPUT @snotelData
     TO @"/debug-out/snoteldata.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null);
-
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+*/
 OUTPUT @namData
     TO @"/debug-out/namdata.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null);
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
-@dailyTable = 
-    SELECT 
-        MAX(TMPsurface) AS MaxTMPsurfaceF,
-        MAX(TMP2mAboveGround) AS MaxTMP2mAboveGroundF,
-        MAX(TMPTrop) AS MaxTMPTropF,
-        MIN(TMPsurface) AS MinTMPsurfaceF,
-        MIN(TMP2mAboveGround) AS MinTMP2mAboveGroundF,
-        MIN(TMPTrop) AS MinTMPTropF,
-        MAX(WindSpeed10m) AS MaxWindSpeed10m,
-        MAX(WindSpeed80m) AS MaxWindSpeed80m,
-        MAX(WindSpeedTrop) AS MaxWindSpeedTrop,
-        AVG(WindDirection10m) AS AvgWindDirection10m,
-        AVG(WindDirection80m) AS AvgWindDirection80m,
-        AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
-        
 
-//TODO: join and add snotel data before storing
-/*
 INSERT INTO dbo.HourlyWeatherForecast
 (
     DatePart,
@@ -158,11 +98,11 @@ INSERT INTO dbo.HourlyWeatherForecast
     Lat,
     Lon,
     APCPsurface,
-    APCPStepSite,
+    APCPStepSize,
     CSNOWsurface,
     CRAINsurface,
     TMPsurface,
-    TMP2mAboveGround,
+    Tmp2mAboveGround,
     RH2mAboveGround,
     TMP80mAboveGround,
     TMPTrop,
@@ -173,21 +113,43 @@ INSERT INTO dbo.HourlyWeatherForecast
     WindSpeedTrop,
     WindDirectionTrop,
     __fileHour,
-    __filedate
+    __fileDate 
 )
 SELECT *
 FROM @namData;
-
+/*
+INSERT INTO dbo.HourlySnotelReadings
+(
+    StationName,
+    ElevationFt,
+    SnotelLat,
+    SnotelLon,
+    SnowWaterEquivalentIn,
+    PrecipitationAccumulation,
+    SnowDepthIn,
+    AirTemperatureObservedF,
+    SnotelState,
+    __fileHour,
+    __fileDate
+)
+SELECT *
+FROM @snotelData;
+*/
+/*
 CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 ( 
     INDEX idx  
     CLUSTERED(DatePart ASC, Lat, Lon)
     DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @namData;
+
+CREATE TABLE IF NOT EXISTS dbo.HourlySnotelReadings
+( 
+    INDEX idx  
+    CLUSTERED(DatePart ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(DatePart) 
+) AS SELECT * FROM @snotelData;
 */
-
-
-
 
            
 

@@ -1,0 +1,6 @@
+﻿DECLARE @ASSEMBLY_PATH string = "/references/";
+DECLARE @MathNet string = @ASSEMBLY_PATH+"MathNet.Numerics.dll";
+
+DROP ASSEMBLY IF EXISTS MathNet;
+CREATE ASSEMBLY MathNet
+FROM @MathNet;
