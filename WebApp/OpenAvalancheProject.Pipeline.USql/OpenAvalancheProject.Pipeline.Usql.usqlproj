@@ -24,7 +24,10 @@
     <Script Include="ParseHourlyCSVToTable.usql" />
     <Script Include="RegisterAssembley.usql" />
     <Script Include="SnotelHourlyCSVToTable.usql" />
-    <ScriptCode Include="HourlyToDaily.usql.cs">
+    <ScriptCode Include="InterpolateMissingValuesReducer.usql.cs">
+      <DependentUpon>HourlyToDaily.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="CombinerNearestStation.usql.cs">
       <DependentUpon>HourlyToDaily.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="ParseHourlyCSVToTable.usql.cs">
