@@ -80,7 +80,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(urlBase);
                 request.Method = WebRequestMethods.Ftp.GetDateTimestamp;
 
-                // This example assumes the FTP site uses anonymous logon.  
+                // This FTP site uses anonymous logon.  
                 request.Credentials = new NetworkCredential("anonymous", "");
                 try
                 {
@@ -108,19 +108,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
                     }
                 }
             }
-            //Stream responseStream = response.GetResponseStream();
-            //StreamReader reader = new StreamReader(responseStream);
-            //string line = null;
-            //while ((line = reader.ReadLine()) != null)
-            //{
-            //    if(line.Contains("SNODAS_") && line.Contains(".tar"))
-            //    {
-            //        var datePart = line.Split('_')[1].Split('.')[0];
-            //        //TODO: take this; determine if its in the previously downloaded list; otherwise download it                    
-
-            //    }
-            //    log.Info($"Have directory contents: {line}");
-            //}
         }
     }
 }

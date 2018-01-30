@@ -1,19 +1,14 @@
 ﻿USE DATABASE [westus-v1];
 REFERENCE ASSEMBLY [westus-v1].MathNet;
 
-SET @@FeaturePreviews = "DIAGNOSTICS:ON";
+DECLARE EXTERNAL @Debug bool = true;
 
 DECLARE EXTERNAL @SliceStart = "20180112";
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 
 
 //Read in data from nam for file date at forecast time (84 hours) & snotel (readings of previous 24 hours of forecast date)
-/*
-@namData =
-    SELECT *
-    FROM dbo.HourlyWeatherForecast
-    WHERE __fileDate == @ForecastDate AND __fileHour < 24; //TODO: this shold be 84 after debug
-*/
+
 //snotel data we need to take the previous 24 hours
 @snotelData =
     SELECT *
@@ -48,9 +43,16 @@ DECLARE @biHourlyThreshold int = 12;
            (DiffDepthBiHourly - @biHourlyThreshold < 0 ? true : false) AS SnowThresholdGoodBiHourly
     FROM @detectSnowOutliers;
 
-OUTPUT @detectSnowOutliers 
-    TO @"/debug-out/detectsnowoutlierswithmetadata.csv"    
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+IF(@Debug) THEN
+@count1 = 
+    SELECT COUNT(*) AS CountAtStepSnowOutliersWithMetadata
+    FROM @detectSnowOutliers;
+    
+    OUTPUT @detectSnowOutliers 
+        TO @"/debug-out/detectsnowoutlierswithmetadata.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
 
 @detectSnowOutliers =
     SELECT DatePart,
@@ -88,9 +90,15 @@ OUTPUT @detectSnowOutliers
     FROM @detectSnowOutliers;
 
 
-OUTPUT @detectSnowOutliers 
-    TO @"/debug-out/detectsnowoutliers.csv"    
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+IF @Debug THEN
+@count2 = 
+    SELECT COUNT(*) AS CountAtStepDetectSnowOutliers
+    FROM @detectSnowOutliers;
+    
+    OUTPUT @detectSnowOutliers 
+        TO @"/debug-out/detectsnowoutliers.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
 
 //iterpolate missing values
 @interpolatedSnow =
@@ -114,48 +122,158 @@ OUTPUT @detectSnowOutliers
         __fileDate DateTime
     USING new OpenAvalancheProject.Pipeline.Usql.InterpolateMissingValuesReducer();
 
-OUTPUT @interpolatedSnow 
-    TO @"/debug-out/interpolatedSnow.csv"    
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+
+
+@interpolatedSnow =
+    SELECT *,
+           LAG(SnowDepthIn, 1, -9999) OVER(PARTITION BY Lat, Lon ORDER BY Date ASC) AS PrevSnowDepth
+    FROM @interpolatedSnow;
+
+@interpolatedSnow =
+    SELECT *,
+           SnowDepthIn - (PrevSnowDepth == -9999 ? SnowDepthIn : PrevSnowDepth) AS SnowAccumulationIn
+    FROM @interpolatedSnow;
+
+IF @Debug THEN
+@count3 = 
+    SELECT COUNT(*) AS CountInterpolatedSnow
+    FROM @interpolatedSnow;
+    
+    OUTPUT @interpolatedSnow 
+        TO @"/debug-out/interpolatedSnow.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
 
 //convert snotel to daily; just the 24 hours leading up to the forecast time will result in just 1 row
-/*
 @snotelDaily =
-    SELECT AVG(SnowDepthIn) AS SnowDepthIn,
+    SELECT DatePart AS Date,
+           DatePart.AddDays(1) AS ForecastDate,
+           StationName,
+           ElevationFt,
+           Lat,
+           Lon,
+           SnotelState,
+           __fileDate,
+           MAX(SnowDepthIn) AS SnowDepthIn,
            AVG(SnowWaterEquivalentIn) AS SnowWaterEquivalentIn,
-           AVG(PrecipitationAccu
- */   
- 
+           SUM(SnowAccumulationIn) AS PrecipIncrementSnowIn,
+           MIN(AirTemperatureObservedF) AS TempMinF,
+           MAX(AirTemperatureObservedF) AS TempMaxF,
+           AVG(AirTemperatureObservedF) AS TempAveF,
+           MAX(PrecipitationAccumulation) AS PrecipitationAccumulation
+    FROM @interpolatedSnow
+    GROUP BY DatePart,
+             StationName,
+             ElevationFt,
+             Lat,
+             Lon,
+             SnotelState,
+             __fileDate;
+
+IF @Debug THEN
+@count4 = 
+    SELECT COUNT(*) AS CountSnotelDaily
+    FROM @snotelDaily;
+    
+    OUTPUT @snotelDaily 
+        TO @"/debug-out/snotelDaily.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END; 
+
 //nam will continue to be hourly for that timeperiod and the next 84 hours
+@namData =
+    SELECT *
+    FROM dbo.HourlyWeatherForecast
+    WHERE __fileDate == @ForecastDate AND __fileHour < 24; //TODO: this shold be 84 after debug
+
 //Group the nam values and snotel values for the feature creation
+@namDailyAPCP =
+    SELECT Lat,
+           Lon,
+           DatePart AS Date,
+           SUM(APCPsurface) AS APCPsurface
+    FROM @namData
+    WHERE APCPStepSize == 11 //apcp step 11 is the sum for the previous 12 hours; this likely wont work for hours > 24
+    GROUP BY Lat,
+             Lon,
+             DatePart;
+
+@namDaily =
+    SELECT Lat,
+           Lon,
+           DatePart AS Date,
+           MAX(TMPsurface) AS MaxTempSurface,
+           MIN(TMPsurface) AS MinTempSurface,
+           AVG(TMPsurface) AS AvgTempSurface,
+           MAX(Tmp2mAboveGround) AS MaxTemp2mAboveGround,
+           MIN(Tmp2mAboveGround) AS MinTemp2mAboveGround,
+           AVG(Tmp2mAboveGround) AS AvgTemp2mAboveGround,
+           MAX(TMP80mAboveGround) AS MaxTemp80mAboveGround,
+           MIN(TMP80mAboveGround) AS MinTemp80mAboveGround,
+           AVG(TMP80mAboveGround) AS AvgTemp80mAboveGround,
+           MAX(TMPTrop) AS MaxTempTrop,
+           MIN(TMPTrop) AS MinTempTrop,
+           AVG(TMPTrop) AS AvgTempTrop,
+           AVG(RH2mAboveGround) AS AvgRH2mAboveGround,
+           AVG(WindDirection10m) AS AvgWindDirection10m,
+           AVG(WindDirection80m) AS AvgWindDirection80m,
+           AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
+           AVG(WindSpeed10m) AS AvgWindSpeed10m,
+           MAX(WindSpeed10m) AS MaxWindSpeed10m,
+           AVG(WindSpeed80m) AS AvgWindSpeed80m,
+           MAX(WindSpeed80m) AS MaxWindSpeed80m,
+           AVG(WindSpeedTrop) AS AvgWindSpeedTrop,
+           MAX(WindSpeedTrop) AS MaxWindSpeedTrop
+    FROM @namData
+    GROUP BY Lat,
+             Lon,
+             DatePart;
+
+@namDaily =
+    SELECT @namDaily. *,
+           @namDailyAPCP.APCPsurface
+    FROM @namDaily
+         INNER JOIN
+             @namDailyAPCP
+         ON
+         @namDaily.Lat == @namDailyAPCP.Lat
+         AND @namDaily.Lon == @namDailyAPCP.Lon
+         AND @namDaily.Date == @namDailyAPCP.Date;
+
+IF @Debug THEN
+
+    @count5 = 
+        SELECT COUNT(*) AS CountNamDaily
+        FROM @namDaily;
+
+    OUTPUT @namDaily 
+        TO @"/debug-out/namDaily.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);        
+END;
+
 //join the snotel and nam data
-//join the snodas data
-//Look back n days using lag
-/*
 @distinctNamLatLon =
-    SELECT DISTINCT DatePart,
+    SELECT DISTINCT Date,
                     Lat,
                     Lon
-    FROM @namData;
+    FROM @namDaily;
 
 @distinctSnotelStations =
-    SELECT DISTINCT DatePart, 
+    SELECT DISTINCT Date, 
                     StationName,
                     Lat,
                     Lon,
-                    GridLat,
-                    GridLon,
                     ElevationFt,
                     SnotelState
-    FROM @snotelData;
+    FROM @snotelDaily;
 
 @namLatLonToStations =
     COMBINE @distinctNamLatLon AS nam 
     WITH @distinctSnotelStations AS snotel 
     ON 
-        nam.DatePart == snotel.DatePart //look at full day so we get the best match even if some hours are missing
+        nam.Date == snotel.Date
     PRODUCE 
-        DatePart DateTime,
+        Date DateTime,
         Lat double,
         Lon double,
         DistanceToStationKm float,
@@ -164,64 +282,177 @@ OUTPUT @interpolatedSnow
         SnotelLat double,
         SnotelLon double,
         SnotelState string
-    USING new OpenAvalancheProject.Pipeline.USql.CombinerNearestStation();
+    USING new OpenAvalancheProject.Pipeline.Usql.CombinerNearestStation();
 
+IF @Debug THEN
 
-OUTPUT @namLatLonToStations
-    TO @"/debug-out/namLatLonToStations.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+    @count6 = 
+        SELECT COUNT(*) AS CountNamLatLonToStations
+        FROM @namLatLonToStations;
+        
+    OUTPUT @namLatLonToStations
+        TO @"/debug-out/namLatLonToStations.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
 
 @namWithStations =
-    SELECT @namData.*,
+    SELECT @namDaily.*,
            @namLatLonToStations.DistanceToStationKm,
            @namLatLonToStations.StationName,
            @namLatLonToStations.ElevationFt,
            @namLatLonToStations.SnotelLat,
            @namLatLonToStations.SnotelLon,
            @namLatLonToStations.SnotelState
-    FROM @namData
+    FROM @namDaily
          INNER JOIN
              @namLatLonToStations
-         ON @namData.Lat == @namLatLonToStations.Lat
-            AND @namData.Lon == @namLatLonToStations.Lon;
+         ON @namDaily.Lat == @namLatLonToStations.Lat
+            AND @namDaily.Lon == @namLatLonToStations.Lon;
 
+IF @Debug THEN
 
-OUTPUT @namWithStations
-    TO @"/debug-out/namwithstations.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-           
+    @count7 = 
+        SELECT COUNT(*) AS CountNamWithStations
+        FROM @namWithStations;
+        
+    OUTPUT @namWithStations
+        TO @"/debug-out/namwithstations.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END; 
 
 @namWithStationsAndSnotel =
     SELECT @namWithStations.*,
-           @snotelData.SnowWaterEquivalentIn,
-           @snotelData.PrecipitationAccumulation,
-           @snotelData.SnowDepthIn,
-           @snotelData.AirTemperatureObservedF
+           (int)@namWithStations.Lat * 1000000 AS JoinLat,
+           (int)@namWithStations.Lon * 1000000 AS JoinLon,
+           @snotelDaily.SnowWaterEquivalentIn,
+           @snotelDaily.PrecipIncrementSnowIn,
+           @snotelDaily.PrecipitationAccumulation,
+           @snotelDaily.SnowDepthIn,
+           @snotelDaily.TempMinF,
+           @snotelDaily.TempMaxF,
+           @snotelDaily.TempAveF
     FROM @namWithStations
          LEFT OUTER JOIN
-             @snotelData
-         ON @namWithStations.StationName == @snotelData.StationName 
-            AND @namWithStations.Date == @snotelData.Date
+             @snotelDaily
+         ON @namWithStations.StationName == @snotelDaily.StationName 
+            AND @namWithStations.Date == @snotelDaily.ForecastDate
     WHERE @namWithStations.StationName != "None";
 
-OUTPUT @namWithStationsAndSnotel
-    TO @"/debug-out/namwithstationsandsnotel.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-*/
+IF @Debug THEN
 
-/*
-@dailyTable = 
+    @count8 = 
+        SELECT COUNT(*) AS CountNamWithStationsAndSnotel
+        FROM @namWithStationsAndSnotel;
+        
+    OUTPUT @namWithStationsAndSnotel
+        TO @"/debug-out/namwithstationsandsnotel.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+//Snodas is available ~ 7am for a UTC hour 0 forecast we need to use the previous day
+DECLARE @inputFileSnodas string = @"/snodas-csv-westus-v1/" + @ForecastDate.AddDays(-1).ToString("yyyyMMdd") + "Snodas.csv";
+//Join With Snodas
+@snodasData = 
+    EXTRACT 
+        DateString string,
+        Lat double,
+        Lon double,
+        SNOWDAS_SnowDepth_mm int,
+        SNOWDAS_SWE_mm int,
+        SNOWDAS_SnowmeltRunoff_micromm int,
+        SNOWDAS_Sublimation_micromm int,
+        SNOWDAS_SublimationBlowing_micromm int,
+        SNOWDAS_SolidPrecip_kgpersquarem int,
+        SNOWDAS_LiquidPrecip_kgpersquarem int,
+        SNOWDAS_SnowpackAveTemp_k int
+    FROM @inputFileSnodas
+    USING Extractors.Csv(skipFirstNRows : 2, silent : false);
+
+@snodasData = 
+    SELECT
+        DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
+        Lat,
+        Lon,
+        //(int)Lat*1000000 AS JoinLat,
+        //(int)Lon*1000000 AS JoinLon,
+        SNOWDAS_SnowDepth_mm,
+        SNOWDAS_SWE_mm,
+        SNOWDAS_SnowmeltRunoff_micromm,
+        SNOWDAS_Sublimation_micromm,
+        SNOWDAS_SublimationBlowing_micromm,
+        SNOWDAS_SolidPrecip_kgpersquarem,
+        SNOWDAS_LiquidPrecip_kgpersquarem,
+        SNOWDAS_SnowpackAveTemp_k
+    FROM @snodasData;
+
+@allSources = 
     SELECT 
-        MAX(TMPsurface) AS MaxTMPsurfaceF,
-        MAX(TMP2mAboveGround) AS MaxTMP2mAboveGroundF,
-        MAX(TMPTrop) AS MaxTMPTropF,
-        MIN(TMPsurface) AS MinTMPsurfaceF,
-        MIN(TMP2mAboveGround) AS MinTMP2mAboveGroundF,
-        MIN(TMPTrop) AS MinTMPTropF,
-        MAX(WindSpeed10m) AS MaxWindSpeed10m,
-        MAX(WindSpeed80m) AS MaxWindSpeed80m,
-        MAX(WindSpeedTrop) AS MaxWindSpeedTrop,
-        AVG(WindDirection10m) AS AvgWindDirection10m,
-        AVG(WindDirection80m) AS AvgWindDirection80m,
-        AVG(WindDirectionTrop) AS AvgWindDirectionTrop,
+        @namWithStationsAndSnotel.*,
+        @snodasData.SNOWDAS_SnowDepth_mm,
+        @snodasData.SNOWDAS_SWE_mm,
+        @snodasData.SNOWDAS_SnowmeltRunoff_micromm,
+        @snodasData.SNOWDAS_Sublimation_micromm,
+        @snodasData.SNOWDAS_SublimationBlowing_micromm,
+        @snodasData.SNOWDAS_SolidPrecip_kgpersquarem,
+        @snodasData.SNOWDAS_LiquidPrecip_kgpersquarem,
+        @snodasData.SNOWDAS_SnowpackAveTemp_k
+    FROM @namWithStationsAndSnotel
+    INNER JOIN @snodasData ON @namWithStationsAndSnotel.Lat == @snodasData.Lat 
+                              AND @namWithStationsAndSnotel.Lon == @snodasData.Lon;
+
+IF @Debug THEN
+
+    @count9 = 
+        SELECT COUNT(*) AS CountAllSources
+        FROM @allSources;
+        
+    @forecastFunnel = 
+        SELECT *
+        FROM @count1
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count2
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count3
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count4
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count5
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count6
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count7
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count8
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count9;
+       
+    OUTPUT @snodasData
+        TO @"/debug-out/snodasData.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+    OUTPUT @forecastFunnel
+        TO @"/debug-out/forecastFunnel.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+    OUTPUT @allSources
+        TO @"/debug-out/allSources.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+     
+END;
+    
+/*
+CREATE TABLE IF NOT EXISTS dbo.DailyWeatherAndSnotel
+( 
+    INDEX idx  
+    CLUSTERED(DatePart ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(DatePart) 
+) AS SELECT * FROM @namData;
 */

@@ -30,7 +30,25 @@ DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileH
 
 @namData =
     SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
-           *,
+           DateString,
+           Lat,
+           Lon,
+           APCPsurface,
+           APCPStepSize,
+           CSNOWsurface,
+           CRAINsurface,
+           TMPsurface * 1.8 - 459.67 AS TMPsurfaceF,  //Convert temp from Kelvin to farenheit
+           Tmp2mAboveGround * 1.8 - 459.67 AS Tmp2mAboveGroundF,
+           RH2mAboveGround,
+           TMP80mAboveGround * 1.8 - 459.67 AS TMP80mAboveGroundF, 
+           TMPTrop * 1.8 - 459.67 AS TMPTropF, 
+           WindSpeed10m,
+           WindDirection10m,
+           WindSpeed80m,
+           WindDirection80m,
+           WindSpeedTrop,
+           WindDirectionTrop,
+           __fileHour,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @namData
     WHERE __fileHour < 85; 
@@ -89,7 +107,7 @@ OUTPUT @namData
     TO @"/debug-out/namdata.csv"
     USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
-
+/*
 INSERT INTO dbo.HourlyWeatherForecast
 (
     DatePart,
@@ -135,7 +153,6 @@ INSERT INTO dbo.HourlySnotelReadings
 SELECT *
 FROM @snotelData;
 */
-/*
 CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 ( 
     INDEX idx  
@@ -143,7 +160,7 @@ CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
     DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @namData;
 
-CREATE TABLE IF NOT EXISTS dbo.HourlySnotelReadings
+/*CREATE TABLE IF NOT EXISTS dbo.HourlySnotelReadings
 ( 
     INDEX idx  
     CLUSTERED(DatePart ASC, Lat, Lon)
