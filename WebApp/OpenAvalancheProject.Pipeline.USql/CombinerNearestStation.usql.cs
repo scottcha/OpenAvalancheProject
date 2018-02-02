@@ -75,7 +75,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                         SnotelState = "None"
                     };
                 }
-                output.Set<DateTime>("Date", row.Get<DateTime>("Date"));
+                output.Set<DateTime>("Date", row.Get<DateTime>("__fileDate"));
                 //output.Set<DateTime>("Date", row.Get<DateTime>("Date"));
                 //output.Set<string>("DateString", row.Get<string>("DateString"));
                 output.Set<double>("Lat", row.Get<double>("Lat"));
