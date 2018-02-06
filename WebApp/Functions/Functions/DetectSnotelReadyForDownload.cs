@@ -55,7 +55,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             {
                 foreach(var state in stateList)
                 {
-                    string fileName = CreateSnotelFileDate(checkDate) + "." + state + ".snotel.csv";
+                    string fileName = SnotelUtilities.CreateSnotelFileDate(checkDate) + "." + state + ".snotel.csv";
                     if (results.Where(r => r.RowKey == fileName).Count() == 0)
                     {
                         //If file doesn't exist enter a new item
@@ -79,7 +79,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             string snotelTemplate = @"https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/customMultipleStationReport/hourly/start_of_period/state=%22%STATE%%22%20AND%20network=%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%222100-01-01%22%7Cname/%yyyy-MM-dd%,%yyyy-MM-dd%:H%7C%HOUR%/name,elevation,latitude,longitude,WTEQ::value,PREC::value,SNWD::value,TOBS::value";
             string snotelUrl = CreateSnotelUrl(readingDateUtc, state, snotelTemplate);
             //keep the file date utc; we'll correct the times in the file to UTC in the ADSL upload
-            var fileDate = CreateSnotelFileDate(readingDateUtc);
+            var fileDate = SnotelUtilities.CreateSnotelFileDate(readingDateUtc);
             log.Info($"Adding file {fileDate} with state {state} to download queue.");
             //enter a new queue item 
             outputQueueItem.Add(new FileReadyToDownloadQueueMessage { FileName = state + ".snotel.csv", FileDate = fileDate, Url = snotelUrl, Filetype = partitionName });
@@ -99,9 +99,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
             return snotelUrl;
         }
 
-        private static string CreateSnotelFileDate(DateTime checkDate)
-        {
-            return checkDate.ToString("yyyyMMdd") + "." + checkDate.ToString("HH");
-        }
+       
     }
 }
