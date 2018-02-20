@@ -1,6 +1,6 @@
 ﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20180111";
-DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__fileHour}.{__SnotelState}.snotel.csv";
+DECLARE EXTERNAL @SliceStart = "20171130";
+DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1/" + @SliceStart + ".{__fileHour}.snotel.csv";
 
 
 //2. Extract all snotel data
@@ -14,14 +14,14 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
             PrecipitationAccumulation float?,
             SnowDepthIn int?,
             AirTemperatureObservedF int?,
-            __SnotelState string,
+            SnotelState string,
             __fileHour int
     FROM @inputFileSnotel
     USING Extractors.Csv(skipFirstNRows : 1, silent : true);
 
 @snotelData =
     SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
-           DateString,           
+           DateString,
            StationName,
            ElevationFt,
            Lat,
@@ -30,24 +30,25 @@ DECLARE @inputFileSnotel string = "/snotel-csv-westus-v1/" + @SliceStart + ".{__
            PrecipitationAccumulation,
            SnowDepthIn,
            AirTemperatureObservedF,
-           __SnotelState AS SnotelState,
+           SnotelState AS SnotelState,
            __fileHour,
            DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @snotelData
-    WHERE __fileHour < 24 AND __SnotelState IN ("AK", "AZ", "CA", "CO", "ID", "MT", "NM", "NV", "OR", "UT", "WA", "WY");
+    WHERE __fileHour < 24;
 
-@snotelData =
+@snotelData = 
     SELECT Date.Date AS DatePart,
-           *,
-           (int)Lat AS GridLat, //used to narrow matching criteria so we don't have to examine all sites
-           (int)Lon AS GridLon 
+           *
     FROM @snotelData;
 
-
-OUTPUT @snotelData
-    TO @"/debug-out/snoteldata.csv"
-    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
+/*
+CREATE TABLE IF NOT EXISTS dbo.HourlySnotelReadings
+( 
+    INDEX idx  
+    CLUSTERED(DatePart ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(DatePart) 
+) AS SELECT * FROM @snotelData;
+*/
 INSERT INTO dbo.HourlySnotelReadings
 (
     DatePart,
@@ -63,10 +64,7 @@ INSERT INTO dbo.HourlySnotelReadings
     AirTemperatureObservedF,
     SnotelState,
     __fileHour,
-    __fileDate,
-    GridLat,
-    GridLon
-
+    __fileDate
 )
 SELECT *
 FROM @snotelData;

@@ -1,0 +1,31 @@
+{ 
+  "name": "CookInputFeaturesPipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "CreateUSWestInputFeaturesV1",
+        "description": "Creates daily input features",
+        "type": "DataLakeAnalyticsU-SQL",
+        "linkedServiceName": {
+          "referenceName": "AzureDataLakeLinkedService",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scriptLinkedService": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+          },
+          "scriptPath": "scripts\\CreateUSWestInputFeatures.v1.usql",
+          "parameters": {
+            "SliceStart": "@Pipeline().parameters.SliceStart"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "SliceStart": {
+        "type": "String"
+      }
+    }
+  }
+}

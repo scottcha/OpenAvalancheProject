@@ -11,7 +11,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class DetectSnotelReadyForDownload
     {
-        [FunctionName("DetectSnotelReadyForDownload")]
+        [FunctionName("DetectSnotelReadyForDownload"), Disable()]
         [return: Queue("filereadytodownloadqueue")]
         public static void Run([TimerTrigger("0 20 * * * *", RunOnStartup = true)]TimerInfo myTimer, 
                                [Queue("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 

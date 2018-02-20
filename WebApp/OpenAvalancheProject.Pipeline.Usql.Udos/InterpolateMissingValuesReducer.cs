@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics;
 
-namespace OpenAvalancheProject.Pipeline.Usql
+namespace OpenAvalancheProject.Pipeline.Usql.Udos
 {
     [SqlUserDefinedReducer]
-    public class InterpolateMissingValuesReducer: IReducer
+    public class InterpolateMissingValuesReducer : IReducer
     {
         public override IEnumerable<IRow> Reduce(IRowset input, IUpdatableRow output)
         {
@@ -29,7 +29,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                             __fileHour = r.Get<int>("__fileHour"),
                             __fileDate = r.Get<DateTime>("__fileDate")
                         }).ToList();
-            
+
             List<double> pointsSwe = new List<double>();
             List<double> pointsPrecip = new List<double>();
             List<double> pointsSnowDepth = new List<double>();
@@ -99,7 +99,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                 {
                     output.Set<float?>("SnowWaterEquivalentIn", row.SnowWaterEquivalentIn.Value);
                 }
-                else if(row.SnowWaterEquivalentIn == null && methodSwe != null)
+                else if (row.SnowWaterEquivalentIn == null && methodSwe != null)
                 {
                     float swe = (float)methodSwe.Interpolate(count);
                     output.Set<float?>("SnowWaterEquivalentIn", swe);
@@ -114,7 +114,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                 {
                     output.Set<float?>("PrecipitationAccumulation", row.PrecipitationAccumulation.Value);
                 }
-                else if(row.PrecipitationAccumulation == null && methodPrecip != null)
+                else if (row.PrecipitationAccumulation == null && methodPrecip != null)
                 {
                     float precip = (float)methodPrecip.Interpolate(count);
                     output.Set<float?>("PrecipitationAccumulation", precip);
@@ -128,7 +128,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                 {
                     output.Set<int?>("SnowDepthIn", row.SnowDepthIn.Value);
                 }
-                else if(row.SnowDepthIn == null && methodSnowDepth != null)
+                else if (row.SnowDepthIn == null && methodSnowDepth != null)
                 {
                     int depth = (int)methodSnowDepth.Interpolate(count);
                     output.Set<int?>("SnowDepthIn", depth);
@@ -142,7 +142,7 @@ namespace OpenAvalancheProject.Pipeline.Usql
                 {
                     output.Set<int?>("AirTemperatureObservedF", row.AirTemperatureObservedF.Value);
                 }
-                else if(row.AirTemperatureObservedF == null && methodAirTemp != null)
+                else if (row.AirTemperatureObservedF == null && methodAirTemp != null)
                 {
                     int temp = (int)methodAirTemp.Interpolate(count);
                     output.Set<int?>("AirTemperatureObservedF", temp);

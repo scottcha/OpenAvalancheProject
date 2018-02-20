@@ -20,24 +20,40 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Script Include="AdHocNam.usql" />
+    <Script Include="AdHocSnotel.usql" />
+    <Script Include="AuditTable.usql" />
+    <Script Include="CreateUSWestInputFeatures.v1.usql" />
+    <Script Include="CreateUSWestLookback.v1.usql" />
+    <Script Include="DropAssembly.usql" />
+    <Script Include="SnotelConcatHourlyCSVToTable.usql" />
     <Script Include="HourlyToDaily.usql" />
-    <Script Include="ParseHourlyCSVToTable.usql" />
+    <Script Include="NamHourlyCSVToTable.usql" />
     <Script Include="RegisterAssembley.usql" />
-    <Script Include="SnotelHourlyCSVToTable.usql" />
-    <ScriptCode Include="InterpolateMissingValuesReducer.usql.cs">
-      <DependentUpon>HourlyToDaily.usql</DependentUpon>
+    <Script Include="TruncateTable.usql" />
+    <ScriptCode Include="AdHocNam.usql.cs">
+      <DependentUpon>AdHocNam.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="CombinerNearestStation.usql.cs">
-      <DependentUpon>HourlyToDaily.usql</DependentUpon>
+    <ScriptCode Include="AdHocSnotel.usql.cs">
+      <DependentUpon>AdHocSnotel.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="ParseHourlyCSVToTable.usql.cs">
-      <DependentUpon>ParseHourlyCSVToTable.usql</DependentUpon>
+    <ScriptCode Include="AuditTable.usql.cs">
+      <DependentUpon>AuditTable.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="CreateUSWestInputFeatures.v1.usql.cs">
+      <DependentUpon>CreateUSWestInputFeatures.v1.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="CreateUSWestLookback.v1.usql.cs">
+      <DependentUpon>CreateUSWestLookback.v1.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="DropAssembly.usql.cs">
+      <DependentUpon>DropAssembly.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="RegisterAssembley.usql.cs">
       <DependentUpon>RegisterAssembley.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="SnotelHourlyCSVToTable.usql.cs">
-      <DependentUpon>SnotelHourlyCSVToTable.usql</DependentUpon>
+    <ScriptCode Include="TruncateTable.usql.cs">
+      <DependentUpon>TruncateTable.usql</DependentUpon>
     </ScriptCode>
   </ItemGroup>
   <ItemGroup>

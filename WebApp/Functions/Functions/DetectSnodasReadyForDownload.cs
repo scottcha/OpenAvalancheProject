@@ -28,6 +28,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
 
             string partitionName = "snodas-westus-v1";
             log.Info($"DetectSnodasReadyForDownload Timer trigger function executed at UTC: {DateTime.UtcNow}");
+#if DEBUG
+            int numberOfDaysToCheck = 67;
+#else
+            int numberOfDaysToCheck = 5;
+#endif
 
             // Retrieve storage account from connection string.
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
@@ -40,16 +45,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionName),
                     TableOperators.And,
-                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThan, DateTime.UtcNow.AddDays(-8))
+                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThan, DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck))
                 )
             );
 
             var results = table.ExecuteQuery(dateQuery);
-#if DEBUG
-            int numberOfDaysToCheck = 1;
-#else
-            int numberOfDaysToCheck = 5;
-#endif
             //1. Are there any missing dates for the last n days we should backfill
             var currentDate = DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck);
             var checkDate = currentDate;
