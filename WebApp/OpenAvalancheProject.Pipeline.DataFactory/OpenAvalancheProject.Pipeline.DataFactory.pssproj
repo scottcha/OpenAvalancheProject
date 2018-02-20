@@ -33,8 +33,14 @@
     <Content Include="Config\AzureDataLakeLinkedService.json" />
     <Content Include="Config\AzureStorageLinkedService.json" />
     <Content Include="Config\CookForecastPipeline.json" />
+    <Content Include="Config\CookHourlyToDailyPipeline.json" />
+    <Content Include="Config\CookInputFeaturesPipeline.json" />
     <Content Include="Config\DailyTriggerCookForecastPipeline.json" />
+    <Content Include="Config\DailyTriggerCookHourlyToDailyPipeline.json" />
+    <Content Include="Config\DailyTriggerCookInputFeaturesPipeline.json" />
+    <Content Include="Config\DailyTriggerUSWestInputFeaturesPipeline.json" />
     <Content Include="Config\PipelineInputParameters.json" />
+    <Content Include="Config\USWestInputFeaturesPipeline.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateDataFactory.ps1" />

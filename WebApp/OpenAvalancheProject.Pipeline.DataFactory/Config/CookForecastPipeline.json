@@ -15,7 +15,86 @@
             "referenceName": "AzureStorageLinkedService",
             "type": "LinkedServiceReference"
           },
-          "scriptPath": "scripts\\ParseHourlyCSVToTable.usql",
+          "scriptPath": "scripts\\NamHourlyCSVToTable.usql",
+          "parameters": {
+            "SliceStart": "@Pipeline().parameters.SliceStart"
+          }
+        }
+      },
+      {
+        "name": "CookDailySnotelWestUSForecastActivity",
+        "description": "Takes daily snotel csv hourly values for west us and populates ADLA table",
+        "type": "DataLakeAnalyticsU-SQL",
+        "linkedServiceName": {
+          "referenceName": "AzureDataLakeLinkedService",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scriptLinkedService": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+          },
+          "scriptPath": "scripts\\SnotelConcatHourlyCSVToTable.usql",
+          "parameters": {
+            "SliceStart": "@Pipeline().parameters.SliceStart"
+          }
+        }
+      },
+      {
+        "name": "CookHourlyToDailyWestUS",
+        "description": "Takes hourly values for west us for all sources, nam, snotel, snodas and populates ADLA table with daily summaries",
+        "type": "DataLakeAnalyticsU-SQL",
+        "linkedServiceName": {
+          "referenceName": "AzureDataLakeLinkedService",
+          "type": "LinkedServiceReference"
+        },
+        "dependsOn": [
+          {
+            "activity": "CookDailySnotelWestUSForecastActivity",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "CookDailyNamWestUSForecastActivity",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "scriptLinkedService": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+          },
+          "scriptPath": "scripts\\HourlyToDaily.usql",
+          "parameters": {
+            "SliceStart": "@Pipeline().parameters.SliceStart"
+          }
+        }
+      },
+      {
+        "name": "CreateUSWestInputFeaturesV1",
+        "description": "Creates daily input features",
+        "type": "DataLakeAnalyticsU-SQL",
+        "linkedServiceName": {
+          "referenceName": "AzureDataLakeLinkedService",
+          "type": "LinkedServiceReference"
+        },
+        "dependsOn": [
+          {
+            "activity": "CookHourlyToDailyWestUS",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "scriptLinkedService": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+          },
+          "scriptPath": "scripts\\CreateUSWestInputFeatures.v1.usql",
           "parameters": {
             "SliceStart": "@Pipeline().parameters.SliceStart"
           }
@@ -24,7 +103,7 @@
     ],
     "parameters": {
       "SliceStart": {
-        "type":  "String"
+        "type": "String"
       }
     }
   }

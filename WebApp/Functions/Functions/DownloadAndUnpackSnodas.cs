@@ -125,7 +125,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 //delete local temp file
                 File.Delete(f);
             }
-
             return new FileProcessedTracker { ForecastDate = fileDate, PartitionKey = "snodas-westus-v1", RowKey = fileName, Url = "unknown" };
         }
     }
