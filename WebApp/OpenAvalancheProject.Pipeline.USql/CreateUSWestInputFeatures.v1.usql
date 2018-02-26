@@ -41,9 +41,9 @@ END;
     SELECT 
            Lat,
            Lon,
-           MAX(MaxTemp2mAboveGroundF) AS n_r_Prev1DayMaxTemp,
+           MAX(MaxTempSurfaceF) AS n_r_Prev1DayMaxTemp,
            MAX(MaxWindSpeed10m) AS n_r_Prev1DayMaxWindSpeed10m,
-           MIN(MinTemp2mAboveGroundF) AS n_r_Prev1DayMinTemp
+           MIN(MinTempSurfaceF) AS n_r_Prev1DayMinTemp
     FROM dbo.DailyWeatherAndSnow
     WHERE __fileDate >= @ForecastDate.AddDays( - 1)
     GROUP BY Lat,
@@ -53,9 +53,9 @@ END;
     SELECT 
            Lat,
            Lon,
-           MAX(MaxTemp2mAboveGroundF) AS n_r_Prev3DayMaxTemp,
+           MAX(MaxTempSurfaceF) AS n_r_Prev3DayMaxTemp,
            MAX(MaxWindSpeed10m) AS n_r_Prev3DayMaxWindSpeed10m,
-           MIN(MinTemp2mAboveGroundF) AS n_r_Prev3DayMinTemp
+           MIN(MinTempSurfaceF) AS n_r_Prev3DayMinTemp
     FROM dbo.DailyWeatherAndSnow
     WHERE __fileDate >= @ForecastDate.AddDays( - 3)
     GROUP BY Lat,
@@ -65,9 +65,9 @@ END;
     SELECT 
            Lat,
            Lon,
-           MAX(MaxTemp2mAboveGroundF) AS n_r_Prev7DayMaxTemp,
+           MAX(MaxTempSurfaceF) AS n_r_Prev7DayMaxTemp,
            MAX(MaxWindSpeed10m) AS n_r_Prev7DayMaxWindSpeed10m,
-           MIN(MinTemp2mAboveGroundF) AS n_r_Prev7DayMinTemp
+           MIN(MinTempSurfaceF) AS n_r_Prev7DayMinTemp
     FROM dbo.DailyWeatherAndSnow
     WHERE __fileDate >= @ForecastDate.AddDays( - 7)
     GROUP BY Lat,
@@ -1156,8 +1156,8 @@ END;
             [c_r_Prev3DayWindSlabLikeliness],
             [c_r_Prev7DayWindSlabLikeliness],
             [n_r_Prev1DayPrecip],
-            n_r_Prev3DayMaxTemp - TempMaxF AS n_f_Next24HourChangeInTempFromPrev3DayMax,
-            n_r_Prev1DayMaxTemp - TempMaxF AS n_f_Next24HourChangeInTempFromPrev1DayMax,
+            n_r_Prev3DayMaxTemp - n_f_MaxTempSurfaceF AS n_f_Next24HourChangeInTempFromPrev3DayMax,
+            n_r_Prev1DayMaxTemp - n_f_MaxTempSurfaceF AS n_f_Next24HourChangeInTempFromPrev1DayMax,
             [c_r_LongTermColdTemps],
             [n_r_Prev24HoursPrecipAsRainTotalIn]
     FROM @pastData
