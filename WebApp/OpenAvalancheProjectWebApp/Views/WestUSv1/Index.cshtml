@@ -1,0 +1,66 @@
+﻿@model OpenAvalancheProjectWebApp.Entities.Forecast
+
+@{
+    ViewBag.Title = Model.ForecastTitle;
+}
+
+<h2>@Model.ForecastTitle</h2>
+<h5>Experimental--Not For Hazard Evaluation!</h5>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- Plotly chart will be drawn inside this DIV -->
+<div id="mapDiv"></div>
+
+<script>
+
+    scl = [[0, 'rgb(255,255,255)'], [.2, 'rgb(124,252,0)'], [.4, 'rgb(255,255,0)'], [.6, 'rgb(255,165,0)'], [.8, 'rgb(255,0,0)'], [1, 'rgb(0,0,0)']];
+
+    var data = [{
+        type: 'scattermapbox',
+        mode: 'markers',
+        lon: JSON.parse('@Html.Raw(Model.LonArray)'),
+        lat: JSON.parse('@Html.Raw(Model.LatArray)'),
+        text: JSON.parse('@Html.Raw(Model.ForecastLabels)'),
+        marker: {
+            color: JSON.parse('@Html.Raw(Model.ForecastValues)'),
+            colorscale: scl,
+            cmin: 0,
+            cmax: 1,
+            opacity: 0.4,
+            size: 7
+        },
+        name: '@Html.Raw(Model.ForecastTitle)',
+        title: '@Html.Raw(Model.ForecastTitle)'
+
+    }];
+
+    layout = {
+        dragmode: 'zoom',
+        mapbox: {
+            center: {
+                lat: 45.702,
+                lon: -120.446
+            },
+            domain: {
+                x: [0, 1],
+                y: [0, 1]
+            },
+            style: 'outdoors',
+            zoom: 5
+        },
+        margin: {
+            r: 0,
+            t: 0,
+            b: 0,
+            l: 0,
+            pad: 0
+        },
+        showlegend: false
+    };
+
+    Plotly.setPlotConfig({
+        mapboxAccessToken: '@System.Web.Configuration.WebConfigurationManager.AppSettings["mapboxaccesstoken"]'
+    })
+
+    Plotly.newPlot('mapDiv', data, layout);
+</script>

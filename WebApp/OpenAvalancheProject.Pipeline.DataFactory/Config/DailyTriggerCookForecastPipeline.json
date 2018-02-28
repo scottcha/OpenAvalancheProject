@@ -6,8 +6,8 @@
     "typeProperties": {
       "frequency": "Hour",
       "interval": "24",
-      "startTime": "2017-12-31T04:00:00Z",
-      "endTime": "2018-1-31T04:00:00Z",
+      "startTime": "2018-1-31T04:00:00Z",
+      "endTime": "2018-2-26T04:00:00Z",
       "maxConcurrency": 32
     },
     "pipeline": {
