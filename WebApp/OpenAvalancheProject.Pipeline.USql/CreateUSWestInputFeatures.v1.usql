@@ -1,5 +1,5 @@
 ﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20171230";
+DECLARE EXTERNAL @SliceStart = "20171214";
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE EXTERNAL @DebugCounts bool = false;
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
@@ -1156,8 +1156,8 @@ END;
             [c_r_Prev3DayWindSlabLikeliness],
             [c_r_Prev7DayWindSlabLikeliness],
             [n_r_Prev1DayPrecip],
-            n_r_Prev3DayMaxTemp - n_f_MaxTempSurfaceF AS n_f_Next24HourChangeInTempFromPrev3DayMax,
-            n_r_Prev1DayMaxTemp - n_f_MaxTempSurfaceF AS n_f_Next24HourChangeInTempFromPrev1DayMax,
+            n_r_Prev3DayMaxTemp - [MaxTempSurfaceF] AS n_f_Next24HourChangeInTempFromPrev3DayMax,
+            n_r_Prev1DayMaxTemp - [MaxTempSurfaceF] AS n_f_Next24HourChangeInTempFromPrev1DayMax,
             [c_r_LongTermColdTemps],
             [n_r_Prev24HoursPrecipAsRainTotalIn]
     FROM @pastData
