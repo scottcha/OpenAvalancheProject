@@ -3,29 +3,79 @@
 }
 
 <div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <img class="img-responsive" align="middle" src="~/Content/Images/2017_OpenAvalancheProject_Logo_Horizontal_small_PNG.png" />
+    <br />
+    <p class="lead" align="center">The Goal of the Open Avalanche Project is to cover the world with the best Avalanche and Snow data possible.  Using machine learning to increase the accuracy and impact of avalanche forecasts we are setting out to help reduce avalanche related deaths and impacts.</p>
 </div>
 
 <div class="row">
     <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+        <h2>View the Forecasts</h2>
+        <p><a class="btn btn-default" href="@Url.Action("Index", "WestUSv1")">View Forecast &raquo;</a></p>
+        <img class="img-responsive" src="~/Content/Images/AvyMapOverview.JPG" />
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
+        <h2>Fork the Code</h2>
+        <p><a class="btn btn-default" href="https://github.com/scottcha/OpenAvalancheProject">Fork On GitHub &raquo;</a></p>
+        <img class="img-responsive" src="~/Content/Images/code.JPG" />
     </div>
     <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+        <h2>Support The Project</h2>
+        <p><a class="btn btn-default" href="https://www.patreon.com/scottcha">Support on Patreon &raquo;</a></p>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+            <input type="hidden" name="cmd" value="_s-xclick">
+            <input type="hidden" name="hosted_button_id" value="P6KRRTSUA6XGC">
+            <input type="submit" class="btn btn-default" name="submit" value="Donate via Paypal &raquo;" alt="Donate via PayPal">
+            <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+        </form>
+
+    </div>
+</div>
+
+<div class="row">
+    <h2>Imagine a Future</h2>
+    <div class="col-md-6">
+        <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Hourly Forecast Updates To Better Reflect Conditions On The Ground</h3>
+                </div>
+                <p class="mb-1">Mountain weather conditions can change rapidly.  An area which was not hazardous an hour ago may have rapidly changing conditions over the course of a day. We aim to be able to take hourly forecast and snow telemetry updates and update the forecast accordingly.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">High Resolution Updates Tailored To Your Micro-Locale</h3>
+                </div>
+                <p class="mb-1"></p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Locally Specialized Models</h3>
+                </div>
+                <p class="mb-1">We know that contentnal snowpack models are different than costal models.  Are there other regional differences or avalanche problems which commonly occur under certain conditions which are hard to detect or otherwise unknown.  We can invest in beginning to understand some of the deeper relationships between locale and snowpack.</p>
+            </a>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Global Forecast Coverage Including Areas Which Lack Forecasting Resources</h3>
+                </div>
+                <p class="mb-1">There are many forecast centers aroune the world but still many places which don't have the benefit of full time avalanche forecasts or any forecasts.  We would like to fill this gap.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Platform to Learn, Iterate and Measure Improvements</h3>
+                </div>
+                <p class="mb-1">The Open Avalanche Project provides a common base to begin to build both accuracy measures and the ability to share and encode forecasting heuristics across regions.  What is learned in Europe can directly be evaluated against US forecasting and vice versa.  We can also start to measure compartive improvements in forecasts as well as form a baseline for forecast quality in regions with human forecasting.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Community Engaged and Enabled</h3>
+                </div>
+                <p class="mb-1">Everything about the Open Avalanche Project is designed to be transparent and available.  That includes the code, the data, the financials, and the decision making process.  The community around our snow safety and backcountry community is full of awesoeme and knowledgable people and we want to make this project a place of collaboration.</p>
+            </a>
+        </div>
     </div>
 </div>

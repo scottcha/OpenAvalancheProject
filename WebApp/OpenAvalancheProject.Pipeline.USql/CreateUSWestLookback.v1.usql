@@ -1,5 +1,5 @@
 ﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20171231";
+DECLARE EXTERNAL @SliceStart = "20180201";
 DECLARE EXTERNAL @Debug bool = true;
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 
@@ -882,11 +882,7 @@ DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", nu
              @day11InPast
          ON @currentInputData.Lat == @day11InPast.Lat AND @currentInputData.Lon == @day11InPast.Lon;
 
-/*
-OUTPUT @allDataInPast
-TO @"/debug-out/allDataInPast.csv"
-USING Outputters.Csv(quoting : false, dateTimeFormat : null, outputHeader : true);
-*/
+
 @V1Features= 
     SELECT __fileDate AS Date,
         Lat,
@@ -1233,8 +1229,35 @@ USING Outputters.Csv(quoting : false, dateTimeFormat : null, outputHeader : true
         [c_r_Prev3DayWindSlabLikeliness10InPast] AS c_r_Prev3DayWindSlabLikeliness10InPast,
         [c_r_Prev7DayWindSlabLikeliness10InPast] AS c_r_Prev7DayWindSlabLikeliness10InPast
     FROM @allDataInPast;
-//3. what needs to be written to a db and a file?
+
+INSERT INTO dbo.USWestFullInputFeaturesv1
+SELECT * FROM @V1Features;
+
+/*
+CREATE TABLE IF NOT EXISTS dbo.USWestFullInputFeaturesv1
+( 
+    INDEX idx  
+    CLUSTERED(Date ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(Date) 
+) AS SELECT * FROM @V1Features;
+*/
 
 OUTPUT @V1Features
-TO @"/debug-out/V1Features20171231.csv"
+TO @"/inputfeatures-csv-westus-v1/V1Features" + @SliceStart + ".csv"
+USING Outputters.Csv(quoting : false, dateTimeFormat : null, outputHeader : true);
+
+INSERT INTO dbo.[USWestFullInputFeaturesv1.1]
+SELECT * FROM @allDataInPast;
+
+/*
+CREATE TABLE IF NOT EXISTS dbo.[USWestFullInputFeaturesv1.1]
+( 
+    INDEX idx  
+    CLUSTERED(__fileDate ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(__fileDate) 
+) AS SELECT * FROM @allDataInPast;
+*/
+
+OUTPUT @allDataInPast
+TO @"/inputfeatures-csv-westus-v1.1/V1.1Features" + @SliceStart + ".csv"
 USING Outputters.Csv(quoting : false, dateTimeFormat : null, outputHeader : true);

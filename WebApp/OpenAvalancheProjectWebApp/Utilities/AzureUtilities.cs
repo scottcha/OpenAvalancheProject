@@ -1,4 +1,7 @@
 ﻿using Microsoft.Azure;
+using Microsoft.Azure.Management.DataLake.Store;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Rest.Azure.Authentication;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -11,8 +14,33 @@ namespace OpenAvalancheProjectWebApp.Utilities
 {
     public static class AzureUtilities
     {
+        private static DataLakeStoreFileSystemManagementClient adlsClient;
+        public static DataLakeStoreFileSystemManagementClient AdlsClient
+        {
+            get
+            {
+                if (adlsClient == null)
+                {
+                    var adlsAccountName = CloudConfigurationManager.GetSetting("ADLSAccountName");
+
+                    //auth secrets 
+                    var domain = CloudConfigurationManager.GetSetting("Domain");
+                    var webApp_clientId = CloudConfigurationManager.GetSetting("WebAppClientId");
+                    var clientSecret = CloudConfigurationManager.GetSetting("ClientSecret");
+                    var clientCredential = new ClientCredential(webApp_clientId, clientSecret);
+                    var creds = ApplicationTokenProvider.LoginSilentAsync(domain, clientCredential).Result;
+
+                    // Create client objects and set the subscription ID
+                    var adlsFileSystemClient = new DataLakeStoreFileSystemManagementClient(creds);
+                    adlsClient = adlsFileSystemClient;
+                }
+                return adlsClient;
+            }
+        }
+
         private static CloudBlobClient blobClient;
-        public static CloudBlobClient CloudBlobClient{
+        public static CloudBlobClient CloudBlobClient
+        {
             get
             {
                 if (AzureUtilities.blobClient == null)

@@ -16,6 +16,7 @@
             "type": "LinkedServiceReference"
           },
           "scriptPath": "scripts\\CreateUSWestInputFeatures.v1.usql",
+          "degreeOfParallelism":  5,
           "parameters": {
             "SliceStart": "@Pipeline().parameters.SliceStart"
           }

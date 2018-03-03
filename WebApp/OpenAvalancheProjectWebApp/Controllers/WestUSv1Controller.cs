@@ -25,31 +25,41 @@ namespace OpenAvalancheProjectWebApp.Controllers
             this.repository = new AzureTableForecastRepository();
         }
 
-        //TODO: Convert this to a webapi which we can call from a function on a timer
-        public ActionResult MakePrediction(DateTime? dateOfPrediction)
-        {
-            PredictionUtilities.MakePredictions(this.repository, dateOfPrediction);
-            return RedirectToAction("Home", "Index");
-        }
+        
+        
 
         // GET: WestUSv1
-        public ActionResult Index()
+        //cache for 1 hour--if a new forecast is generated we want it to be picked up within an hour
+        [OutputCache(Duration = 3600, VaryByParam = "*")]
+        public ActionResult Index(string date, string modelId = Constants.ModelDangerAboveTreelineV1, string region = "NWAC")
         {
+            var s = Request.QueryString;
+            DateTime dateOfForecast = DateTime.UtcNow;
+            if (date != null)
+            {
+                dateOfForecast = DateTime.ParseExact(date, "yyyyMMdd", null);
+            }
+
             var forecastPoints = repository.ForecastPoints;
-            //look back eight days and fill in any missing values; I beleive they store files on this server for 7 days
-            //TableQuery<FileProcessedTracker> dateQuery = new TableQuery<FileProcessedTracker>().Where(
-            //    TableQuery.CombineFilters(
-            //        TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionName),
-            //        TableOperators.And,
-            //        TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThan, DateTime.UtcNow.AddDays(-8))
-            //    )
-            //);
 
-            //var results = table.ExecuteQuery(dateQuery);
+            //Check that we have a forecast for that date, if now get the most recent one before that
+            var dateResult = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateOfForecast, modelId)).Select(p => p.Date);
+            DateTime dateToQuery = dateOfForecast;
+            if(dateResult.ToList().Count() == 0)
+            {
+                var dateResult2 = forecastPoints.Select(p => p.Date).ToList().OrderByDescending(d => d).First();
+                dateToQuery = dateResult2; 
+            }
 
-            var result = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(new DateTime(2017, 12, 31), Constants.ModelDangerAboveTreelineV1)).ToList();
-
-            return View(new Forecast(result));
+            var result = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateToQuery, modelId)).ToList();
+            if (result.Count > 0)
+            {
+                return View(new ForecastViewModel(new Forecast(result)));
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
         }
     }
 }

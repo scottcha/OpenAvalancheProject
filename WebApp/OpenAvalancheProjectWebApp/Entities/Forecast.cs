@@ -12,11 +12,20 @@ namespace OpenAvalancheProjectWebApp.Entities
 {
     public class Forecast
     {
-        public Forecast(List<ForecastPoint> forecastPoints = null)
+        public Forecast(List<ForecastPoint> forecastPoints)
         {
             ForecastPoints = forecastPoints;
             Date = ForecastPoints[0].Date;
         }
+
+        public string ForecastModelId
+        {
+            get
+            {
+                return ForecastPoints[0].ModelName;
+            }
+        }
+
         public DateTime Date { get; set; }
         public List<ForecastPoint> ForecastPoints
         {

@@ -6,9 +6,9 @@
     "typeProperties": {
       "frequency": "Hour",
       "interval": "24",
-      "startTime": "2017-12-08T04:00:00Z",
-      "endTime": "2017-12-30T04:00:00Z",
-      "maxConcurrency": 30
+      "startTime": "2018-1-05T04:00:00Z",
+      "endTime": "2018-2-27T04:00:00Z",
+      "maxConcurrency": 1 //depends on previous instances so don't set this higher than 1
     },
     "pipeline": {
       "pipelineReference": {
