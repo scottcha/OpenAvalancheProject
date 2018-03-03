@@ -20,7 +20,6 @@ namespace OpenAvalancheProjectWebApp.Domain
                 op.InsertOrMerge(forecast.ForecastPoints[i]);
                 if((i+1) % 100 == 0)
                 {
-                    Debug.WriteLine("Running " + i);
                     var result = table.ExecuteBatch(op);
                     op = new TableBatchOperation();
                 }

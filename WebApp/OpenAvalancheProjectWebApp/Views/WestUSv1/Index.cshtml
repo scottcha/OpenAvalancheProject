@@ -1,11 +1,14 @@
-﻿@model OpenAvalancheProjectWebApp.Entities.Forecast
+﻿@model OpenAvalancheProjectWebApp.Models.ForecastViewModel
+@using OpenAvalancheProjectWebApp.Utilities
+@using OpenAvalancheProjectWebApp.Models
 
 @{
-    ViewBag.Title = Model.ForecastTitle;
+    ViewBag.Title = Model.ForecastForView.ForecastTitle;
 }
 
-<h2>@Model.ForecastTitle</h2>
+<h2>@Model.ForecastForView.ForecastTitle</h2>
 <h5>Experimental--Not For Hazard Evaluation!</h5>
+
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <!-- Plotly chart will be drawn inside this DIV -->
@@ -18,19 +21,19 @@
     var data = [{
         type: 'scattermapbox',
         mode: 'markers',
-        lon: JSON.parse('@Html.Raw(Model.LonArray)'),
-        lat: JSON.parse('@Html.Raw(Model.LatArray)'),
-        text: JSON.parse('@Html.Raw(Model.ForecastLabels)'),
+        lon: JSON.parse('@Html.Raw(Model.ForecastForView.LonArray)'),
+        lat: JSON.parse('@Html.Raw(Model.ForecastForView.LatArray)'),
+        text: JSON.parse('@Html.Raw(Model.ForecastForView.ForecastLabels)'),
         marker: {
-            color: JSON.parse('@Html.Raw(Model.ForecastValues)'),
+            color: JSON.parse('@Html.Raw(Model.ForecastForView.ForecastValues)'),
             colorscale: scl,
             cmin: 0,
             cmax: 1,
             opacity: 0.4,
             size: 7
         },
-        name: '@Html.Raw(Model.ForecastTitle)',
-        title: '@Html.Raw(Model.ForecastTitle)'
+        name: '@Html.Raw(Model.ForecastForView.ForecastTitle)',
+        title: '@Html.Raw(Model.ForecastForView.ForecastTitle)'
 
     }];
 

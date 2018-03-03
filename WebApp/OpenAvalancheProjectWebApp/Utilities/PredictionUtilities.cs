@@ -62,11 +62,28 @@ namespace OpenAvalancheProjectWebApp.Utilities
             return new Tuple<float[][], float[][]>(latLonValues, values);
         }
 
-        private static List<string> PredictAboveDangerV1(float[][] values)
+        private static List<string> PredictDangerV1(float[][] values, string modelName)
         {
-            //deploy resource command should place is in working dir
+            string modelFile = "";
+            
             CloudBlobContainer container = AzureUtilities.ModelBlobContainer;
-            CloudBlockBlob blob = container.GetBlockBlobReference("ModelAboveV1.bin");
+            switch(modelName)
+            {
+                case Constants.ModelDangerAboveTreelineV1:
+                    modelFile = "ModelAboveV1.bin";
+                    break;
+                case Constants.ModelDangerBelowTreelineV1:
+                    modelFile = "ModelBelowV1.bin";
+                    break;
+                case Constants.ModelDangerNearTreelineV1:
+                    modelFile = "ModelNearV1.bin";
+                    break;
+                default:
+                    throw new ArgumentException("Unknown model name: " + modelName);
+            }
+
+            //deploy resource command should place is in working dir
+            CloudBlockBlob blob = container.GetBlockBlobReference(modelFile);
 
             string localFileName = String.Empty;
             using (var fileStream = System.IO.File.OpenWrite(Path.GetTempFileName()))
@@ -76,7 +93,7 @@ namespace OpenAvalancheProjectWebApp.Utilities
             }
             if(localFileName == String.Empty)
             {
-                throw new FileNotFoundException("Could not find model file: ModelAboveV1.bin before predicting");
+                throw new FileNotFoundException(String.Format("Could not find model file: {0} before predicting", modelName) );
             }
             var xgbc = BaseXgbModel.LoadClassifierFromFile(localFileName);
             //format is single column with one row for each probability for that class; need to decode it
@@ -137,13 +154,26 @@ namespace OpenAvalancheProjectWebApp.Utilities
             return calculatedPredictions;
         }
 
-        public static Forecast MakePredictions(IForecastRepository db, DateTime? dateOfForecast)
+        /// <summary>
+        /// Main method to calculate predictions
+        /// Created to be called via webapi
+        /// </summary>
+        /// <param name="db">Repository to use; if null we will use default repo</param>
+        /// <param name="dateOfForecast">Date of forecast to create; if null we use use current date</param>
+        public static void MakePredictions(IForecastRepository db, string dateOfForecast)
         {
-            //DateTime date = dateOfForecast ?? DateTime.UtcNow;
-            DateTime date = dateOfForecast ?? new DateTime(2017, 12, 31);
-
+            IForecastRepository theDb;
+            if(db == null)
+            {
+                theDb = new AzureTableForecastRepository();
+            }
+            else
+            {
+                theDb = db;
+            }
+           
             CloudBlobContainer container = AzureUtilities.FeaturesBlobContainer;
-            string cloudFileName = "V1Features" + date.ToString("yyyyMMdd") + ".csv";
+            string cloudFileName = "V1Features" + dateOfForecast + ".csv";
             CloudBlockBlob blob = container.GetBlockBlobReference(cloudFileName);
 
             string localFileName = String.Empty;
@@ -155,7 +185,15 @@ namespace OpenAvalancheProjectWebApp.Utilities
 
             var values = PredictionUtilities.CreatePredictionFormat(localFileName);
             var latLons = values.Item1;
-            var predictions = PredictionUtilities.PredictAboveDangerV1(values.Item2);
+            ExecutePredictionAndStore(theDb, dateOfForecast, values, latLons, Constants.ModelDangerAboveTreelineV1);
+            ExecutePredictionAndStore(theDb, dateOfForecast, values, latLons, Constants.ModelDangerBelowTreelineV1);
+            ExecutePredictionAndStore(theDb, dateOfForecast, values, latLons, Constants.ModelDangerNearTreelineV1);
+        }
+
+        private static void ExecutePredictionAndStore(IForecastRepository db, string date, Tuple<float[][], float[][]> values, float[][] latLons, String ModelName)
+        {
+            DateTime dateToAdd = DateTime.ParseExact(date, "yyyyMMdd", null);
+            var predictions = PredictionUtilities.PredictDangerV1(values.Item2, ModelName);
 
             if (latLons.Length != predictions.Count())
             {
@@ -164,13 +202,12 @@ namespace OpenAvalancheProjectWebApp.Utilities
             var mappedPredictions = new List<ForecastPoint>();
             for (int i = 0; i < latLons.Length; i++)
             {
-                mappedPredictions.Add(new ForecastPoint(date, Constants.ModelDangerAboveTreelineV1, latLons[i][0], latLons[i][1], predictions[i]));
+                mappedPredictions.Add(new ForecastPoint(dateToAdd, ModelName, latLons[i][0], latLons[i][1], predictions[i]));
             }
 
             //upload the predictions to table storage
             var forecast = new Forecast(mappedPredictions);
             db.SaveForecast(forecast);
-            return forecast;
         }
     }
 }

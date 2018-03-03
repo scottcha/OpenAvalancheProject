@@ -3,6 +3,7 @@
 //1. Check that every date has the min number of samples
 //2. Check that no duplicates exist
 
+/*
 @auditHourly =
     SELECT __fileDate,
            __fileHour,
@@ -69,7 +70,7 @@ USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 OUTPUT @auditInputRows
 TO @"/audit-out/auditInputRows.csv"    
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
+*/
 //Check date ranges
 @datesOfHourlySnotel =
     SELECT __fileDate,

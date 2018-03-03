@@ -6,7 +6,7 @@ REFERENCE ASSEMBLY [westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE EXTERNAL @DebugCounts bool = false;
 
-DECLARE EXTERNAL @SliceStart = "20171204";
+DECLARE EXTERNAL @SliceStart = "20180223";
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 
 //Read in data from nam for file date at forecast time (84 hours) & snotel (readings of previous 24 hours of forecast date)
