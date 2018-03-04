@@ -1,0 +1,17 @@
+﻿@model IEnumerable<string>
+
+@foreach (var m in Model)
+{
+    <li>
+        @Html.RouteLink(m, new
+        {
+            controller = "WestUSv1",
+            action = "Index",
+            modelId = m
+        },
+                  new
+                  {
+                      @class = m == ViewBag.SelectedModel ? "label-warning" : null
+                  })
+    </li>
+}

@@ -19,7 +19,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             };
         }
         
-        [FunctionName("DownloadFromQueueToBlob")]
+        [FunctionName("DownloadFromQueueToBlob"), Disable()]
         [StorageAccount("AzureWebJobsStorage")]
         public static void Run([QueueTrigger("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")]FileReadyToDownloadQueueMessage myQueueItem,
                           [Blob("{FileType}/{UniqueFileName}", FileAccess.Write)] Stream myOutputBlob,

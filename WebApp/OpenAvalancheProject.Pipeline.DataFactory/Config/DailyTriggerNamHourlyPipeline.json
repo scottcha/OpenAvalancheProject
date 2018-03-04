@@ -1,0 +1,26 @@
+{
+  "name": "DailyTriggerNamHourlyPipeline",
+  "properties": {
+    "type": "TumblingWindowTrigger",
+    "runtimeState": "Started",
+    "typeProperties": {
+      "frequency": "Hour",
+      "interval": "24",
+      "startTime": "2017-12-01T04:00:00Z",
+      "endTime": "2017-12-31T04:00:00Z",
+      "maxConcurrency": 30
+    },
+    "pipeline": {
+      "pipelineReference": {
+        "type": "PipelineReference",
+        "referenceName": "CookNamHourlyPipeline"
+      },
+      "parameters": {
+        "SliceStart": {
+          "type": "Expression",
+          "value": "@{formatDateTime(trigger().outputs.windowStartTime,'yyyyMMdd')}"
+        }
+      }
+    }
+  }
+}

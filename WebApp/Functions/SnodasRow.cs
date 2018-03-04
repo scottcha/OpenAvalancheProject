@@ -29,7 +29,7 @@ namespace OpenAvalancheProject.Pipeline
             get
             {
                 var sb = new StringBuilder();
-                sb.Append("Date, Lat, Lon");
+                sb.Append("Date, Lat, Lon,");
                 sb.Append("SNOWDAS_SnowDepth_mm" + ",");
                 sb.Append("SNOWDAS_SWE_mm" + ",");
                 sb.Append("SNOWDAS_SnowmeltRunoff_micromm" + ",");
@@ -55,7 +55,7 @@ namespace OpenAvalancheProject.Pipeline
             sb.Append(SNOWDAS_SublimationBlowing_micromm.ToString() + ",");
             sb.Append(SNOWDAS_SolidPrecip_kgpersquarem.ToString() + ",");
             sb.Append(SNOWDAS_LiquidPrecip_kgpersquarem.ToString() + ",");
-            sb.Append(SNOWDAS_SnowpackAveTemp_k.ToString() + ",");
+            sb.Append(SNOWDAS_SnowpackAveTemp_k.ToString());
             return sb.ToString();
         }
     }

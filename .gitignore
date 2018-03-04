@@ -289,3 +289,5 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+WebApp/OpenAvalancheProjectWebApp/WebSecret.config
+WebApp/OpenAvalancheProjectWebApp/local.settings.json

@@ -17,7 +17,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class DownloadAndUnpackSnodas
     {
+<<<<<<< HEAD
+        [FunctionName("DownloadAndUnpackSnodas"), Disable()]
+=======
         [FunctionName("DownloadAndUnpackSnodas")]
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
         [StorageAccount("AzureWebJobsStorage")]
         [return: Table("snodasdownloadtracker")]
         public static FileProcessedTracker Run([QueueTrigger("downloadandunpacksnodas", Connection = "AzureWebJobsStorage")]FileReadyToDownloadQueueMessage myQueueItem,
@@ -125,7 +129,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 //delete local temp file
                 File.Delete(f);
             }
-
             return new FileProcessedTracker { ForecastDate = fileDate, PartitionKey = "snodas-westus-v1", RowKey = fileName, Url = "unknown" };
         }
     }

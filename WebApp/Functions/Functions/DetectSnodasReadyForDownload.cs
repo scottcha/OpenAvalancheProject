@@ -18,7 +18,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
         /// </summary>
         /// <param name="myTimer"></param>
         /// <param name="log"></param>
+<<<<<<< HEAD
+        [FunctionName("DetectSnodasReadyForDownload"), Disable()]
+=======
         [FunctionName("DetectSnodasReadyForDownload")]
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
         [return: Queue("downloadandunpacksnodas")]
         public static void Run([TimerTrigger("0 10 3/3 1/1 * *", RunOnStartup = true)]TimerInfo myTimer,
                                [Queue("downloadandunpacksnodas", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem,
@@ -28,6 +32,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
 
             string partitionName = "snodas-westus-v1";
             log.Info($"DetectSnodasReadyForDownload Timer trigger function executed at UTC: {DateTime.UtcNow}");
+#if DEBUG
+            int numberOfDaysToCheck = 67;
+#else
+            int numberOfDaysToCheck = 5;
+#endif
 
             // Retrieve storage account from connection string.
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("AzureWebJobsStorage"));
@@ -40,16 +49,11 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionName),
                     TableOperators.And,
-                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThan, DateTime.UtcNow.AddDays(-8))
+                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThan, DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck))
                 )
             );
 
             var results = table.ExecuteQuery(dateQuery);
-#if DEBUG
-            int numberOfDaysToCheck = 1;
-#else
-            int numberOfDaysToCheck = 5;
-#endif
             //1. Are there any missing dates for the last n days we should backfill
             var currentDate = DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck);
             var checkDate = currentDate;
@@ -80,7 +84,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 FtpWebRequest request = (FtpWebRequest)WebRequest.Create(urlBase);
                 request.Method = WebRequestMethods.Ftp.GetDateTimestamp;
 
-                // This example assumes the FTP site uses anonymous logon.  
+                // This FTP site uses anonymous logon.  
                 request.Credentials = new NetworkCredential("anonymous", "");
                 try
                 {
@@ -108,19 +112,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
                     }
                 }
             }
-            //Stream responseStream = response.GetResponseStream();
-            //StreamReader reader = new StreamReader(responseStream);
-            //string line = null;
-            //while ((line = reader.ReadLine()) != null)
-            //{
-            //    if(line.Contains("SNODAS_") && line.Contains(".tar"))
-            //    {
-            //        var datePart = line.Split('_')[1].Split('.')[0];
-            //        //TODO: take this; determine if its in the previously downloaded list; otherwise download it                    
-
-            //    }
-            //    log.Info($"Have directory contents: {line}");
-            //}
         }
     }
 }

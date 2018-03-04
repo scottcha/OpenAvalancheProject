@@ -1,0 +1,111 @@
+﻿@model OpenAvalancheProjectWebApp.Models.ForecastViewModel
+@using OpenAvalancheProjectWebApp.Utilities
+@using OpenAvalancheProjectWebApp.Models
+
+@{
+    ViewBag.Title = Model.ForecastForView.ForecastTitle;
+}
+
+<h2>@Model.ForecastForView.ForecastTitle</h2>
+<h5>Experimental--Not For Hazard Evaluation!</h5>
+
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- Plotly chart will be drawn inside this DIV -->
+<div id="mapDiv"></div>
+<div class="col-md-6">
+    <h2>How To Read This Forecast</h2>
+    <ul>
+        <li>
+            <h4>The current forecast is only interpretable in mountainous regions which overlapping existing forecast areas</h4>
+            <p>
+                The current forecasts produced do not distinguish between mountainous and non-mountainous regions and produce uninterpretable results in non-mountainous regions.
+                It's on the backlog to remove forecasts in areas which are uninterpretable.
+            </p>
+            <p>
+                If accuracy ratings are provided they are only applicable against the existing <a href="http://nwac.us">Northwest Avalanche Center</a> Forecast Regions.
+            </p>
+        </li>
+        <li>
+            <h4>The avalanche danger scale is available <a href="https://www.nwac.us/static/common/images/danger-scale.png">here</a></h4>
+        </li>
+        <li>
+            <h4>
+                The V1 model has trained with data from the Northwest Avalanche Center (2013/2014 season through 2016/2017 season)
+            </h4>
+            <p>
+                Areas with no forecast but which are in mountainous regions likely lack Snotel data within a reasonable distance.  The model currently depends on snotel data within 160kms to produce a forecast.
+            </p>
+        </li>
+    </ul>
+</div>
+<div class="col-md-6">
+    @{
+        string accuracyString = "";
+        if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
+        {
+            accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
+        }
+        else
+        {
+            accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
+        }
+
+        @Html.Raw(accuracyString);
+    }
+</div>
+
+
+<script>
+
+    scl = [[0, 'rgb(255,255,255)'], [.2, 'rgb(124,252,0)'], [.4, 'rgb(255,255,0)'], [.6, 'rgb(255,165,0)'], [.8, 'rgb(255,0,0)'], [1, 'rgb(0,0,0)']];
+
+    var data = [{
+        type: 'scattermapbox',
+        mode: 'markers',
+        lon: JSON.parse('@Html.Raw(Model.ForecastForView.LonArray)'),
+        lat: JSON.parse('@Html.Raw(Model.ForecastForView.LatArray)'),
+        text: JSON.parse('@Html.Raw(Model.ForecastForView.ForecastLabels)'),
+        marker: {
+            color: JSON.parse('@Html.Raw(Model.ForecastForView.ForecastValues)'),
+            colorscale: scl,
+            cmin: 0,
+            cmax: 1,
+            opacity: 0.4,
+            size: 7
+        },
+        name: '@Html.Raw(Model.ForecastForView.ForecastTitle)',
+        title: '@Html.Raw(Model.ForecastForView.ForecastTitle)'
+
+    }];
+
+    layout = {
+        dragmode: 'zoom',
+        mapbox: {
+            center: {
+                lat: 45.702,
+                lon: -120.446
+            },
+            domain: {
+                x: [0, 1],
+                y: [0, 1]
+            },
+            style: 'outdoors',
+            zoom: 5
+        },
+        margin: {
+            r: 0,
+            t: 0,
+            b: 0,
+            l: 0,
+            pad: 0
+        },
+        showlegend: false
+    };
+
+    Plotly.setPlotConfig({
+        mapboxAccessToken: '@System.Web.Configuration.WebConfigurationManager.AppSettings["mapboxaccesstoken"]'
+    })
+
+    Plotly.newPlot('mapDiv', data, layout);
+</script>

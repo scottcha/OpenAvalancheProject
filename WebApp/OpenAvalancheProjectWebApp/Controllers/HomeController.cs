@@ -8,6 +8,8 @@ namespace OpenAvalancheProjectWebApp.Controllers
 {
     public class HomeController : Controller
     {
+
+        //[OutputCache(Duration=3600)]
         public ActionResult Index()
         {
             return View();
@@ -15,14 +17,14 @@ namespace OpenAvalancheProjectWebApp.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
+            ViewBag.Message = "";
 
             return View();
         }
 
         public ActionResult Contact()
         {
-            ViewBag.Message = "Your contact page.";
+            ViewBag.Message = "";
 
             return View();
         }
