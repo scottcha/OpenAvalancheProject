@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using XGBoost;
+using System.Web.Configuration;
 
 namespace OpenAvalancheProjectWebApp.Utilities
 {
@@ -172,16 +173,14 @@ namespace OpenAvalancheProjectWebApp.Utilities
                 theDb = db;
             }
            
+            string localFileName = Path.GetTempFileName();
             CloudBlobContainer container = AzureUtilities.FeaturesBlobContainer;
             string cloudFileName = "V1Features" + dateOfForecast + ".csv";
-            CloudBlockBlob blob = container.GetBlockBlobReference(cloudFileName);
-
-            string localFileName = String.Empty;
-            using (var fileStream = System.IO.File.OpenWrite(Path.GetTempFileName()))
-            {
-                blob.DownloadToStream(fileStream);
-                localFileName = fileStream.Name;
-            }
+            var adlsClient = AzureUtilities.AdlsClient;
+            adlsClient.FileSystem.DownloadFile(
+                WebConfigurationManager.AppSettings["ADLSAccountName"],
+                "/inputfeatures-csv-westus-v1/"+ cloudFileName,
+                localFileName, overwrite:true);
 
             var values = PredictionUtilities.CreatePredictionFormat(localFileName);
             var latLons = values.Item1;
@@ -200,14 +199,21 @@ namespace OpenAvalancheProjectWebApp.Utilities
                 throw new Exception("Predictions don't have the same lenth as LatLon");
             }
             var mappedPredictions = new List<ForecastPoint>();
+            var mappedPredictionsOnlyNorthWest = new List<ForecastPoint>();
             for (int i = 0; i < latLons.Length; i++)
             {
                 mappedPredictions.Add(new ForecastPoint(dateToAdd, ModelName, latLons[i][0], latLons[i][1], predictions[i]));
+                if (latLons[i][0] > 42.0 && latLons[i][1] < -118.0)
+                {
+                    mappedPredictionsOnlyNorthWest.Add(new ForecastPoint(dateToAdd, ModelName + "NW", latLons[i][0], latLons[i][1], predictions[i]));
+                }
             }
 
             //upload the predictions to table storage
             var forecast = new Forecast(mappedPredictions);
+            var forecastNw = new Forecast(mappedPredictionsOnlyNorthWest);
             db.SaveForecast(forecast);
+            db.SaveForecast(forecastNw);
         }
     }
 }

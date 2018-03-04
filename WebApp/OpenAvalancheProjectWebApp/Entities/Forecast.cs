@@ -99,11 +99,53 @@ namespace OpenAvalancheProjectWebApp.Entities
                     case Constants.ModelDangerNearTreelineV1:
                         sb.Append(Constants.ModelDangerNearTreelineV1DisplayName);
                         break;
+                    case Constants.ModelDangerAboveTreelineV1NW:
+                        sb.Append(Constants.ModelDangerAboveTreelineV1NWDisplayName);
+                        break;
+                    case Constants.ModelDangerBelowTreelineV1NW:
+                        sb.Append(Constants.ModelDangerBelowTreelineV1NWDisplayName);
+                        break;
+                    case Constants.ModelDangerNearTreelineV1NW:
+                        sb.Append(Constants.ModelDangerNearTreelineV1NWDisplayName);
+                        break;
                     default:
                         sb.Append("Unknown Model");
                         break;
                 }
                 sb.Append(" ").Append(Date.ToShortDateString());
+                return sb.ToString();
+            }
+        }
+
+        public string ForecastAccuracyImagePath
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                switch (ForecastPoints[0].ModelName)
+                {
+                    case Constants.ModelDangerAboveTreelineV1:
+                        sb.Append(Constants.ModelDangerAboveTreelineV1EvaluationImage);
+                        break;
+                    case Constants.ModelDangerBelowTreelineV1:
+                        sb.Append(Constants.ModelDangerNearTreelineV1EvaluationImage);
+                        break;
+                    case Constants.ModelDangerNearTreelineV1:
+                        sb.Append(Constants.ModelDangerBelowTreelineV1EvaluationImage);
+                        break;
+                    case Constants.ModelDangerAboveTreelineV1NW:
+                        sb.Append(Constants.ModelDangerAboveTreelineV1NWEvaluationImage);
+                        break;
+                    case Constants.ModelDangerBelowTreelineV1NW:
+                        sb.Append(Constants.ModelDangerNearTreelineV1NWEvaluationImage);
+                        break;
+                    case Constants.ModelDangerNearTreelineV1NW:
+                        sb.Append(Constants.ModelDangerBelowTreelineV1NWEvaluationImage);
+                        break;
+                    default:
+                        sb.Append(String.Empty);
+                        break;
+                }
                 return sb.ToString();
             }
         }

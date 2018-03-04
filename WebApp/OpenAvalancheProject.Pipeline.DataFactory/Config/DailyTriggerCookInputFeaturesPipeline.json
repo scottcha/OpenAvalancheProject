@@ -1,19 +1,19 @@
 {
-  "name": "DailyTriggerCookInputFeaturesPipeline",
+  "name": "DailyTriggerCookInputFeaturesPipeline2",
   "properties": {
     "type": "TumblingWindowTrigger",
     "runtimeState": "Started",
     "typeProperties": {
       "frequency": "Hour",
       "interval": "24",
-      "startTime": "2018-1-05T04:00:00Z",
+      "startTime": "2018-2-03T04:00:00Z",
       "endTime": "2018-2-27T04:00:00Z",
       "maxConcurrency": 1 //depends on previous instances so don't set this higher than 1
     },
     "pipeline": {
       "pipelineReference": {
         "type": "PipelineReference",
-        "referenceName": "CookInputFeaturesPipeline"
+        "referenceName": "CookInputFeaturesPipeline2"
       },
       "parameters": {
         "SliceStart": {

@@ -233,7 +233,6 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
-    <Compile Include="Controllers\MapController.cs" />
     <Compile Include="Controllers\NavigationController.cs" />
     <Compile Include="Controllers\PredictController.cs" />
     <Compile Include="Controllers\WestUSv1Controller.cs" />
@@ -266,6 +265,7 @@
     <Content Include="Content\Images\2017_OpenAvalancheProject_Logo_Icon_small_PNG.png" />
     <Content Include="Content\Images\AvyMapOverview.JPG" />
     <Content Include="Content\Images\code.JPG" />
+    <Content Include="Content\Images\DangerAboveTreelineV1NWAccuracy.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
@@ -273,9 +273,6 @@
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="ApplicationInsights.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="local.settings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Connected Services\oapstoragedevelopAzureStorage\ConnectedService.json" />

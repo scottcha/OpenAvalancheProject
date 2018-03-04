@@ -13,6 +13,48 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <!-- Plotly chart will be drawn inside this DIV -->
 <div id="mapDiv"></div>
+<div class="col-md-6">
+    <h2>How To Read This Forecast</h2>
+    <ul>
+        <li>
+            <h4>The current forecast is only interpretable in mountainous regions which overlapping existing forecast areas</h4>
+            <p>
+                The current forecasts produced do not distinguish between mountainous and non-mountainous regions and produce uninterpretable results in non-mountainous regions.
+                It's on the backlog to remove forecasts in areas which are uninterpretable.
+            </p>
+            <p>
+                If accuracy ratings are provided they are only applicable against the existing <a href="http://nwac.us">Northwest Avalanche Center</a> Forecast Regions.
+            </p>
+        </li>
+        <li>
+            <h4>The avalanche danger scale is available <a href="https://www.nwac.us/static/common/images/danger-scale.png">here</a></h4>
+        </li>
+        <li>
+            <h4>
+                The V1 model has trained with data from the Northwest Avalanche Center (2013/2014 season through 2016/2017 season)
+            </h4>
+            <p>
+                Areas with no forecast but which are in mountainous regions likely lack Snotel data within a reasonable distance.  The model currently depends on snotel data within 160kms to produce a forecast.
+            </p>
+        </li>
+    </ul>
+</div>
+<div class="col-md-6">
+    @{
+        string accuracyString = "";
+        if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
+        {
+            accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
+        }
+        else
+        {
+            accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
+        }
+
+        @Html.Raw(accuracyString);
+    }
+</div>
+
 
 <script>
 

@@ -8,7 +8,9 @@ using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
+using System.Web.Configuration;
 
 namespace OpenAvalancheProjectWebApp.Utilities
 {
@@ -21,14 +23,15 @@ namespace OpenAvalancheProjectWebApp.Utilities
             {
                 if (adlsClient == null)
                 {
-                    var adlsAccountName = CloudConfigurationManager.GetSetting("ADLSAccountName");
+                    var adlsAccountName = WebConfigurationManager.AppSettings["ADLSAccountName"];
 
                     //auth secrets 
-                    var domain = CloudConfigurationManager.GetSetting("Domain");
-                    var webApp_clientId = CloudConfigurationManager.GetSetting("WebAppClientId");
-                    var clientSecret = CloudConfigurationManager.GetSetting("ClientSecret");
+                    var domain = WebConfigurationManager.AppSettings["Domain"];
+                    var webApp_clientId = WebConfigurationManager.AppSettings["WebAppClientId"];
+                    var clientSecret = WebConfigurationManager.AppSettings["ClientSecret"];
                     var clientCredential = new ClientCredential(webApp_clientId, clientSecret);
-                    var creds = ApplicationTokenProvider.LoginSilentAsync(domain, clientCredential).Result;
+                    var creds = Task.Run(async () => { return await ApplicationTokenProvider.LoginSilentAsync(domain, clientCredential); }).Result;
+                    //var creds = ApplicationTokenProvider.LoginSilentAsync(domain, clientCredential).Result;
 
                     // Create client objects and set the subscription ID
                     var adlsFileSystemClient = new DataLakeStoreFileSystemManagementClient(creds);

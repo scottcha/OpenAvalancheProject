@@ -290,3 +290,4 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 WebApp/OpenAvalancheProjectWebApp/WebSecret.config
+WebApp/OpenAvalancheProjectWebApp/local.settings.json
