@@ -39,8 +39,9 @@ namespace OpenAvalancheProjectWebApp.Controllers
 
             return PartialView(modelIds);
         }
-
+#if DEBUG != true
         [OutputCache(Duration =3600, VaryByParam ="date")]
+#endif
         public PartialViewResult DateList(DateTime? date = null)
         {
             if(date != null)
