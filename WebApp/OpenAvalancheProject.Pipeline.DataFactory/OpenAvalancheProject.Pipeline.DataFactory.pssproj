@@ -30,30 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\.gitignore" />
-    <Content Include="Config\AzureDataLakeLinkedService.json" />
-<<<<<<< HEAD
-    <Content Include="Config\AzureDataLakeStoreLinkedService.json" />
-=======
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
-    <Content Include="Config\AzureStorageLinkedService.json" />
-    <Content Include="Config\CookForecastPipeline.json" />
-    <Content Include="Config\CookHourlyToDailyPipeline.json" />
-    <Content Include="Config\CookInputFeaturesPipeline.json" />
-<<<<<<< HEAD
-    <Content Include="Config\CookUSWestCompleteFeaturesPipeline.json" />
-    <Content Include="Config\DailyTriggerCookForecastPipeline.json" />
-    <Content Include="Config\DailyTriggerCookHourlyToDailyPipeline.json" />
-    <Content Include="Config\DailyTriggerCookInputFeaturesPipeline.json" />
-    <Content Include="Config\DailyTriggerUSWestCompleteFeaturesPipeline.json" />
-    <Content Include="Config\PipelineInputParameters.json" />
-=======
-    <Content Include="Config\DailyTriggerCookForecastPipeline.json" />
-    <Content Include="Config\DailyTriggerCookHourlyToDailyPipeline.json" />
-    <Content Include="Config\DailyTriggerCookInputFeaturesPipeline.json" />
-    <Content Include="Config\DailyTriggerUSWestInputFeaturesPipeline.json" />
-    <Content Include="Config\PipelineInputParameters.json" />
-    <Content Include="Config\USWestInputFeaturesPipeline.json" />
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateDataFactory.ps1" />

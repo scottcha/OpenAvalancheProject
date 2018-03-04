@@ -26,10 +26,7 @@
     <Script Include="CreateUSWestInputFeatures.v1.usql" />
     <Script Include="CreateUSWestLookback.v1.usql" />
     <Script Include="DropAssembly.usql" />
-<<<<<<< HEAD
     <Script Include="DropRows.usql" />
-=======
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
     <Script Include="PredictUSWestV1.usql" />
     <Script Include="SnotelConcatHourlyCSVToTable.usql" />
     <Script Include="HourlyToDaily.usql" />
@@ -54,12 +51,9 @@
     <ScriptCode Include="DropAssembly.usql.cs">
       <DependentUpon>DropAssembly.usql</DependentUpon>
     </ScriptCode>
-<<<<<<< HEAD
     <ScriptCode Include="DropRows.usql.cs">
       <DependentUpon>DropRows.usql</DependentUpon>
     </ScriptCode>
-=======
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
     <ScriptCode Include="PredictUSWestV1.usql.cs">
       <DependentUpon>PredictUSWestV1.usql</DependentUpon>
     </ScriptCode>
