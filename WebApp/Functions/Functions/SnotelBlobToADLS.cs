@@ -13,7 +13,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class SnotelBlobToADLS
     {
-        [FunctionName("SnotelBlobToADLS")]
+        [FunctionName("SnotelBlobToADLS"), Disable()]
         [return: Table("snoteltracker")]
         public static FileProcessedTracker Run([BlobTrigger("snotel-csv-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
         {

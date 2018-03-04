@@ -1,0 +1,10 @@
+﻿
+@rowsToSave =
+    SELECT *
+    FROM dbo.USWestDailyInputFeaturesv1
+    WHERE __fileDate <= DateTime.ParseExact("20180202", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.USWestDailyInputFeaturesv1;
+
+INSERT INTO dbo.USWestDailyInputFeaturesv1
+SELECT * FROM @rowsToSave;

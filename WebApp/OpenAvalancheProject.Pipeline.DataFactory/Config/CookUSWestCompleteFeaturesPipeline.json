@@ -1,0 +1,42 @@
+{
+    "name": "CookUSWestCompleteFeaturesPipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "CreateUSWestLookbackV1",
+                "description": "Creates daily input features with lookback",
+                "type": "DataLakeAnalyticsU-SQL",
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false
+                },
+                "typeProperties": {
+<<<<<<< HEAD
+                    "scriptPath": "scripts/CreateUSWestLookback.v1.usql",
+=======
+                    "scriptPath": "scripts/CreateUSWestInputFeatures.v1.usql",
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
+                    "degreeOfParallelism": 5,
+                    "scriptLinkedService": {
+                        "referenceName": "AzureStorageLinkedService",
+                        "type": "LinkedServiceReference"
+                    },
+                  "parameters": {
+                    "SliceStart": "@Pipeline().parameters.SliceStart"
+                  }
+                },
+                "linkedServiceName": {
+                    "referenceName": "AzureDataLakeLinkedService",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "parameters": {
+            "SliceStart": {
+                "type": "String"
+            }
+        }
+    }
+}

@@ -14,5 +14,15 @@ namespace OpenAvalancheProject.Pipeline.Utilities
         public const string SnotelTrackerPartitionKey = "snotel-csv-westus-v1";
         public const string NamTrackerTable = "filedownloadtracker";
         public const string NamTrackerPartitionKey = "nam-grib-westus-v1";
+<<<<<<< HEAD
+        public const string PredictionTable = "predictiontracker";
+        public const string PredictionTrackerPartitionKey = "prediction-westus-v1";
+        //local debug
+        //public const string UrlForPredictApi = "http://localhost:port/api/Predict/";
+        //develop instance
+        public const string UrlForPredictApi = "http://openavalancheprojectdevelop.azurewebsites.net/api/Predict/";
+        //prod instance
+=======
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
     }
 }

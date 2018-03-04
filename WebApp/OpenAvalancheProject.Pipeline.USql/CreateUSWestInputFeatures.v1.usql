@@ -1,0 +1,1230 @@
+﻿USE DATABASE [westus-v1];
+DECLARE EXTERNAL @SliceStart = "20171214";
+DECLARE EXTERNAL @Debug bool = false;
+DECLARE EXTERNAL @DebugCounts bool = false;
+DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
+@currentInputData =
+    SELECT *
+    FROM dbo.DailyWeatherAndSnow
+    WHERE __fileDate == @ForecastDate; //this might need to be -1 depending on when forecast is run
+    
+@pastData =
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           LAG(Daily.SnowDepthIn, 3, - 9999) OVER(PARTITION BY Daily.Lat, Daily.Lon ORDER BY Daily.__fileDate ASC) AS SnowDepthIn3DaysAgo,
+           LAG(Daily.SnowDepthIn, 7, - 9999) OVER(PARTITION BY Daily.Lat, Daily.Lon ORDER BY Daily.__fileDate ASC) AS SnowDepthIn7DaysAgo
+    FROM dbo.DailyWeatherAndSnow AS Daily
+    WHERE __fileDate BETWEEN @ForecastDate.AddDays(-8) AND @ForecastDate; 
+
+IF(@Debug) THEN
+@count1 = 
+    SELECT COUNT(*) AS PastData1 
+    FROM @pastData;
+    
+    OUTPUT @pastData 
+        TO @"/debug-out/pastData.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+@pastData = 
+    SELECT @currentInputData.*,
+           @pastData.SnowDepthIn3DaysAgo - @currentInputData.SnowDepthIn AS n_r_Prev3DaySnowAccumulation,
+           @pastData.SnowDepthIn7DaysAgo - @currentInputData.SnowDepthIn AS n_r_Prev7DaySnowAccumulation
+    FROM @currentInputData
+    INNER JOIN @pastData ON @currentInputData.__fileDate == @pastData.__fileDate
+                         AND @currentInputData.Lat == @pastData.Lat
+                         AND @currentInputData.Lon == @pastData.Lon
+    WHERE @pastData.SnowDepthIn3DaysAgo != -9999 AND @pastData.SnowDepthIn7DaysAgo != -9999;
+
+@past1DayMaxes =
+    SELECT 
+           Lat,
+           Lon,
+           MAX(MaxTempSurfaceF) AS n_r_Prev1DayMaxTemp,
+           MAX(MaxWindSpeed10m) AS n_r_Prev1DayMaxWindSpeed10m,
+           MIN(MinTempSurfaceF) AS n_r_Prev1DayMinTemp
+    FROM dbo.DailyWeatherAndSnow
+    WHERE __fileDate >= @ForecastDate.AddDays( - 1)
+    GROUP BY Lat,
+             Lon;
+
+@past3DayMaxes =
+    SELECT 
+           Lat,
+           Lon,
+           MAX(MaxTempSurfaceF) AS n_r_Prev3DayMaxTemp,
+           MAX(MaxWindSpeed10m) AS n_r_Prev3DayMaxWindSpeed10m,
+           MIN(MinTempSurfaceF) AS n_r_Prev3DayMinTemp
+    FROM dbo.DailyWeatherAndSnow
+    WHERE __fileDate >= @ForecastDate.AddDays( - 3)
+    GROUP BY Lat,
+             Lon;
+
+@past7DayMaxes =
+    SELECT 
+           Lat,
+           Lon,
+           MAX(MaxTempSurfaceF) AS n_r_Prev7DayMaxTemp,
+           MAX(MaxWindSpeed10m) AS n_r_Prev7DayMaxWindSpeed10m,
+           MIN(MinTempSurfaceF) AS n_r_Prev7DayMinTemp
+    FROM dbo.DailyWeatherAndSnow
+    WHERE __fileDate >= @ForecastDate.AddDays( - 7)
+    GROUP BY Lat,
+             Lon;
+
+@pastData =
+    SELECT @pastData.*,
+           @past1DayMaxes.n_r_Prev1DayMaxTemp,
+           @past1DayMaxes.n_r_Prev1DayMaxWindSpeed10m,
+           @past1DayMaxes.n_r_Prev1DayMinTemp,
+           @past3DayMaxes.n_r_Prev3DayMaxTemp,
+           @past3DayMaxes.n_r_Prev3DayMaxWindSpeed10m,
+           @past3DayMaxes.n_r_Prev3DayMinTemp,
+           @past7DayMaxes.n_r_Prev7DayMaxTemp,
+           @past7DayMaxes.n_r_Prev7DayMaxWindSpeed10m,
+           @past7DayMaxes.n_r_Prev7DayMinTemp
+    FROM @pastData
+         INNER JOIN
+             @past1DayMaxes
+         ON @pastData.Lat == @past1DayMaxes.Lat
+            AND @pastData.Lon == @past1DayMaxes.Lon
+         INNER JOIN
+             @past3DayMaxes
+         ON @pastData.Lat == @past3DayMaxes.Lat
+            AND @pastData.Lon == @past3DayMaxes.Lon
+         INNER JOIN
+             @past7DayMaxes
+         ON @pastData.Lat == @past7DayMaxes.Lat
+            AND @pastData.Lon == @past7DayMaxes.Lon;
+
+IF(@Debug) THEN
+@count2 = 
+    SELECT COUNT(*) AS PastDataMaxes 
+    FROM @pastData;
+    
+    OUTPUT @pastData 
+        TO @"/debug-out/pastDataMaxes.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+@prev1DayPrecip =
+    SELECT Lat,
+           Lon,
+           APCPSurface  
+    FROM dbo.DailyWeatherAndSnow
+    WHERE __fileDate == @ForecastDate.AddDays( - 1);
+
+@pastData =
+    SELECT @pastData. *,
+           (@pastData.n_r_Prev3DayMaxTemp > 32 && @pastData.n_r_Prev3DayMinTemp < 32? 1 : 0) AS c_r_Prev3DayFreezeThawLikeliness,
+           (@pastData.n_r_Prev7DayMaxTemp > 32 && @pastData.n_r_Prev7DayMinTemp < 32? 1 : 0) AS c_r_Prev7DayFreezeThawLikeliness,
+           (@pastData.n_r_Prev3DayMaxWindSpeed10m >= 8.9408? 1 : 0) AS c_r_Prev3DayWindSlabLikeliness,
+           (@pastData.n_r_Prev7DayMaxWindSpeed10m >= 8.9408? 1 : 0) AS c_r_Prev7DayWindSlabLikeliness,
+           @prev1DayPrecip.APCPSurface AS n_r_Prev1DayPrecip,
+//           @pastData.n_r_Prev3DayMaxTemp - @pastData.MaxTemp2mAboveGroundF AS n_f_Next24HourChangeInTempFromPrev3DayMax,
+//           @pastData.n_r_Prev1DayMaxTemp - @pastData.MaxTemp2mAboveGroundF AS n_f_Next24HourChangeInTempFromPrev1DayMax,
+           (@pastData.n_r_Prev7DayMaxTemp < 15 ? 1 : 0) AS c_r_LongTermColdTemps,
+           (@pastData.n_r_Prev1DayMaxTemp > 32 && @pastData.n_r_Prev1DayMinTemp > 32 ? @prev1DayPrecip.APCPSurface : 0) AS n_r_Prev24HoursPrecipAsRainTotalIn
+    FROM @pastData
+    INNER JOIN @prev1DayPrecip ON @pastData.Lat == @prev1DayPrecip.Lat
+                               AND @pastData.Lon == @prev1DayPrecip.Lon;
+
+IF(@Debug) THEN
+@count3 = 
+    SELECT COUNT(*) AS PastData3
+    FROM @pastData;
+    
+    OUTPUT @pastData 
+        TO @"/debug-out/pastData3.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+@hourlyData = 
+    SELECT * 
+    FROM dbo.HourlyWeatherForecast
+    WHERE __fileDate == @ForecastDate AND __fileHour < 24; 
+
+IF(@Debug) THEN
+@count5 = 
+    SELECT COUNT(*) AS hourlyDataRows
+    FROM @hourlyData;
+
+@count6 = 
+    SELECT Lat, Lon, COUNT(*) AS CountOfHours
+    FROM @hourlyData
+    GROUP BY Lat, Lon;
+
+
+ OUTPUT @count6 
+        TO @"/debug-out/countHourlyData.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+    OUTPUT @hourlyData 
+        TO @"/debug-out/hourlyDebug.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+//Now get hourly data for the forecast period looking forward
+@futureData0Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface0HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface0HourForecast,
+           CRAINsurface AS c_f_CRAINsurface0HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF0HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF0HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround0HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF0HourForecast,
+           TMPTropF AS n_f_TMPTropF0HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m0HourForecast,
+           WindDirection10m AS n_f_WindDirection10m0HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m0HourForecast,
+           WindDirection80m AS n_f_WindDirection80m0HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop0HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop0HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 0;
+
+IF(@Debug) THEN
+
+ OUTPUT @futureData0Hour 
+        TO @"/debug-out/futureData0Hour.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+END;
+
+@futureData1Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface1HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface1HourForecast,
+           CRAINsurface AS c_f_CRAINsurface1HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF1HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF1HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround1HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF1HourForecast,
+           TMPTropF AS n_f_TMPTropF1HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m1HourForecast,
+           WindDirection10m AS n_f_WindDirection10m1HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m1HourForecast,
+           WindDirection80m AS n_f_WindDirection80m1HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop1HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop1HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 1;
+
+IF(@Debug) THEN
+
+ OUTPUT @futureData1Hour 
+        TO @"/debug-out/futureData1Hour.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+END;
+
+@futureData2Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface2HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface2HourForecast,
+           CRAINsurface AS c_f_CRAINsurface2HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF2HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF2HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround2HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF2HourForecast,
+           TMPTropF AS n_f_TMPTropF2HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m2HourForecast,
+           WindDirection10m AS n_f_WindDirection10m2HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m2HourForecast,
+           WindDirection80m AS n_f_WindDirection80m2HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop2HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop2HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 2;
+
+@futureData3Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface3HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface3HourForecast,
+           CRAINsurface AS c_f_CRAINsurface3HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF3HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF3HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround3HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF3HourForecast,
+           TMPTropF AS n_f_TMPTropF3HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m3HourForecast,
+           WindDirection10m AS n_f_WindDirection10m3HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m3HourForecast,
+           WindDirection80m AS n_f_WindDirection80m3HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop3HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop3HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 3;
+
+@futureData4Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface4HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface4HourForecast,
+           CRAINsurface AS c_f_CRAINsurface4HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF4HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF4HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround4HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF4HourForecast,
+           TMPTropF AS n_f_TMPTropF4HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m4HourForecast,
+           WindDirection10m AS n_f_WindDirection10m4HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m4HourForecast,
+           WindDirection80m AS n_f_WindDirection80m4HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop4HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop4HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 4;
+
+@futureData5Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface5HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface5HourForecast,
+           CRAINsurface AS c_f_CRAINsurface5HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF5HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF5HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround5HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF5HourForecast,
+           TMPTropF AS n_f_TMPTropF5HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m5HourForecast,
+           WindDirection10m AS n_f_WindDirection10m5HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m5HourForecast,
+           WindDirection80m AS n_f_WindDirection80m5HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop5HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop5HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 5;
+
+@futureData6Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface6HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface6HourForecast,
+           CRAINsurface AS c_f_CRAINsurface6HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF6HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF6HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround6HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF6HourForecast,
+           TMPTropF AS n_f_TMPTropF6HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m6HourForecast,
+           WindDirection10m AS n_f_WindDirection10m6HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m6HourForecast,
+           WindDirection80m AS n_f_WindDirection80m6HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop6HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop6HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 6;
+
+@futureData7Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface7HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface7HourForecast,
+           CRAINsurface AS c_f_CRAINsurface7HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF7HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF7HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround7HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF7HourForecast,
+           TMPTropF AS n_f_TMPTropF7HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m7HourForecast,
+           WindDirection10m AS n_f_WindDirection10m7HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m7HourForecast,
+           WindDirection80m AS n_f_WindDirection80m7HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop7HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop7HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 7;
+
+@futureData8Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface8HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface8HourForecast,
+           CRAINsurface AS c_f_CRAINsurface8HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF8HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF8HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround8HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF8HourForecast,
+           TMPTropF AS n_f_TMPTropF8HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m8HourForecast,
+           WindDirection10m AS n_f_WindDirection10m8HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m8HourForecast,
+           WindDirection80m AS n_f_WindDirection80m8HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop8HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop8HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 8;
+
+@futureData9Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface9HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface9HourForecast,
+           CRAINsurface AS c_f_CRAINsurface9HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF9HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF9HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround9HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF9HourForecast,
+           TMPTropF AS n_f_TMPTropF9HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m9HourForecast,
+           WindDirection10m AS n_f_WindDirection10m9HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m9HourForecast,
+           WindDirection80m AS n_f_WindDirection80m9HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop9HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop9HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 9;
+
+@futureData10Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface10HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface10HourForecast,
+           CRAINsurface AS c_f_CRAINsurface10HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF10HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF10HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround10HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF10HourForecast,
+           TMPTropF AS n_f_TMPTropF10HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m10HourForecast,
+           WindDirection10m AS n_f_WindDirection10m10HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m10HourForecast,
+           WindDirection80m AS n_f_WindDirection80m10HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop10HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop10HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 10;
+
+@futureData11Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface11HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface11HourForecast,
+           CRAINsurface AS c_f_CRAINsurface11HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF11HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF11HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround11HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF11HourForecast,
+           TMPTropF AS n_f_TMPTropF11HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m11HourForecast,
+           WindDirection10m AS n_f_WindDirection10m11HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m11HourForecast,
+           WindDirection80m AS n_f_WindDirection80m11HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop11HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop11HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 11;
+
+@futureData12Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface12HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface12HourForecast,
+           CRAINsurface AS c_f_CRAINsurface12HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF12HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF12HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround12HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF12HourForecast,
+           TMPTropF AS n_f_TMPTropF12HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m12HourForecast,
+           WindDirection10m AS n_f_WindDirection10m12HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m12HourForecast,
+           WindDirection80m AS n_f_WindDirection80m12HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop12HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop12HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 12;
+
+@futureData13Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface13HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface13HourForecast,
+           CRAINsurface AS c_f_CRAINsurface13HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF13HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF13HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround13HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF13HourForecast,
+           TMPTropF AS n_f_TMPTropF13HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m13HourForecast,
+           WindDirection10m AS n_f_WindDirection10m13HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m13HourForecast,
+           WindDirection80m AS n_f_WindDirection80m13HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop13HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop13HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 13;
+
+@futureData14Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface14HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface14HourForecast,
+           CRAINsurface AS c_f_CRAINsurface14HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF14HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF14HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround14HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF14HourForecast,
+           TMPTropF AS n_f_TMPTropF14HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m14HourForecast,
+           WindDirection10m AS n_f_WindDirection10m14HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m14HourForecast,
+           WindDirection80m AS n_f_WindDirection80m14HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop14HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop14HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 14;
+
+@futureData15Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface15HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface15HourForecast,
+           CRAINsurface AS c_f_CRAINsurface15HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF15HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF15HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround15HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF15HourForecast,
+           TMPTropF AS n_f_TMPTropF15HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m15HourForecast,
+           WindDirection10m AS n_f_WindDirection10m15HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m15HourForecast,
+           WindDirection80m AS n_f_WindDirection80m15HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop15HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop15HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 15;
+
+@futureData16Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface16HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface16HourForecast,
+           CRAINsurface AS c_f_CRAINsurface16HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF16HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF16HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround16HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF16HourForecast,
+           TMPTropF AS n_f_TMPTropF16HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m16HourForecast,
+           WindDirection10m AS n_f_WindDirection10m16HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m16HourForecast,
+           WindDirection80m AS n_f_WindDirection80m16HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop16HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop16HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 16;
+
+@futureData17Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface17HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface17HourForecast,
+           CRAINsurface AS c_f_CRAINsurface17HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF17HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF17HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround17HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF17HourForecast,
+           TMPTropF AS n_f_TMPTropF17HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m17HourForecast,
+           WindDirection10m AS n_f_WindDirection10m17HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m17HourForecast,
+           WindDirection80m AS n_f_WindDirection80m17HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop17HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop17HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 17;
+
+@futureData18Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface18HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface18HourForecast,
+           CRAINsurface AS c_f_CRAINsurface18HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF18HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF18HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround18HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF18HourForecast,
+           TMPTropF AS n_f_TMPTropF18HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m18HourForecast,
+           WindDirection10m AS n_f_WindDirection10m18HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m18HourForecast,
+           WindDirection80m AS n_f_WindDirection80m18HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop18HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop18HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 18;
+
+@futureData19Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface19HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface19HourForecast,
+           CRAINsurface AS c_f_CRAINsurface19HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF19HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF19HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround19HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF19HourForecast,
+           TMPTropF AS n_f_TMPTropF19HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m19HourForecast,
+           WindDirection10m AS n_f_WindDirection10m19HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m19HourForecast,
+           WindDirection80m AS n_f_WindDirection80m19HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop19HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop19HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 19;
+
+@futureData20Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface20HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface20HourForecast,
+           CRAINsurface AS c_f_CRAINsurface20HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF20HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF20HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround20HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF20HourForecast,
+           TMPTropF AS n_f_TMPTropF20HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m20HourForecast,
+           WindDirection10m AS n_f_WindDirection10m20HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m20HourForecast,
+           WindDirection80m AS n_f_WindDirection80m20HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop20HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop20HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 20;
+
+@futureData21Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface21HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface21HourForecast,
+           CRAINsurface AS c_f_CRAINsurface21HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF21HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF21HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround21HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF21HourForecast,
+           TMPTropF AS n_f_TMPTropF21HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m21HourForecast,
+           WindDirection10m AS n_f_WindDirection10m21HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m21HourForecast,
+           WindDirection80m AS n_f_WindDirection80m21HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop21HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop21HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 21; 
+
+@futureData22Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface22HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface22HourForecast,
+           CRAINsurface AS c_f_CRAINsurface22HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF22HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF22HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround22HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF22HourForecast,
+           TMPTropF AS n_f_TMPTropF22HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m22HourForecast,
+           WindDirection10m AS n_f_WindDirection10m22HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m22HourForecast,
+           WindDirection80m AS n_f_WindDirection80m22HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop22HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop22HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 22; 
+
+@futureData23Hour =   
+    SELECT __fileDate,
+           Lat,
+           Lon,
+           APCPsurface AS n_f_APCPsurface23HourForecast,
+           CSNOWsurface AS c_f_CSNOWsurface23HourForecast,
+           CRAINsurface AS c_f_CRAINsurface23HourForecast,
+           TMPsurfaceF AS n_f_TMPsurfaceF23HourForecast,
+           Tmp2mAboveGroundF AS n_f_Tmp2mAboveGroundF23HourForecast,
+           RH2mAboveGround AS n_f_RH2mAboveGround23HourForecast,
+           TMP80mAboveGroundF AS n_f_TMP80mAboveGroundF23HourForecast,
+           TMPTropF AS n_f_TMPTropF23HourForecast,
+           WindSpeed10m AS n_f_WindSpeed10m23HourForecast,
+           WindDirection10m AS n_f_WindDirection10m23HourForecast,
+           WindSpeed80m AS n_f_WindSpeed80m23HourForecast,
+           WindDirection80m AS n_f_WindDirection80m23HourForecast,
+           WindSpeedTrop AS n_f_WindSpeedTrop23HourForecast,
+           WindDirectionTrop AS n_f_WindDirectionTrop23HourForecast
+     FROM @hourlyData
+     WHERE __fileHour == 23;
+
+
+@renamedColumns =
+    SELECT  @pastData.[__fileDate],
+            @pastData.[Lat],
+            @pastData.[Lon],
+            @futureData0Hour.n_f_APCPsurface0HourForecast,
+            @futureData0Hour.c_f_CSNOWsurface0HourForecast,
+            @futureData0Hour.c_f_CRAINsurface0HourForecast,
+            @futureData0Hour.n_f_TMPsurfaceF0HourForecast,
+            @futureData0Hour.n_f_Tmp2mAboveGroundF0HourForecast,
+            @futureData0Hour.n_f_RH2mAboveGround0HourForecast,
+            @futureData0Hour.n_f_TMP80mAboveGroundF0HourForecast,
+            @futureData0Hour.n_f_TMPTropF0HourForecast,
+            @futureData0Hour.n_f_WindSpeed10m0HourForecast,
+            @futureData0Hour.n_f_WindDirection10m0HourForecast,
+            @futureData0Hour.n_f_WindSpeed80m0HourForecast,
+            @futureData0Hour.n_f_WindDirection80m0HourForecast,
+            @futureData0Hour.n_f_WindSpeedTrop0HourForecast,
+            @futureData0Hour.n_f_WindDirectionTrop0HourForecast,
+            @futureData1Hour.n_f_APCPsurface1HourForecast,
+            @futureData1Hour.c_f_CSNOWsurface1HourForecast,
+            @futureData1Hour.c_f_CRAINsurface1HourForecast,
+            @futureData1Hour.n_f_TMPsurfaceF1HourForecast,
+            @futureData1Hour.n_f_Tmp2mAboveGroundF1HourForecast,
+            @futureData1Hour.n_f_RH2mAboveGround1HourForecast,
+            @futureData1Hour.n_f_TMP80mAboveGroundF1HourForecast,
+            @futureData1Hour.n_f_TMPTropF1HourForecast,
+            @futureData1Hour.n_f_WindSpeed10m1HourForecast,
+            @futureData1Hour.n_f_WindDirection10m1HourForecast,
+            @futureData1Hour.n_f_WindSpeed80m1HourForecast,
+            @futureData1Hour.n_f_WindDirection80m1HourForecast,
+            @futureData1Hour.n_f_WindSpeedTrop1HourForecast,
+            @futureData1Hour.n_f_WindDirectionTrop1HourForecast,
+            @futureData2Hour.n_f_APCPsurface2HourForecast,
+            @futureData2Hour.c_f_CSNOWsurface2HourForecast,
+            @futureData2Hour.c_f_CRAINsurface2HourForecast,
+            @futureData2Hour.n_f_TMPsurfaceF2HourForecast,
+            @futureData2Hour.n_f_Tmp2mAboveGroundF2HourForecast,
+            @futureData2Hour.n_f_RH2mAboveGround2HourForecast,
+            @futureData2Hour.n_f_TMP80mAboveGroundF2HourForecast,
+            @futureData2Hour.n_f_TMPTropF2HourForecast,
+            @futureData2Hour.n_f_WindSpeed10m2HourForecast,
+            @futureData2Hour.n_f_WindDirection10m2HourForecast,
+            @futureData2Hour.n_f_WindSpeed80m2HourForecast,
+            @futureData2Hour.n_f_WindDirection80m2HourForecast,
+            @futureData2Hour.n_f_WindSpeedTrop2HourForecast,
+            @futureData2Hour.n_f_WindDirectionTrop2HourForecast,
+            @futureData3Hour.n_f_APCPsurface3HourForecast,
+            @futureData3Hour.c_f_CSNOWsurface3HourForecast,
+            @futureData3Hour.c_f_CRAINsurface3HourForecast,
+            @futureData3Hour.n_f_TMPsurfaceF3HourForecast,
+            @futureData3Hour.n_f_Tmp2mAboveGroundF3HourForecast,
+            @futureData3Hour.n_f_RH2mAboveGround3HourForecast,
+            @futureData3Hour.n_f_TMP80mAboveGroundF3HourForecast,
+            @futureData3Hour.n_f_TMPTropF3HourForecast,
+            @futureData3Hour.n_f_WindSpeed10m3HourForecast,
+            @futureData3Hour.n_f_WindDirection10m3HourForecast,
+            @futureData3Hour.n_f_WindSpeed80m3HourForecast,
+            @futureData3Hour.n_f_WindDirection80m3HourForecast,
+            @futureData3Hour.n_f_WindSpeedTrop3HourForecast,
+            @futureData3Hour.n_f_WindDirectionTrop3HourForecast,
+            @futureData4Hour.n_f_APCPsurface4HourForecast,
+            @futureData4Hour.c_f_CSNOWsurface4HourForecast,
+            @futureData4Hour.c_f_CRAINsurface4HourForecast,
+            @futureData4Hour.n_f_TMPsurfaceF4HourForecast,
+            @futureData4Hour.n_f_Tmp2mAboveGroundF4HourForecast,
+            @futureData4Hour.n_f_RH2mAboveGround4HourForecast,
+            @futureData4Hour.n_f_TMP80mAboveGroundF4HourForecast,
+            @futureData4Hour.n_f_TMPTropF4HourForecast,
+            @futureData4Hour.n_f_WindSpeed10m4HourForecast,
+            @futureData4Hour.n_f_WindDirection10m4HourForecast,
+            @futureData4Hour.n_f_WindSpeed80m4HourForecast,
+            @futureData4Hour.n_f_WindDirection80m4HourForecast,
+            @futureData4Hour.n_f_WindSpeedTrop4HourForecast,
+            @futureData4Hour.n_f_WindDirectionTrop4HourForecast,
+            @futureData5Hour.n_f_APCPsurface5HourForecast,
+            @futureData5Hour.c_f_CSNOWsurface5HourForecast,
+            @futureData5Hour.c_f_CRAINsurface5HourForecast,
+            @futureData5Hour.n_f_TMPsurfaceF5HourForecast,
+            @futureData5Hour.n_f_Tmp2mAboveGroundF5HourForecast,
+            @futureData5Hour.n_f_RH2mAboveGround5HourForecast,
+            @futureData5Hour.n_f_TMP80mAboveGroundF5HourForecast,
+            @futureData5Hour.n_f_TMPTropF5HourForecast,
+            @futureData5Hour.n_f_WindSpeed10m5HourForecast,
+            @futureData5Hour.n_f_WindDirection10m5HourForecast,
+            @futureData5Hour.n_f_WindSpeed80m5HourForecast,
+            @futureData5Hour.n_f_WindDirection80m5HourForecast,
+            @futureData5Hour.n_f_WindSpeedTrop5HourForecast,
+            @futureData5Hour.n_f_WindDirectionTrop5HourForecast,
+            @futureData6Hour.n_f_APCPsurface6HourForecast,
+            @futureData6Hour.c_f_CSNOWsurface6HourForecast,
+            @futureData6Hour.c_f_CRAINsurface6HourForecast,
+            @futureData6Hour.n_f_TMPsurfaceF6HourForecast,
+            @futureData6Hour.n_f_Tmp2mAboveGroundF6HourForecast,
+            @futureData6Hour.n_f_RH2mAboveGround6HourForecast,
+            @futureData6Hour.n_f_TMP80mAboveGroundF6HourForecast,
+            @futureData6Hour.n_f_TMPTropF6HourForecast,
+            @futureData6Hour.n_f_WindSpeed10m6HourForecast,
+            @futureData6Hour.n_f_WindDirection10m6HourForecast,
+            @futureData6Hour.n_f_WindSpeed80m6HourForecast,
+            @futureData6Hour.n_f_WindDirection80m6HourForecast,
+            @futureData6Hour.n_f_WindSpeedTrop6HourForecast,
+            @futureData6Hour.n_f_WindDirectionTrop6HourForecast,
+            @futureData7Hour.n_f_APCPsurface7HourForecast,
+            @futureData7Hour.c_f_CSNOWsurface7HourForecast,
+            @futureData7Hour.c_f_CRAINsurface7HourForecast,
+            @futureData7Hour.n_f_TMPsurfaceF7HourForecast,
+            @futureData7Hour.n_f_Tmp2mAboveGroundF7HourForecast,
+            @futureData7Hour.n_f_RH2mAboveGround7HourForecast,
+            @futureData7Hour.n_f_TMP80mAboveGroundF7HourForecast,
+            @futureData7Hour.n_f_TMPTropF7HourForecast,
+            @futureData7Hour.n_f_WindSpeed10m7HourForecast,
+            @futureData7Hour.n_f_WindDirection10m7HourForecast,
+            @futureData7Hour.n_f_WindSpeed80m7HourForecast,
+            @futureData7Hour.n_f_WindDirection80m7HourForecast,
+            @futureData7Hour.n_f_WindSpeedTrop7HourForecast,
+            @futureData7Hour.n_f_WindDirectionTrop7HourForecast,
+            @futureData8Hour.n_f_APCPsurface8HourForecast,
+            @futureData8Hour.c_f_CSNOWsurface8HourForecast,
+            @futureData8Hour.c_f_CRAINsurface8HourForecast,
+            @futureData8Hour.n_f_TMPsurfaceF8HourForecast,
+            @futureData8Hour.n_f_Tmp2mAboveGroundF8HourForecast,
+            @futureData8Hour.n_f_RH2mAboveGround8HourForecast,
+            @futureData8Hour.n_f_TMP80mAboveGroundF8HourForecast,
+            @futureData8Hour.n_f_TMPTropF8HourForecast,
+            @futureData8Hour.n_f_WindSpeed10m8HourForecast,
+            @futureData8Hour.n_f_WindDirection10m8HourForecast,
+            @futureData8Hour.n_f_WindSpeed80m8HourForecast,
+            @futureData8Hour.n_f_WindDirection80m8HourForecast,
+            @futureData8Hour.n_f_WindSpeedTrop8HourForecast,
+            @futureData8Hour.n_f_WindDirectionTrop8HourForecast,
+            @futureData9Hour.n_f_APCPsurface9HourForecast,
+            @futureData9Hour.c_f_CSNOWsurface9HourForecast,
+            @futureData9Hour.c_f_CRAINsurface9HourForecast,
+            @futureData9Hour.n_f_TMPsurfaceF9HourForecast,
+            @futureData9Hour.n_f_Tmp2mAboveGroundF9HourForecast,
+            @futureData9Hour.n_f_RH2mAboveGround9HourForecast,
+            @futureData9Hour.n_f_TMP80mAboveGroundF9HourForecast,
+            @futureData9Hour.n_f_TMPTropF9HourForecast,
+            @futureData9Hour.n_f_WindSpeed10m9HourForecast,
+            @futureData9Hour.n_f_WindDirection10m9HourForecast,
+            @futureData9Hour.n_f_WindSpeed80m9HourForecast,
+            @futureData9Hour.n_f_WindDirection80m9HourForecast,
+            @futureData9Hour.n_f_WindSpeedTrop9HourForecast,
+            @futureData9Hour.n_f_WindDirectionTrop9HourForecast,
+            @futureData10Hour.n_f_APCPsurface10HourForecast,
+            @futureData10Hour.c_f_CSNOWsurface10HourForecast,
+            @futureData10Hour.c_f_CRAINsurface10HourForecast,
+            @futureData10Hour.n_f_TMPsurfaceF10HourForecast,
+            @futureData10Hour.n_f_Tmp2mAboveGroundF10HourForecast,
+            @futureData10Hour.n_f_RH2mAboveGround10HourForecast,
+            @futureData10Hour.n_f_TMP80mAboveGroundF10HourForecast,
+            @futureData10Hour.n_f_TMPTropF10HourForecast,
+            @futureData10Hour.n_f_WindSpeed10m10HourForecast,
+            @futureData10Hour.n_f_WindDirection10m10HourForecast,
+            @futureData10Hour.n_f_WindSpeed80m10HourForecast,
+            @futureData10Hour.n_f_WindDirection80m10HourForecast,
+            @futureData10Hour.n_f_WindSpeedTrop10HourForecast,
+            @futureData10Hour.n_f_WindDirectionTrop10HourForecast,
+            @futureData11Hour.n_f_APCPsurface11HourForecast,
+            @futureData11Hour.c_f_CSNOWsurface11HourForecast,
+            @futureData11Hour.c_f_CRAINsurface11HourForecast,
+            @futureData11Hour.n_f_TMPsurfaceF11HourForecast,
+            @futureData11Hour.n_f_Tmp2mAboveGroundF11HourForecast,
+            @futureData11Hour.n_f_RH2mAboveGround11HourForecast,
+            @futureData11Hour.n_f_TMP80mAboveGroundF11HourForecast,
+            @futureData11Hour.n_f_TMPTropF11HourForecast,
+            @futureData11Hour.n_f_WindSpeed10m11HourForecast,
+            @futureData11Hour.n_f_WindDirection10m11HourForecast,
+            @futureData11Hour.n_f_WindSpeed80m11HourForecast,
+            @futureData11Hour.n_f_WindDirection80m11HourForecast,
+            @futureData11Hour.n_f_WindSpeedTrop11HourForecast,
+            @futureData11Hour.n_f_WindDirectionTrop11HourForecast,
+            @futureData12Hour.n_f_APCPsurface12HourForecast,
+            @futureData12Hour.c_f_CSNOWsurface12HourForecast,
+            @futureData12Hour.c_f_CRAINsurface12HourForecast,
+            @futureData12Hour.n_f_TMPsurfaceF12HourForecast,
+            @futureData12Hour.n_f_Tmp2mAboveGroundF12HourForecast,
+            @futureData12Hour.n_f_RH2mAboveGround12HourForecast,
+            @futureData12Hour.n_f_TMP80mAboveGroundF12HourForecast,
+            @futureData12Hour.n_f_TMPTropF12HourForecast,
+            @futureData12Hour.n_f_WindSpeed10m12HourForecast,
+            @futureData12Hour.n_f_WindDirection10m12HourForecast,
+            @futureData12Hour.n_f_WindSpeed80m12HourForecast,
+            @futureData12Hour.n_f_WindDirection80m12HourForecast,
+            @futureData12Hour.n_f_WindSpeedTrop12HourForecast,
+            @futureData12Hour.n_f_WindDirectionTrop12HourForecast,
+            @futureData13Hour.n_f_APCPsurface13HourForecast,
+            @futureData13Hour.c_f_CSNOWsurface13HourForecast,
+            @futureData13Hour.c_f_CRAINsurface13HourForecast,
+            @futureData13Hour.n_f_TMPsurfaceF13HourForecast,
+            @futureData13Hour.n_f_Tmp2mAboveGroundF13HourForecast,
+            @futureData13Hour.n_f_RH2mAboveGround13HourForecast,
+            @futureData13Hour.n_f_TMP80mAboveGroundF13HourForecast,
+            @futureData13Hour.n_f_TMPTropF13HourForecast,
+            @futureData13Hour.n_f_WindSpeed10m13HourForecast,
+            @futureData13Hour.n_f_WindDirection10m13HourForecast,
+            @futureData13Hour.n_f_WindSpeed80m13HourForecast,
+            @futureData13Hour.n_f_WindDirection80m13HourForecast,
+            @futureData13Hour.n_f_WindSpeedTrop13HourForecast,
+            @futureData13Hour.n_f_WindDirectionTrop13HourForecast,
+            @futureData14Hour.n_f_APCPsurface14HourForecast,
+            @futureData14Hour.c_f_CSNOWsurface14HourForecast,
+            @futureData14Hour.c_f_CRAINsurface14HourForecast,
+            @futureData14Hour.n_f_TMPsurfaceF14HourForecast,
+            @futureData14Hour.n_f_Tmp2mAboveGroundF14HourForecast,
+            @futureData14Hour.n_f_RH2mAboveGround14HourForecast,
+            @futureData14Hour.n_f_TMP80mAboveGroundF14HourForecast,
+            @futureData14Hour.n_f_TMPTropF14HourForecast,
+            @futureData14Hour.n_f_WindSpeed10m14HourForecast,
+            @futureData14Hour.n_f_WindDirection10m14HourForecast,
+            @futureData14Hour.n_f_WindSpeed80m14HourForecast,
+            @futureData14Hour.n_f_WindDirection80m14HourForecast,
+            @futureData14Hour.n_f_WindSpeedTrop14HourForecast,
+            @futureData14Hour.n_f_WindDirectionTrop14HourForecast,
+            @futureData15Hour.n_f_APCPsurface15HourForecast,
+            @futureData15Hour.c_f_CSNOWsurface15HourForecast,
+            @futureData15Hour.c_f_CRAINsurface15HourForecast,
+            @futureData15Hour.n_f_TMPsurfaceF15HourForecast,
+            @futureData15Hour.n_f_Tmp2mAboveGroundF15HourForecast,
+            @futureData15Hour.n_f_RH2mAboveGround15HourForecast,
+            @futureData15Hour.n_f_TMP80mAboveGroundF15HourForecast,
+            @futureData15Hour.n_f_TMPTropF15HourForecast,
+            @futureData15Hour.n_f_WindSpeed10m15HourForecast,
+            @futureData15Hour.n_f_WindDirection10m15HourForecast,
+            @futureData15Hour.n_f_WindSpeed80m15HourForecast,
+            @futureData15Hour.n_f_WindDirection80m15HourForecast,
+            @futureData15Hour.n_f_WindSpeedTrop15HourForecast,
+            @futureData15Hour.n_f_WindDirectionTrop15HourForecast,
+            @futureData16Hour.n_f_APCPsurface16HourForecast,
+            @futureData16Hour.c_f_CSNOWsurface16HourForecast,
+            @futureData16Hour.c_f_CRAINsurface16HourForecast,
+            @futureData16Hour.n_f_TMPsurfaceF16HourForecast,
+            @futureData16Hour.n_f_Tmp2mAboveGroundF16HourForecast,
+            @futureData16Hour.n_f_RH2mAboveGround16HourForecast,
+            @futureData16Hour.n_f_TMP80mAboveGroundF16HourForecast,
+            @futureData16Hour.n_f_TMPTropF16HourForecast,
+            @futureData16Hour.n_f_WindSpeed10m16HourForecast,
+            @futureData16Hour.n_f_WindDirection10m16HourForecast,
+            @futureData16Hour.n_f_WindSpeed80m16HourForecast,
+            @futureData16Hour.n_f_WindDirection80m16HourForecast,
+            @futureData16Hour.n_f_WindSpeedTrop16HourForecast,
+            @futureData16Hour.n_f_WindDirectionTrop16HourForecast,
+            @futureData17Hour.n_f_APCPsurface17HourForecast,
+            @futureData17Hour.c_f_CSNOWsurface17HourForecast,
+            @futureData17Hour.c_f_CRAINsurface17HourForecast,
+            @futureData17Hour.n_f_TMPsurfaceF17HourForecast,
+            @futureData17Hour.n_f_Tmp2mAboveGroundF17HourForecast,
+            @futureData17Hour.n_f_RH2mAboveGround17HourForecast,
+            @futureData17Hour.n_f_TMP80mAboveGroundF17HourForecast,
+            @futureData17Hour.n_f_TMPTropF17HourForecast,
+            @futureData17Hour.n_f_WindSpeed10m17HourForecast,
+            @futureData17Hour.n_f_WindDirection10m17HourForecast,
+            @futureData17Hour.n_f_WindSpeed80m17HourForecast,
+            @futureData17Hour.n_f_WindDirection80m17HourForecast,
+            @futureData17Hour.n_f_WindSpeedTrop17HourForecast,
+            @futureData17Hour.n_f_WindDirectionTrop17HourForecast,
+            @futureData18Hour.n_f_APCPsurface18HourForecast,
+            @futureData18Hour.c_f_CSNOWsurface18HourForecast,
+            @futureData18Hour.c_f_CRAINsurface18HourForecast,
+            @futureData18Hour.n_f_TMPsurfaceF18HourForecast,
+            @futureData18Hour.n_f_Tmp2mAboveGroundF18HourForecast,
+            @futureData18Hour.n_f_RH2mAboveGround18HourForecast,
+            @futureData18Hour.n_f_TMP80mAboveGroundF18HourForecast,
+            @futureData18Hour.n_f_TMPTropF18HourForecast,
+            @futureData18Hour.n_f_WindSpeed10m18HourForecast,
+            @futureData18Hour.n_f_WindDirection10m18HourForecast,
+            @futureData18Hour.n_f_WindSpeed80m18HourForecast,
+            @futureData18Hour.n_f_WindDirection80m18HourForecast,
+            @futureData18Hour.n_f_WindSpeedTrop18HourForecast,
+            @futureData18Hour.n_f_WindDirectionTrop18HourForecast,
+            @futureData19Hour.n_f_APCPsurface19HourForecast,
+            @futureData19Hour.c_f_CSNOWsurface19HourForecast,
+            @futureData19Hour.c_f_CRAINsurface19HourForecast,
+            @futureData19Hour.n_f_TMPsurfaceF19HourForecast,
+            @futureData19Hour.n_f_Tmp2mAboveGroundF19HourForecast,
+            @futureData19Hour.n_f_RH2mAboveGround19HourForecast,
+            @futureData19Hour.n_f_TMP80mAboveGroundF19HourForecast,
+            @futureData19Hour.n_f_TMPTropF19HourForecast,
+            @futureData19Hour.n_f_WindSpeed10m19HourForecast,
+            @futureData19Hour.n_f_WindDirection10m19HourForecast,
+            @futureData19Hour.n_f_WindSpeed80m19HourForecast,
+            @futureData19Hour.n_f_WindDirection80m19HourForecast,
+            @futureData19Hour.n_f_WindSpeedTrop19HourForecast,
+            @futureData19Hour.n_f_WindDirectionTrop19HourForecast,
+            @futureData20Hour.n_f_APCPsurface20HourForecast,
+            @futureData20Hour.c_f_CSNOWsurface20HourForecast,
+            @futureData20Hour.c_f_CRAINsurface20HourForecast,
+            @futureData20Hour.n_f_TMPsurfaceF20HourForecast,
+            @futureData20Hour.n_f_Tmp2mAboveGroundF20HourForecast,
+            @futureData20Hour.n_f_RH2mAboveGround20HourForecast,
+            @futureData20Hour.n_f_TMP80mAboveGroundF20HourForecast,
+            @futureData20Hour.n_f_TMPTropF20HourForecast,
+            @futureData20Hour.n_f_WindSpeed10m20HourForecast,
+            @futureData20Hour.n_f_WindDirection10m20HourForecast,
+            @futureData20Hour.n_f_WindSpeed80m20HourForecast,
+            @futureData20Hour.n_f_WindDirection80m20HourForecast,
+            @futureData20Hour.n_f_WindSpeedTrop20HourForecast,
+            @futureData20Hour.n_f_WindDirectionTrop20HourForecast,
+            @futureData21Hour.n_f_APCPsurface21HourForecast,
+            @futureData21Hour.c_f_CSNOWsurface21HourForecast,
+            @futureData21Hour.c_f_CRAINsurface21HourForecast,
+            @futureData21Hour.n_f_TMPsurfaceF21HourForecast,
+            @futureData21Hour.n_f_Tmp2mAboveGroundF21HourForecast,
+            @futureData21Hour.n_f_RH2mAboveGround21HourForecast,
+            @futureData21Hour.n_f_TMP80mAboveGroundF21HourForecast,
+            @futureData21Hour.n_f_TMPTropF21HourForecast,
+            @futureData21Hour.n_f_WindSpeed10m21HourForecast,
+            @futureData21Hour.n_f_WindDirection10m21HourForecast,
+            @futureData21Hour.n_f_WindSpeed80m21HourForecast,
+            @futureData21Hour.n_f_WindDirection80m21HourForecast,
+            @futureData21Hour.n_f_WindSpeedTrop21HourForecast,
+            @futureData21Hour.n_f_WindDirectionTrop21HourForecast,
+            @futureData22Hour.n_f_APCPsurface22HourForecast,
+            @futureData22Hour.c_f_CSNOWsurface22HourForecast,
+            @futureData22Hour.c_f_CRAINsurface22HourForecast,
+            @futureData22Hour.n_f_TMPsurfaceF22HourForecast,
+            @futureData22Hour.n_f_Tmp2mAboveGroundF22HourForecast,
+            @futureData22Hour.n_f_RH2mAboveGround22HourForecast,
+            @futureData22Hour.n_f_TMP80mAboveGroundF22HourForecast,
+            @futureData22Hour.n_f_TMPTropF22HourForecast,
+            @futureData22Hour.n_f_WindSpeed10m22HourForecast,
+            @futureData22Hour.n_f_WindDirection10m22HourForecast,
+            @futureData22Hour.n_f_WindSpeed80m22HourForecast,
+            @futureData22Hour.n_f_WindDirection80m22HourForecast,
+            @futureData22Hour.n_f_WindSpeedTrop22HourForecast,
+            @futureData22Hour.n_f_WindDirectionTrop22HourForecast,
+            @futureData23Hour.n_f_APCPsurface23HourForecast,
+            @futureData23Hour.c_f_CSNOWsurface23HourForecast,
+            @futureData23Hour.c_f_CRAINsurface23HourForecast,
+            @futureData23Hour.n_f_TMPsurfaceF23HourForecast,
+            @futureData23Hour.n_f_Tmp2mAboveGroundF23HourForecast,
+            @futureData23Hour.n_f_RH2mAboveGround23HourForecast,
+            @futureData23Hour.n_f_TMP80mAboveGroundF23HourForecast,
+            @futureData23Hour.n_f_TMPTropF23HourForecast,
+            @futureData23Hour.n_f_WindSpeed10m23HourForecast,
+            @futureData23Hour.n_f_WindDirection10m23HourForecast,
+            @futureData23Hour.n_f_WindSpeed80m23HourForecast,
+            @futureData23Hour.n_f_WindDirection80m23HourForecast,
+            @futureData23Hour.n_f_WindSpeedTrop23HourForecast,
+            @futureData23Hour.n_f_WindDirectionTrop23HourForecast,
+            [APCPSurface] AS n_f_APCPSurface,
+            [MaxTempSurfaceF] AS n_f_MaxTempSurfaceF,
+            [MinTempSurfaceF] AS n_f_MinTempSurfaceF,
+            [AvgTempSurfaceF] AS n_f_AvgTempSurfaceF,
+            [MaxTemp2mAboveGroundF] AS n_f_MaxTemp2mAboveGround,
+            [MinTemp2mAboveGroundF] AS n_f_MinTemp2mAboveGround,
+            [AvgTemp2mAboveGroundF] AS n_f_AvgTemp2mAboveGround,
+            [MaxTemp80mAboveGroundF] AS n_f_MaxTemp80mAboveGround,
+            [MinTemp80mAboveGroundF] AS n_f_MinTemp80mAboveGround,
+            [AvgTemp80mAboveGroundF] AS n_f_AvgTemp80mAboveGround,
+            [MaxTempTropF] AS n_f_MaxTempTropF,
+            [MinTempTropF] AS n_f_MinTempTropF,
+            [AvgTempTropF] AS n_f_AvgTempTropF,
+            [AvgRH2mAboveGround] AS n_f_AvgRH2mAboveGround,
+            [AvgWindDirection10m] AS n_f_AvgWindDirection10m,
+            [AvgWindDirection80m] AS n_f_AvgWindDirection80m,
+            [AvgWindDirectionTrop] AS n_f_AvgWindDirectionTrop,
+            [AvgWindSpeed10m] AS n_f_AvgWindSpeed10m,
+            [MaxWindSpeed10m] AS n_f_MaxWindSpeed10m,
+            [AvgWindSpeed80m] AS n_f_AvgWindSpeed80m,
+            [MaxWindSpeed80m] AS n_f_MaxWindSpeed80m,
+            [AvgWindSpeedTrop] AS n_f_AvgWindSpeedTrop,
+            [MaxWindSpeedTrop] AS n_f_MaxWindSpeedTrop,
+            [APCPSurface_Day1] AS n_f_APCPSurface_Day1,
+            [MaxTempSurfaceF_Day1] AS n_f_MaxTempSurfaceF_Day1,
+            [MinTempSurfaceF_Day1] AS n_f_MinTempSurfaceF_Day1,
+            [AvgTempSurfaceF_Day1] AS n_f_AvgTempSurfaceF_Day1,
+            [MaxTemp2mAboveGroundF_Day1] AS n_f_MaxTemp2mAboveGround_Day1,
+            [MinTemp2mAboveGroundF_Day1] AS n_f_MinTemp2mAboveGround_Day1,
+            [AvgTemp2mAboveGroundF_Day1] AS n_f_AvgTemp2mAboveGround_Day1,
+            [MaxTemp80mAboveGroundF_Day1] AS n_f_MaxTemp80mAboveGround_Day1,
+            [MinTemp80mAboveGroundF_Day1] AS n_f_MinTemp80mAboveGround_Day1,
+            [AvgTemp80mAboveGroundF_Day1] AS n_f_AvgTemp80mAboveGround_Day1,
+            [MaxTempTropF_Day1] AS n_f_MaxTempTropF_Day1,
+            [MinTempTropF_Day1] AS n_f_MinTempTropF_Day1,
+            [AvgTempTropF_Day1] AS n_f_AvgTempTropF_Day1,
+            [AvgRH2mAboveGround_Day1] AS n_f_AvgRH2mAboveGround_Day1,
+            [AvgWindDirection10m_Day1] AS n_f_AvgWindDirection10m_Day1,
+            [AvgWindDirection80m_Day1] AS n_f_AvgWindDirection80m_Day1,
+            [AvgWindDirectionTrop_Day1] AS n_f_AvgWindDirectionTrop_Day1,
+            [AvgWindSpeed10m_Day1] AS n_f_AvgWindSpeed10m_Day1,
+            [MaxWindSpeed10m_Day1] AS n_f_MaxWindSpeed10m_Day1,
+            [AvgWindSpeed80m_Day1] AS n_f_AvgWindSpeed80m_Day1,
+            [MaxWindSpeed80m_Day1] AS n_f_MaxWindSpeed80m_Day1,
+            [AvgWindSpeedTrop_Day1] AS n_f_AvgWindSpeedTrop_Day1,
+            [MaxWindSpeedTrop_Day1] AS n_f_MaxWindSpeedTrop_Day1, 
+            [APCPSurface_Day2] AS n_f_APCPSurface_Day2,
+            [MaxTempSurfaceF_Day2] AS n_f_MaxTempSurfaceF_Day2,
+            [MinTempSurfaceF_Day2] AS n_f_MinTempSurfaceF_Day2,
+            [AvgTempSurfaceF_Day2] AS n_f_AvgTempSurfaceF_Day2,
+            [MaxTemp2mAboveGroundF_Day2] AS n_f_MaxTemp2mAboveGround_Day2,
+            [MinTemp2mAboveGroundF_Day2] AS n_f_MinTemp2mAboveGround_Day2,
+            [AvgTemp2mAboveGroundF_Day2] AS n_f_AvgTemp2mAboveGround_Day2,
+            [MaxTemp80mAboveGroundF_Day2] AS n_f_MaxTemp80mAboveGround_Day2,
+            [MinTemp80mAboveGroundF_Day2] AS n_f_MinTemp80mAboveGround_Day2,
+            [AvgTemp80mAboveGroundF_Day2] AS n_f_AvgTemp80mAboveGround_Day2,
+            [MaxTempTropF_Day2] AS n_f_MaxTempTropF_Day2,
+            [MinTempTropF_Day2] AS n_f_MinTempTropF_Day2,
+            [AvgTempTropF_Day2] AS n_f_AvgTempTropF_Day2,
+            [AvgRH2mAboveGround_Day2] AS n_f_AvgRH2mAboveGround_Day2,
+            [AvgWindDirection10m_Day2] AS n_f_AvgWindDirection10m_Day2,
+            [AvgWindDirection80m_Day2] AS n_f_AvgWindDirection80m_Day2,
+            [AvgWindDirectionTrop_Day2] AS n_f_AvgWindDirectionTrop_Day2,
+            [AvgWindSpeed10m_Day2] AS n_f_AvgWindSpeed10m_Day2,
+            [MaxWindSpeed10m_Day2] AS n_f_MaxWindSpeed10m_Day2,
+            [AvgWindSpeed80m_Day2] AS n_f_AvgWindSpeed80m_Day2,
+            [MaxWindSpeed80m_Day2] AS n_f_MaxWindSpeed80m_Day2,
+            [AvgWindSpeedTrop_Day2] AS n_f_AvgWindSpeedTrop_Day2,
+            [MaxWindSpeedTrop_Day2] AS n_f_MaxWindSpeedTrop_Day2, 
+            [APCPSurface_Day3] AS n_f_APCPSurface_Day3,
+            [MaxTempSurfaceF_Day3] AS n_f_MaxTempSurfaceF_Day3,
+            [MinTempSurfaceF_Day3] AS n_f_MinTempSurfaceF_Day3,
+            [AvgTempSurfaceF_Day3] AS n_f_AvgTempSurfaceF_Day3,
+            [MaxTemp2mAboveGroundF_Day3] AS n_f_MaxTemp2mAboveGround_Day3,
+            [MinTemp2mAboveGroundF_Day3] AS n_f_MinTemp2mAboveGround_Day3,
+            [AvgTemp2mAboveGroundF_Day3] AS n_f_AvgTemp2mAboveGround_Day3,
+            [MaxTemp80mAboveGroundF_Day3] AS n_f_MaxTemp80mAboveGround_Day3,
+            [MinTemp80mAboveGroundF_Day3] AS n_f_MinTemp80mAboveGround_Day3,
+            [AvgTemp80mAboveGroundF_Day3] AS n_f_AvgTemp80mAboveGround_Day3,
+            [MaxTempTropF_Day3] AS n_f_MaxTempTropF_Day3,
+            [MinTempTropF_Day3] AS n_f_MinTempTropF_Day3,
+            [AvgTempTropF_Day3] AS n_f_AvgTempTropF_Day3,
+            [AvgRH2mAboveGround_Day3] AS n_f_AvgRH2mAboveGround_Day3,
+            [AvgWindDirection10m_Day3] AS n_f_AvgWindDirection10m_Day3,
+            [AvgWindDirection80m_Day3] AS n_f_AvgWindDirection80m_Day3,
+            [AvgWindDirectionTrop_Day3] AS n_f_AvgWindDirectionTrop_Day3,
+            [AvgWindSpeed10m_Day3] AS n_f_AvgWindSpeed10m_Day3,
+            [MaxWindSpeed10m_Day3] AS n_f_MaxWindSpeed10m_Day3,
+            [AvgWindSpeed80m_Day3] AS n_f_AvgWindSpeed80m_Day3,
+            [MaxWindSpeed80m_Day3] AS n_f_MaxWindSpeed80m_Day3,
+            [AvgWindSpeedTrop_Day3] AS n_f_AvgWindSpeedTrop_Day3,
+            [MaxWindSpeedTrop_Day3] AS n_f_MaxWindSpeedTrop_Day3, 
+            [DistanceToStationKm],
+            [StationName],
+            [ElevationFt],
+            [SnotelLat],
+            [SnotelLon],
+            [SnotelState],
+            [SnowWaterEquivalentIn] AS n_r_SnowWaterEquivalentIn,
+            [PrecipIncrementSnowIn] AS n_r_PrecipincrementSnowIn,
+            [PrecipitationAccumulation] AS n_r_PrecipitationAccumulation,
+            [SnowDepthIn] AS n_r_SnowDepthIn,
+            [TempMinF] AS n_r_TempMinF,
+            [TempMaxF] AS n_r_TempMaxF,
+            [TempAveF] AS n_r_TempAveF,
+            [SNOWDAS_SnowDepth_mm] AS n_r_SNOWDAS_SnowDepth_mm,
+            [SNOWDAS_SWE_mm] AS n_r_SNOWDAS_SWE_mm,
+            [SNOWDAS_SnowmeltRunoff_micromm] AS n_r_SNOWDAS_SnowmeltRunoff_micromm,
+            [SNOWDAS_Sublimation_micromm] AS n_r_SNOWDAS_Sublimation_micromm,
+            [SNOWDAS_SublimationBlowing_micromm] AS n_r_SNOWDAS_SublimationBlowing_micromm,
+            [SNOWDAS_SolidPrecip_kgpersquarem] AS n_r_SNOWDAS_SolidPrecip_kgpersquarem,
+            [SNOWDAS_LiquidPrecip_kgpersquarem] AS n_r_SNOWDAS_LiquidPrecip_kgpersquarem,
+            [SNOWDAS_SnowpackAveTemp_k] AS n_r_SNOWDAS_SnowpackAveTemp_k,
+            [n_r_Prev3DaySnowAccumulation],
+            [n_r_Prev7DaySnowAccumulation],
+            [n_r_Prev1DayMaxTemp],
+            [n_r_Prev1DayMaxWindSpeed10m],
+            [n_r_Prev1DayMinTemp],
+            [n_r_Prev3DayMaxTemp],
+            [n_r_Prev3DayMaxWindSpeed10m],
+            [n_r_Prev3DayMinTemp],
+            [n_r_Prev7DayMaxTemp],
+            [n_r_Prev7DayMaxWindSpeed10m],
+            [n_r_Prev7DayMinTemp],
+            [c_r_Prev3DayFreezeThawLikeliness],
+            [c_r_Prev7DayFreezeThawLikeliness],
+            [c_r_Prev3DayWindSlabLikeliness],
+            [c_r_Prev7DayWindSlabLikeliness],
+            [n_r_Prev1DayPrecip],
+            n_r_Prev3DayMaxTemp - [MaxTempSurfaceF] AS n_f_Next24HourChangeInTempFromPrev3DayMax,
+            n_r_Prev1DayMaxTemp - [MaxTempSurfaceF] AS n_f_Next24HourChangeInTempFromPrev1DayMax,
+            [c_r_LongTermColdTemps],
+            [n_r_Prev24HoursPrecipAsRainTotalIn]
+    FROM @pastData
+    LEFT OUTER JOIN @futureData0Hour ON @pastData.Lat == @futureData0Hour.Lat && @pastData.Lon == @futureData0Hour.Lon
+    LEFT OUTER JOIN @futureData1Hour ON @pastData.Lat == @futureData1Hour.Lat && @pastData.Lon == @futureData1Hour.Lon
+    LEFT OUTER JOIN @futureData2Hour ON @pastData.Lat == @futureData2Hour.Lat && @pastData.Lon == @futureData2Hour.Lon
+    LEFT OUTER JOIN @futureData3Hour ON @pastData.Lat == @futureData3Hour.Lat && @pastData.Lon == @futureData3Hour.Lon
+    LEFT OUTER JOIN @futureData4Hour ON @pastData.Lat == @futureData4Hour.Lat && @pastData.Lon == @futureData4Hour.Lon
+    LEFT OUTER JOIN @futureData5Hour ON @pastData.Lat == @futureData5Hour.Lat && @pastData.Lon == @futureData5Hour.Lon
+    LEFT OUTER JOIN @futureData6Hour ON @pastData.Lat == @futureData6Hour.Lat && @pastData.Lon == @futureData6Hour.Lon
+    LEFT OUTER JOIN @futureData7Hour ON @pastData.Lat == @futureData7Hour.Lat && @pastData.Lon == @futureData7Hour.Lon
+    LEFT OUTER JOIN @futureData8Hour ON @pastData.Lat == @futureData8Hour.Lat && @pastData.Lon == @futureData8Hour.Lon
+    LEFT OUTER JOIN @futureData9Hour ON @pastData.Lat == @futureData9Hour.Lat && @pastData.Lon == @futureData9Hour.Lon
+    LEFT OUTER JOIN @futureData10Hour ON @pastData.Lat == @futureData10Hour.Lat && @pastData.Lon == @futureData10Hour.Lon
+    LEFT OUTER JOIN @futureData11Hour ON @pastData.Lat == @futureData11Hour.Lat && @pastData.Lon == @futureData11Hour.Lon
+    LEFT OUTER JOIN @futureData12Hour ON @pastData.Lat == @futureData12Hour.Lat && @pastData.Lon == @futureData12Hour.Lon
+    LEFT OUTER JOIN @futureData13Hour ON @pastData.Lat == @futureData13Hour.Lat && @pastData.Lon == @futureData13Hour.Lon
+    LEFT OUTER JOIN @futureData14Hour ON @pastData.Lat == @futureData14Hour.Lat && @pastData.Lon == @futureData14Hour.Lon
+    LEFT OUTER JOIN @futureData15Hour ON @pastData.Lat == @futureData15Hour.Lat && @pastData.Lon == @futureData15Hour.Lon
+    LEFT OUTER JOIN @futureData16Hour ON @pastData.Lat == @futureData16Hour.Lat && @pastData.Lon == @futureData16Hour.Lon
+    LEFT OUTER JOIN @futureData17Hour ON @pastData.Lat == @futureData17Hour.Lat && @pastData.Lon == @futureData17Hour.Lon
+    LEFT OUTER JOIN @futureData18Hour ON @pastData.Lat == @futureData18Hour.Lat && @pastData.Lon == @futureData18Hour.Lon
+    LEFT OUTER JOIN @futureData19Hour ON @pastData.Lat == @futureData19Hour.Lat && @pastData.Lon == @futureData19Hour.Lon
+    LEFT OUTER JOIN @futureData20Hour ON @pastData.Lat == @futureData20Hour.Lat && @pastData.Lon == @futureData20Hour.Lon
+    LEFT OUTER JOIN @futureData21Hour ON @pastData.Lat == @futureData21Hour.Lat && @pastData.Lon == @futureData21Hour.Lon
+    LEFT OUTER JOIN @futureData22Hour ON @pastData.Lat == @futureData22Hour.Lat && @pastData.Lon == @futureData22Hour.Lon
+    LEFT OUTER JOIN @futureData23Hour ON @pastData.Lat == @futureData23Hour.Lat && @pastData.Lon == @futureData23Hour.Lon
+        ;
+
+IF(@Debug) THEN
+@count4 = 
+    SELECT COUNT(*) AS FinalOutput 
+    FROM @renamedColumns;
+   
+    @inputFeaturesFunnel= 
+        SELECT *
+        FROM @count1
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count2
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count3
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count4
+        OUTER UNION ALL BY NAME ON (*)
+        SELECT *
+        FROM @count5;
+        
+    OUTPUT @inputFeaturesFunnel 
+        TO @"/debug-out/inputFeaturesFunnel.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+        
+    OUTPUT @renamedColumns 
+        TO @"/debug-out/renamedColumns.csv"    
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+INSERT INTO dbo.USWestDailyInputFeaturesv1
+SELECT * FROM @renamedColumns;
+
+/*
+CREATE TABLE IF NOT EXISTS dbo.USWestDailyInputFeaturesv1
+( 
+    INDEX idx  
+    CLUSTERED(__fileDate ASC, Lat, Lon)
+    DISTRIBUTED BY RANGE(__fileDate) 
+) AS SELECT * FROM @renamedColumns;
+*/

@@ -1,0 +1,26 @@
+{
+  "name": "DailyTriggerUSWestCompleteFeaturesPipeline",
+  "properties": {
+    "type": "TumblingWindowTrigger",
+    "runtimeState": "Started",
+    "typeProperties": {
+      "frequency": "Hour",
+      "interval": "24",
+      "startTime": "2018-02-02T04:00:00Z",
+      "endTime": "2018-02-27T04:00:00Z",
+      "maxConcurrency": 27 
+    },
+    "pipeline": {
+      "pipelineReference": {
+        "type": "PipelineReference",
+        "referenceName": "CookUSWestCompleteFeaturesPipeline"
+      },
+      "parameters": {
+        "SliceStart": {
+          "type": "Expression",
+          "value": "@{formatDateTime(trigger().outputs.windowStartTime,'yyyyMMdd')}"
+        }
+      }
+    }
+  }
+}

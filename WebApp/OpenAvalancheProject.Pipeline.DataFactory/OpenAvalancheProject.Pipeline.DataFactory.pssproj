@@ -30,11 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\.gitignore" />
-    <Content Include="Config\AzureDataLakeLinkedService.json" />
-    <Content Include="Config\AzureStorageLinkedService.json" />
-    <Content Include="Config\CookForecastPipeline.json" />
-    <Content Include="Config\DailyTriggerCookForecastPipeline.json" />
-    <Content Include="Config\PipelineInputParameters.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateDataFactory.ps1" />
