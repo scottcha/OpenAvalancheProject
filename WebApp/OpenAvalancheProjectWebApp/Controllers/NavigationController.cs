@@ -31,14 +31,10 @@ namespace OpenAvalancheProjectWebApp.Controllers
             IEnumerable<string> modelIds = new List<string>(){
                                                                 Constants.ModelDangerAboveTreelineV1,
                                                                 Constants.ModelDangerNearTreelineV1,
-<<<<<<< HEAD
                                                                 Constants.ModelDangerBelowTreelineV1,
                                                                 Constants.ModelDangerAboveTreelineV1NW,
                                                                 Constants.ModelDangerNearTreelineV1NW,
                                                                 Constants.ModelDangerBelowTreelineV1NW
-=======
-                                                                Constants.ModelDangerBelowTreelineV1
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
                                                             };
 
             return PartialView(modelIds);

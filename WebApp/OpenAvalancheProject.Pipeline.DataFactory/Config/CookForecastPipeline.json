@@ -95,7 +95,6 @@
             "type": "LinkedServiceReference"
           },
           "scriptPath": "scripts\\CreateUSWestInputFeatures.v1.usql",
-<<<<<<< HEAD
           "degreeOfParallelism": 5,
           "parameters": {
             "SliceStart": "@Pipeline().parameters.SliceStart"
@@ -125,8 +124,6 @@
           },
           "scriptPath": "scripts\\CreateUSWestLookback.v1.usql",
           "degreeOfParallelism": 5,
-=======
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
           "parameters": {
             "SliceStart": "@Pipeline().parameters.SliceStart"
           }

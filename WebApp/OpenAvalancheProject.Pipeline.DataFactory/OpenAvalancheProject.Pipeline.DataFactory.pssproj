@@ -30,6 +30,19 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\.gitignore" />
+    <Content Include="Config\AzureDataLakeStoreFeaturesV1.json" />
+    <Content Include="Config\CookForecastPipeline.json" />
+    <Content Include="Config\CookHourlyToDailyPipeline.json" />
+    <Content Include="Config\CookInputFeaturesPipeline.json" />
+    <Content Include="Config\CookNamHourlyPipeline.json" />
+    <Content Include="Config\CookUSWestCompleteFeaturesPipeline.json" />
+    <Content Include="Config\DailyTriggerCookForecastPipeline.json" />
+    <Content Include="Config\DailyTriggerCookHourlyToDailyPipeline.json" />
+    <Content Include="Config\DailyTriggerCookInputFeaturesPipeline.json" />
+    <Content Include="Config\DailyTriggerNamHourlyPipeline.json" />
+    <Content Include="Config\DailyTriggerUSWestCompleteFeaturesPipeline.json" />
+    <Content Include="Config\DailyTriggerUSWestInputFeaturesPipeline.json" />
+    <Content Include="Config\PipelineInputParameters.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CreateDataFactory.ps1" />

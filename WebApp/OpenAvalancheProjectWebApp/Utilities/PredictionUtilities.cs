@@ -7,10 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Web;
 using XGBoost;
-<<<<<<< HEAD
 using System.Web.Configuration;
-=======
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
 
 namespace OpenAvalancheProjectWebApp.Utilities
 {
@@ -176,27 +173,15 @@ namespace OpenAvalancheProjectWebApp.Utilities
                 theDb = db;
             }
            
-<<<<<<< HEAD
             string localFileName = Path.GetTempFileName();
-            CloudBlobContainer container = AzureUtilities.FeaturesBlobContainer;
+            //CloudBlobContainer container = AzureUtilities.FeaturesBlobContainer;
             string cloudFileName = "V1Features" + dateOfForecast + ".csv";
             var adlsClient = AzureUtilities.AdlsClient;
             adlsClient.FileSystem.DownloadFile(
                 WebConfigurationManager.AppSettings["ADLSAccountName"],
                 "/inputfeatures-csv-westus-v1/"+ cloudFileName,
                 localFileName, overwrite:true);
-=======
-            CloudBlobContainer container = AzureUtilities.FeaturesBlobContainer;
-            string cloudFileName = "V1Features" + dateOfForecast + ".csv";
-            CloudBlockBlob blob = container.GetBlockBlobReference(cloudFileName);
 
-            string localFileName = String.Empty;
-            using (var fileStream = System.IO.File.OpenWrite(Path.GetTempFileName()))
-            {
-                blob.DownloadToStream(fileStream);
-                localFileName = fileStream.Name;
-            }
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
 
             var values = PredictionUtilities.CreatePredictionFormat(localFileName);
             var latLons = values.Item1;
@@ -215,7 +200,6 @@ namespace OpenAvalancheProjectWebApp.Utilities
                 throw new Exception("Predictions don't have the same lenth as LatLon");
             }
             var mappedPredictions = new List<ForecastPoint>();
-<<<<<<< HEAD
             var mappedPredictionsOnlyNorthWest = new List<ForecastPoint>();
             for (int i = 0; i < latLons.Length; i++)
             {
@@ -224,22 +208,13 @@ namespace OpenAvalancheProjectWebApp.Utilities
                 {
                     mappedPredictionsOnlyNorthWest.Add(new ForecastPoint(dateToAdd, ModelName + "NW", latLons[i][0], latLons[i][1], predictions[i]));
                 }
-=======
-            for (int i = 0; i < latLons.Length; i++)
-            {
-                mappedPredictions.Add(new ForecastPoint(dateToAdd, ModelName, latLons[i][0], latLons[i][1], predictions[i]));
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
             }
 
             //upload the predictions to table storage
             var forecast = new Forecast(mappedPredictions);
-<<<<<<< HEAD
             var forecastNw = new Forecast(mappedPredictionsOnlyNorthWest);
             db.SaveForecast(forecast);
             db.SaveForecast(forecastNw);
-=======
-            db.SaveForecast(forecast);
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
         }
     }
 }

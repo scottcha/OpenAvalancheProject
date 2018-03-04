@@ -25,10 +25,6 @@ namespace OpenAvalancheProjectWebApp.Controllers
             this.repository = new AzureTableForecastRepository();
         }
 
-<<<<<<< HEAD
-
-
-
         // GET: WestUSv1
         //cache for 1 hour--if a new forecast is generated we want it to be picked up within an hour
 #if DEBUG != true
@@ -36,17 +32,6 @@ namespace OpenAvalancheProjectWebApp.Controllers
 #endif
         public ActionResult Index(string date, string modelId = Constants.ModelDangerAboveTreelineV1NW, string region = "NWAC")
         {
-=======
-        
-        
-
-        // GET: WestUSv1
-        //cache for 1 hour--if a new forecast is generated we want it to be picked up within an hour
-        [OutputCache(Duration = 3600, VaryByParam = "*")]
-        public ActionResult Index(string date, string modelId = Constants.ModelDangerAboveTreelineV1, string region = "NWAC")
-        {
-            var s = Request.QueryString;
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
             DateTime dateOfForecast = DateTime.UtcNow;
             if (date != null)
             {

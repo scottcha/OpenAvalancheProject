@@ -17,11 +17,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class DownloadAndUnpackSnodas
     {
-<<<<<<< HEAD
         [FunctionName("DownloadAndUnpackSnodas"), Disable()]
-=======
-        [FunctionName("DownloadAndUnpackSnodas")]
->>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
         [StorageAccount("AzureWebJobsStorage")]
         [return: Table("snodasdownloadtracker")]
         public static FileProcessedTracker Run([QueueTrigger("downloadandunpacksnodas", Connection = "AzureWebJobsStorage")]FileReadyToDownloadQueueMessage myQueueItem,
