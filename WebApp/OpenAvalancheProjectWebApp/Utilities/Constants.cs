@@ -11,6 +11,7 @@ namespace OpenAvalancheProjectWebApp.Utilities
         public const string ModelDangerAboveTreelineV1 = "DangerAboveTreelineV1";
         public const string ModelDangerNearTreelineV1 = "DangerNearTreelineV1";
         public const string ModelDangerBelowTreelineV1 = "DangerBelowTreelineV1";
+<<<<<<< HEAD
         public const string ModelDangerAboveTreelineV1DisplayName = "Danger Above Treeline West US--Trained NWAC (V1)";
         public const string ModelDangerNearTreelineV1DisplayName = "Danger Near Treeline West US--Trained NWAC (V1)";
         public const string ModelDangerBelowTreelineV1DisplayName = "Danger Below Treeline West US--Trained NWAC (V1)";
@@ -29,5 +30,10 @@ namespace OpenAvalancheProjectWebApp.Utilities
         public const string ModelDangerBelowTreelineV1NWEvaluationImage = "/Content/Images/DangerBelowTreelineV1NWAccuracy.jpg";
 
         public const string TrainingWarning = "Warning: Data outside Washington and Oregon has not been evaluated for accuracy and it can be extremely inaccurate. Do not use it for anything!  It is only being provided here to demonstrate the generalization of the machine learning prediction.  We are working on collecting the data from other regions to train and evaluate future models.";
+=======
+        public const string ModelDangerAboveTreelineV1DisplayName = "Danger Above Treeline--Trained NWAC (V1)";
+        public const string ModelDangerNearTreelineV1DisplayName = "Danger Near Treeline--Trained NWAC (V1)";
+        public const string ModelDangerBelowTreelineV1DisplayName = "Danger Below Treeline--Trained NWAC (V1)";
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
     }
 }

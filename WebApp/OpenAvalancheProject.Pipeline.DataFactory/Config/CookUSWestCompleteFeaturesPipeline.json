@@ -13,7 +13,11 @@
                     "secureOutput": false
                 },
                 "typeProperties": {
+<<<<<<< HEAD
                     "scriptPath": "scripts/CreateUSWestLookback.v1.usql",
+=======
+                    "scriptPath": "scripts/CreateUSWestInputFeatures.v1.usql",
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
                     "degreeOfParallelism": 5,
                     "scriptLinkedService": {
                         "referenceName": "AzureStorageLinkedService",

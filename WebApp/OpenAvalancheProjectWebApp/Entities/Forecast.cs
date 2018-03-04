@@ -99,6 +99,7 @@ namespace OpenAvalancheProjectWebApp.Entities
                     case Constants.ModelDangerNearTreelineV1:
                         sb.Append(Constants.ModelDangerNearTreelineV1DisplayName);
                         break;
+<<<<<<< HEAD
                     case Constants.ModelDangerAboveTreelineV1NW:
                         sb.Append(Constants.ModelDangerAboveTreelineV1NWDisplayName);
                         break;
@@ -108,6 +109,8 @@ namespace OpenAvalancheProjectWebApp.Entities
                     case Constants.ModelDangerNearTreelineV1NW:
                         sb.Append(Constants.ModelDangerNearTreelineV1NWDisplayName);
                         break;
+=======
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
                     default:
                         sb.Append("Unknown Model");
                         break;
@@ -116,6 +119,7 @@ namespace OpenAvalancheProjectWebApp.Entities
                 return sb.ToString();
             }
         }
+<<<<<<< HEAD
 
         public string ForecastAccuracyImagePath
         {
@@ -149,5 +153,7 @@ namespace OpenAvalancheProjectWebApp.Entities
                 return sb.ToString();
             }
         }
+=======
+>>>>>>> 74064c9d858efc5ab0d74cdebf17a912158f7e46
     }
 }
