@@ -9,7 +9,7 @@ namespace OpenAvalancheProjectWebApp.Controllers
     public class HomeController : Controller
     {
 
-        //[OutputCache(Duration=3600)]
+        [OutputCache(Duration=3600)]
         public ActionResult Index()
         {
             return View();
