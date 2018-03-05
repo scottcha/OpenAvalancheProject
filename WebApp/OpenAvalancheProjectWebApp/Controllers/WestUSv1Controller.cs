@@ -30,8 +30,12 @@ namespace OpenAvalancheProjectWebApp.Controllers
 #if DEBUG != true
         [OutputCache(Duration = 3600, VaryByParam = "*")]
 #endif
-        public ActionResult Index(string date, string modelId = Constants.ModelDangerAboveTreelineV1NW, string region = "NWAC")
+        public ActionResult Index(string date, string modelId)
         {
+            if(modelId == null)
+            {
+                modelId = Constants.ModelDangerAboveTreelineV1NW;
+            }
             DateTime dateOfForecast = DateTime.UtcNow;
             if (date != null)
             {
@@ -43,10 +47,11 @@ namespace OpenAvalancheProjectWebApp.Controllers
             //Check that we have a forecast for that date, if now get the most recent one before that
             var dateResult = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateOfForecast, modelId)).Select(p => p.Date);
             DateTime dateToQuery = dateOfForecast;
+            //didn't exist for that date & model combination; find the next most recent date
             if(dateResult.ToList().Count() == 0)
             {
-                var dateResult2 = forecastPoints.Select(p => p.Date).ToList().OrderByDescending(d => d).First();
-                dateToQuery = dateResult2; 
+                var dateResult2 = repository.ForecastDates.Select(p => p.RowKey).ToList().OrderByDescending(d => d).First();
+                dateToQuery = DateTime.ParseExact(dateResult2, "yyyyMMdd", null); 
             }
 
             var result = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateToQuery, modelId)).ToList();

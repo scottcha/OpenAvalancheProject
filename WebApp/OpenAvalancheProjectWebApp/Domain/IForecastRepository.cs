@@ -10,7 +10,9 @@ namespace OpenAvalancheProjectWebApp.Domain
     public interface IForecastRepository
     {
         IQueryable<ForecastPoint> ForecastPoints { get; }
+        IQueryable<ForecastDate> ForecastDates{ get; }
         void SaveForecast(Forecast forecast);
+        void SaveForecastDate(ForecastDate date);
         
     }
 }

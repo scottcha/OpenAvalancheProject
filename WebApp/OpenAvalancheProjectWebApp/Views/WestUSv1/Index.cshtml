@@ -6,18 +6,38 @@
     ViewBag.Title = Model.ForecastForView.ForecastTitle;
 }
 
-<h2>@Model.ForecastForView.ForecastTitle</h2>
-<h5>Experimental--Not For Hazard Evaluation!</h5>
+<br />
 
-<!-- Plotly.js -->
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<!-- Plotly chart will be drawn inside this DIV -->
-<div id="mapDiv"></div>
+
+<div class="row">
+    <div class="col-md-9">
+        <h2>@Model.ForecastForView.ForecastTitle</h2>
+        <div class="alert alert-warning">
+            <h5>Experimental--Not For Hazard Evaluation!</h5>
+        </div>
+        </div>
+    <div class="col-md-3 my-auto">
+        <div class="dropdown show my-auto">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Previous Dates
+            </a>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                @{Html.RenderAction("DateList", "Navigation", new { modelId = Model.ForecastModelId });}
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Plotly chart will be drawn inside this DIV -->
+    <div id="mapDiv"></div>
+</div>
 <div class="col-md-6">
     <h2>How To Read This Forecast</h2>
     <ul>
         <li>
-            <h4>The current forecast is only interpretable in mountainous regions which overlapping existing forecast areas</h4>
+            <h4>The current forecast is only interpretable in mountainous regions which overlapp existing forecast areas</h4>
             <p>
                 The current forecasts produced do not distinguish between mountainous and non-mountainous regions and produce uninterpretable results in non-mountainous regions.
                 It's on the backlog to remove forecasts in areas which are uninterpretable.

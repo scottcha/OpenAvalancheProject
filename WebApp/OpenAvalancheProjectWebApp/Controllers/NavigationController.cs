@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using OpenAvalancheProjectWebApp.Utilities;
+using OpenAvalancheProjectWebApp.Models;
 
 namespace OpenAvalancheProjectWebApp.Controllers
 {
@@ -22,42 +23,42 @@ namespace OpenAvalancheProjectWebApp.Controllers
         {
             ViewBag.SelectedModelId = modelId;
             //TODO: dynamicall load these
-
             //IEnumerable<string> regions = repository.ModelIds
             //                                .Select(x => x.ModelId)
             //                                .Distinct()
             //                                .OrderBy(x => x);
 
             IEnumerable<string> modelIds = new List<string>(){
-                                                                Constants.ModelDangerAboveTreelineV1,
-                                                                Constants.ModelDangerNearTreelineV1,
-                                                                Constants.ModelDangerBelowTreelineV1,
                                                                 Constants.ModelDangerAboveTreelineV1NW,
                                                                 Constants.ModelDangerNearTreelineV1NW,
-                                                                Constants.ModelDangerBelowTreelineV1NW
+                                                                Constants.ModelDangerBelowTreelineV1NW,
+                                                                Constants.ModelDangerAboveTreelineV1,
+                                                                Constants.ModelDangerNearTreelineV1,
+                                                                Constants.ModelDangerBelowTreelineV1
                                                             };
 
             return PartialView(modelIds);
         }
-
-        [OutputCache(Duration =3600, VaryByParam ="date")]
-        public PartialViewResult DateList(DateTime? date = null)
+#if DEBUG != true
+        [OutputCache(Duration =3600, VaryByParam ="*")]
+#endif
+        public PartialViewResult DateList(DateTime? date = null, string modelId = null)
         {
             if(date != null)
             {
                 ViewBag.SelectedDate = date.Value.ToString("yyyyMMdd");
             }
-            IEnumerable<DateTime> dates = repository.ForecastPoints
-                                                .Select(p => p.Date).ToList();
+            IEnumerable<string> dates = repository.ForecastDates
+                                                .Select(p => p.RowKey).ToList();
             //below isn't supported against table storage so drop in to list then do this
-            dates = dates.Distinct().OrderByDescending(x => x);
+            dates = dates.OrderByDescending(x => x);
 
-            List<string> dateStrings = new List<string>();
+            List<DateForecastNameViewModel> viewModelList = new List<DateForecastNameViewModel>();
             foreach(var d in dates)
             {
-                dateStrings.Add(d.ToString("yyyyMMdd"));
+                viewModelList.Add(new DateForecastNameViewModel(d, modelId));
             }
-            return PartialView(dateStrings);
+            return PartialView(viewModelList);
         }
     }
 }

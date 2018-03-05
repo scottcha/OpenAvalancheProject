@@ -29,7 +29,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             log.Info($"C# TriggerPredict trigger function executed at: {DateTime.Now}");
 
 #if DEBUG
-            int numberOfDaysToCheck = 31;
+            int numberOfDaysToCheck = 7;
 #else
             int numberOfDaysToCheck = 7;
 #endif
@@ -45,7 +45,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, Constants.PredictionTrackerPartitionKey),
                     TableOperators.And,
-                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThanOrEqual, DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck))
+                    TableQuery.GenerateFilterConditionForDate("ForecastDate", QueryComparisons.GreaterThanOrEqual, DateTime.UtcNow.AddDays(-1 * numberOfDaysToCheck).Date)
                 )
             );
 
@@ -53,7 +53,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
             var results = table.ExecuteQuery(dateQuery);
 
             //find ones we need to fill
-            var checkDate = DateTime.UtcNow.AddDays(-1*numberOfDaysToCheck);
+            var checkDate = DateTime.UtcNow.AddDays(-1*numberOfDaysToCheck).Date;
             var listOfDatesToPredict = new List<DateTime>();
             while (checkDate < DateTime.UtcNow)
             {
@@ -70,15 +70,12 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 }
                 checkDate = checkDate.AddDays(1);
             }
-            //TODO: remove this debug code
-            var cutoff = new DateTime(2018, 02, 27);
-            listOfDatesToPredict = listOfDatesToPredict.Where(d => d < cutoff).ToList(); 
             //execute the predictions
             foreach (var d in listOfDatesToPredict)
             {
                 var uri = Constants.UrlForPredictApi + d.ToString("yyyyMMdd");
-                //var uri = Constants.UrlForPredictApi + d.ToString("20180201");
                 client.GetAsync(uri).Wait();
+                log.Info($"predicted {d.ToString("yyyyMMdd")} and setting done marker.");
                 var op = TableOperation.InsertOrMerge(new FileProcessedTracker { ForecastDate = d, PartitionKey = Constants.PredictionTrackerPartitionKey, RowKey = CreatePredictFileName(d), Url = "unknown" });
                 table.Execute(op);
             }

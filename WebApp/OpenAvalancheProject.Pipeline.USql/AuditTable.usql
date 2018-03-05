@@ -71,6 +71,7 @@ OUTPUT @auditInputRows
 TO @"/audit-out/auditInputRows.csv"    
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
+*/
 //Check date ranges
 @datesOfHourlySnotel =
     SELECT __fileDate,
@@ -102,7 +103,6 @@ OUTPUT @datesOfDailyWeatherAndSnow
 TO @"/audit-out/datesOfDailyWeatherAndSnow.csv"    
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
-*/
 @datesOfDailyInputFeaturesV1 =
     SELECT __fileDate,
            COUNT( * ) AS CountOfRows

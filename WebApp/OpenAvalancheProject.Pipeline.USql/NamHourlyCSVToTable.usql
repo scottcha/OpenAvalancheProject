@@ -1,5 +1,5 @@
 ﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20171222";
+DECLARE EXTERNAL @SliceStart = "20180228";
 DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileHour}forecastHour00.csv";
 
 //1. Extract hourly nam forecast data
