@@ -21,7 +21,6 @@
                     <span class="icon-bar"></span>
                 </button>
                 @Html.ActionLink("Open Avalanche Project", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-                @*<li>@Html.ActionLink("Predict", "MakePrediction", "WestUSv1")</li>*@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -35,12 +34,12 @@
                             @{Html.RenderAction("ModelList", "Navigation");}
                         </ul>
                     </li>
-                    <li class="dropdown">
+                    @*<li class="dropdown">
                         <a class="dropdown-toggle" href="#" data-toggle="dropdown">Previous Dates<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             @{Html.RenderAction("DateList", "Navigation");}
                         </ul>
-                    </li>
+                    </li>*@
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

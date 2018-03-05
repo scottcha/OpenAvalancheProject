@@ -16,7 +16,7 @@ namespace OpenAvalancheProjectWebApp.Models
             ForecastModelId = forecast.ForecastModelId; 
         }
         public string ForecastModelId { get; set; }
-
         public Forecast ForecastForView { get; set; }
+
     }
 }

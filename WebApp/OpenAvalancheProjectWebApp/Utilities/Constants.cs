@@ -7,7 +7,12 @@ namespace OpenAvalancheProjectWebApp.Utilities
 {
     public static class Constants
     {
+        //Table info
         public const string ForecastTableName = "forecastsuswestv1";
+        public const string ForecastDatesTableName = "forecastsdatesuswestv1";
+        public const string ForecastDatesParitionKey = "datespartition";
+
+        //model info
         public const string ModelDangerAboveTreelineV1 = "DangerAboveTreelineV1";
         public const string ModelDangerNearTreelineV1 = "DangerNearTreelineV1";
         public const string ModelDangerBelowTreelineV1 = "DangerBelowTreelineV1";
@@ -28,6 +33,7 @@ namespace OpenAvalancheProjectWebApp.Utilities
         public const string ModelDangerNearTreelineV1NWEvaluationImage = "/Content/Images/DangerNearTreelineV1NWAccuracy.jpg";
         public const string ModelDangerBelowTreelineV1NWEvaluationImage = "/Content/Images/DangerBelowTreelineV1NWAccuracy.jpg";
 
+        //website strings
         public const string TrainingWarning = "Warning: Data outside Washington and Oregon has not been evaluated for accuracy and it can be extremely inaccurate. Do not use it for anything!  It is only being provided here to demonstrate the generalization of the machine learning prediction.  We are working on collecting the data from other regions to train and evaluate future models.";
     }
 }

@@ -10,6 +10,7 @@ namespace OpenAvalancheProjectWebApp.Domain
         private AzureTableDbContext context = new AzureTableDbContext();
 
         IQueryable<ForecastPoint> IForecastRepository.ForecastPoints => context.ForecastPoints;
+        IQueryable<ForecastDate> IForecastRepository.ForecastDates => context.ForecastDates;
 
         public void SaveForecast(Forecast forecast)
         {
@@ -24,6 +25,12 @@ namespace OpenAvalancheProjectWebApp.Domain
                     op = new TableBatchOperation();
                 }
             }
-        }    
+        }
+        
+        public void SaveForecastDate(ForecastDate date)
+        {
+            var op = TableOperation.InsertOrMerge(date);
+            context.ForecastDateTable.Execute(op);
+        }
     }
 }

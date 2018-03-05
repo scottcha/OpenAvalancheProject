@@ -1,7 +1,10 @@
 ﻿USE DATABASE [westus-v1];
 DECLARE EXTERNAL @SliceStart = "20171130";
-DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1/" + @SliceStart + ".{__fileHour}.snotel.csv";
+DECLARE @SnotelSliceStart = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null).AddDays(-1).ToString("yyyyMMdd");
 
+DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1/" + @SnotelSliceStart + ".{__fileHour}.snotel.csv";
+
+//slice start needs to look back one day for snotel since its one day behind for a complete dataset
 
 //2. Extract all snotel data
 @snotelData =
@@ -32,7 +35,7 @@ DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1/" + @SliceStart 
            AirTemperatureObservedF,
            SnotelState AS SnotelState,
            __fileHour,
-           DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AS __fileDate
+           DateTime.ParseExact(@SnotelSliceStart, "yyyyMMdd", null) AS __fileDate
     FROM @snotelData
     WHERE __fileHour < 24;
 

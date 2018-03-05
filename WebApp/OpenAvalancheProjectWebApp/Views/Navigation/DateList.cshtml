@@ -1,17 +1,14 @@
-﻿@model IEnumerable<string>
+﻿@using OpenAvalancheProjectWebApp.Models;
+@model IEnumerable<DateForecastNameViewModel>
 
 @foreach (var m in Model)
 {
-    <li>
-        @Html.RouteLink(m, new
-        {
-            controller = "WestUSv1",
-            action = "Index",
-            date = m
-        },
-                       new
-                       {
-                           @class = m == ViewBag.SelectedDate ? "label-warning" : null
-                       })
-    </li>
+    @Html.RouteLink(m.Date, new
+    {
+        controller = "WestUSv1",
+        action = "Index",
+        date = m.Date,
+        modelId = m.ModelId
+    },
+     new { @class = "dropdown-item" })<br /> 
 }
