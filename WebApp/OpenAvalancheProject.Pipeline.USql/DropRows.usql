@@ -1,10 +1,41 @@
 ﻿
 @rowsToSave =
     SELECT *
+    FROM dbo.HourlyWeatherForecast
+    WHERE __fileDate <= DateTime.ParseExact("20180301", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.HourlyWeatherForecast;
+
+INSERT INTO dbo.HourlyWeatherForecast
+SELECT * FROM @rowsToSave;
+/*
+@rowsToSave =
+    SELECT *
     FROM dbo.USWestDailyInputFeaturesv1
-    WHERE __fileDate <= DateTime.ParseExact("20180202", "yyyyMMdd", null);
+    WHERE __fileDate <= DateTime.ParseExact("20180301", "yyyyMMdd", null);
 
 TRUNCATE TABLE dbo.USWestDailyInputFeaturesv1;
 
 INSERT INTO dbo.USWestDailyInputFeaturesv1
 SELECT * FROM @rowsToSave;
+
+@rowsToSave =
+    SELECT *
+    FROM dbo.[USWestFullInputFeaturesv1.1]
+    WHERE __fileDate <= DateTime.ParseExact("20180301", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.[USWestFullInputFeaturesv1.1];
+
+INSERT INTO dbo.[USWestFullInputFeaturesv1.1]
+SELECT * FROM @rowsToSave;
+
+@rowsToSave =
+    SELECT *
+    FROM dbo.[USWestFullInputFeaturesv1]
+    WHERE Date <= DateTime.ParseExact("20180301", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.[USWestFullInputFeaturesv1];
+
+INSERT INTO dbo.[USWestFullInputFeaturesv1]
+SELECT * FROM @rowsToSave;
+*/

@@ -1,4 +1,4 @@
-{ 
+{
   "name": "CookInputFeaturesPipeline",
   "properties": {
     "activities": [
@@ -10,13 +10,49 @@
           "referenceName": "AzureDataLakeLinkedService",
           "type": "LinkedServiceReference"
         },
+        "dependsOn": [
+          {
+            "activity": "CookHourlyToDailyWestUS",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
         "typeProperties": {
           "scriptLinkedService": {
             "referenceName": "AzureStorageLinkedService",
             "type": "LinkedServiceReference"
           },
           "scriptPath": "scripts\\CreateUSWestInputFeatures.v1.usql",
-          "degreeOfParallelism":  5,
+          "degreeOfParallelism": 5,
+          "parameters": {
+            "SliceStart": "@Pipeline().parameters.SliceStart"
+          }
+        }
+      },
+      {
+        "name": "CreateUSWestLookbackV1",
+        "description": "Creates lookback features and final prediction format",
+        "type": "DataLakeAnalyticsU-SQL",
+        "linkedServiceName": {
+          "referenceName": "AzureDataLakeLinkedService",
+          "type": "LinkedServiceReference"
+        },
+        "dependsOn": [
+          {
+            "activity": "CreateUSWestInputFeaturesV1",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "scriptLinkedService": {
+            "referenceName": "AzureStorageLinkedService",
+            "type": "LinkedServiceReference"
+          },
+          "scriptPath": "scripts\\CreateUSWestLookback.v1.usql",
+          "degreeOfParallelism": 5,
           "parameters": {
             "SliceStart": "@Pipeline().parameters.SliceStart"
           }

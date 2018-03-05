@@ -1,7 +1,7 @@
 # OpenAvalancheProject
 Open source project to bring data and ml to avalanche forecasting
 
-Homepage is https://openavalanchedata.org
+Homepage is https://openavalancheproject.org
 
 Directories are organized as follows:
 - Data--Contains a zip file containing three CSVs

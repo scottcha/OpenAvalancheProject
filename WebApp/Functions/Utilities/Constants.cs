@@ -16,10 +16,12 @@ namespace OpenAvalancheProject.Pipeline.Utilities
         public const string NamTrackerPartitionKey = "nam-grib-westus-v1";
         public const string PredictionTable = "predictiontracker";
         public const string PredictionTrackerPartitionKey = "prediction-westus-v1";
+        //TODO: make this a function of deployment settings
         //local debug
         //public const string UrlForPredictApi = "http://localhost:port/api/Predict/";
         //develop instance
-        public const string UrlForPredictApi = "http://openavalancheprojectdevelop.azurewebsites.net/api/Predict/";
+        //public const string UrlForPredictApi = "http://openavalancheprojectdevelop.azurewebsites.net/api/Predict/";
         //prod instance
+        public const string UrlForPredictApi = "https://openavalancheprojectprod.azurewebsites.net/api/Predict/";
     }
 }
