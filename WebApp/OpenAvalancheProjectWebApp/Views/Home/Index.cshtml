@@ -5,22 +5,23 @@
 <div class="jumbotron">
     <img class="img-responsive" align="middle" src="~/Content/Images/2017_OpenAvalancheProject_Logo_Horizontal_small_PNG.png" />
     <br />
-    <p class="lead" align="center">The Goal of the Open Avalanche Project is to cover the world with the best Avalanche and Snow data possible.  Using machine learning to increase the accuracy and impact of avalanche forecasts we are setting out to help reduce avalanche related deaths and impacts.</p>
+    <p class="lead" align="center">The Goal of the Open Avalanche Project is to reduce avalanche-related deaths and impacts across the world.  By using machine learning and experimentation to improve the accuracy and efficacy of avalanche forecasts, we are setting out to cover the world with the best Avalanche and Snow data possible.</p>
 </div>
 
 <div class="row">
     <div class="col-md-4">
-        <h2>View the Forecasts</h2>
+        <h2>Forecasts</h2>
         <p><a class="btn btn-default" href="@Url.Action("Index", "WestUSv1")">View Forecast &raquo;</a></p>
         <img class="img-responsive" src="~/Content/Images/AvyMapOverview.JPG" />
     </div>
     <div class="col-md-4">
-        <h2>Fork the Code</h2>
+        <h2>The Code</h2>
         <p><a class="btn btn-default" href="https://github.com/scottcha/OpenAvalancheProject">Fork On GitHub &raquo;</a></p>
         <img class="img-responsive" src="~/Content/Images/code.JPG" />
     </div>
     <div class="col-md-4">
-        <h2>Support The Project</h2>
+        <h2>Support</h2>
+        <p><a class="btn btn-default" href="http://eepurl.com/dmPaOX">Join Our Mailing List &raquo;</a></p>
         <p><a class="btn btn-default" href="https://www.patreon.com/scottcha">Support on Patreon &raquo;</a></p>
         <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
             <input type="hidden" name="cmd" value="_s-xclick">
@@ -33,49 +34,130 @@
 </div>
 
 <div class="row">
-    <h2>Imagine a Future</h2>
-    <div class="col-md-6">
+    <h2>Imagine the Future</h2>
+    <div class="col-md-12">
         <div class="list-group">
             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                 <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">Hourly Forecast Updates To Better Reflect Conditions On The Ground</h3>
+                    <h3 class="mb-1">Hourly Forecasts</h3>
                 </div>
-                <p class="mb-1">Mountain weather conditions can change rapidly.  An area which was not hazardous an hour ago may have rapidly changing conditions over the course of a day. We aim to be able to take hourly forecast and snow telemetry updates and update the forecast accordingly.</p>
+                <p class="mb-1">Mountain weather can change rapidly.  Conditions in an area which was not hazardous an hour ago may quickly change over the course of a day. We aim to be able to take hourly forecast and snow telemetry updates and update the forecast accordingly.</p>
             </a>
             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                 <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">High Resolution Updates Tailored To Your Micro-Locale</h3>
+                    <h3 class="mb-1">High Resolution</h3>
                 </div>
-                <p class="mb-1"></p>
+                <p class="mb-1">Most of today's avalanche forecasts are done at a regional scale.  Using increased resolution, we can improve the granularity of the forecast to better account for local differences in weather and snowfall. Today we are producing forecasts at a 12km scale though we see a possibility of building local models down to 3km or smaller where the data is available if the use makes sense.</p>
             </a>
             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                 <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">Locally Specialized Models</h3>
+                    <h3 class="mb-1">Specialized Models</h3>
                 </div>
-                <p class="mb-1">We know that contentnal snowpack models are different than costal models.  Are there other regional differences or avalanche problems which commonly occur under certain conditions which are hard to detect or otherwise unknown.  We can invest in beginning to understand some of the deeper relationships between locale and snowpack.</p>
+                <p class="mb-1">We know that continental snowpack models are different than coastal models.  Are there other regional differences or avalanche problems which commonly occur under certain conditions which are hard to detect or otherwise unknown?  We will invest in the beginning to understand some of the broader relationships between locale and snowpack.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Forecasts in Areas Which Lack Resources</h3>
+                </div>
+                <p class="mb-1">There are many forecast centers around the world but still many places which don't have the benefit of full-time avalanche forecasts.  We would like to fill this gap.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">A Learning Platform</h3>
+                </div>
+                <p class="mb-1">The Open Avalanche Project provides a standard base to begin to build both accuracy measures and the ability to share and encode forecasting techniques across regions.  What forecasters learn in Europe can directly be evaluated against US forecasting and vice versa.  We can also start to measure improvements in forecasts as well as form a baseline for forecast quality.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="d-flex w-100 justify-content-between">
+                    <h3 class="mb-1">Community Engaged</h3>
+                </div>
+                <p class="mb-1">Everything about the Open Avalanche Project is designed to be transparent and available.  That includes the code, the data, the financials, and the decision making process.  The backcountry and snow safety communities are full of awesome and knowledgeable people we welcome you here to help make this project a place of collaboration.</p>
             </a>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="list-group">
-            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">Global Forecast Coverage Including Areas Which Lack Forecasting Resources</h3>
-                </div>
-                <p class="mb-1">There are many forecast centers aroune the world but still many places which don't have the benefit of full time avalanche forecasts or any forecasts.  We would like to fill this gap.</p>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">Platform to Learn, Iterate and Measure Improvements</h3>
-                </div>
-                <p class="mb-1">The Open Avalanche Project provides a common base to begin to build both accuracy measures and the ability to share and encode forecasting heuristics across regions.  What is learned in Europe can directly be evaluated against US forecasting and vice versa.  We can also start to measure compartive improvements in forecasts as well as form a baseline for forecast quality in regions with human forecasting.</p>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
-                <div class="d-flex w-100 justify-content-between">
-                    <h3 class="mb-1">Community Engaged and Enabled</h3>
-                </div>
-                <p class="mb-1">Everything about the Open Avalanche Project is designed to be transparent and available.  That includes the code, the data, the financials, and the decision making process.  The community around our snow safety and backcountry community is full of awesoeme and knowledgable people and we want to make this project a place of collaboration.</p>
-            </a>
-        </div>
+    <h2>
+        We are taking the first step towards that future
+    </h2>
+    <div class="col-md-12">
+        <ol>
+            <li>
+                Historical avalanche forecast and weather data in a format to make machine learning experiments possible.
+            </li>
+            <li>
+                A machine learning algorithm trained to predict avalanche danger based on historical data from the Northwest Avalanche Center.
+            </li>
+            <li>
+                An end to end data pipeline pulling data from the three sources of the data and an operational daily forecast prediction.
+            </li>
+        </ol>
+    </div>
+    <h2>
+        How does Machine Learning Work for this?
+    </h2>
+    <div class="col-md-12">
+        <p>Machine learning works by taking previous data representing examples of what we want to learn and letting a computer determine an algorithm to make those same predictions with similar inputs in the future.</p>
+        <p>In our case, the past weather, snow data is used as the training input along with the corresponding avalanche forecast information.  We train the algorithm to take the input from the weather and snow information to determine the relationship between that data the avalanche forecast which is what we want to predict in the future.  Once we have trained this algorithm, we can provide it additional data where we don't necessarily know the avalanche forecast and have it determine one.</p>
+        <p>Every day we pull down the most recent snow and avalanche data and use the trained algorithm to generate a new forecast.</p>
+    </div>
+    <h2>
+        Accuracy of the Forecast
+    </h2>
+    <div class="col-md-12">
+        <p>There are two methods we use to measure accuracy today:</p>
+        <ul>
+            <li>
+                When training the algorithm, we hold back some of the data and don't use it as part of the training.  We can then use the trained algorithm to make predictions against the held back data and then evaluate the accuracy of those predictions since we know for sure what the prediction should be.  We show these accuracy evaluations along with the data on the forecast pages.
+            </li>
+            <li>
+                We also want to make sure the algorithm continues to generalize into other locations and the future which is why we are currently making predictions in other areas which we haven't been trained on and are we continue to evaluate the prediction results against the daily avalanche forecasts produced.  We should have those accuracy number for the 2017/2018 season available soon.
+            </li>
+        </ul>
+    </div>
+    <h2>
+        Ethics
+    </h2>
+    <div class="col-md-12">
+        <p>There are two aspects to this which we should address up front: safety and people.</p>
+        <h4>Safety</h4>
+        <p>
+            Avalanche forecasts are one part of a safe ski area, highway or backcountry travel evaluation.  You should never use an avalanche forecast without local evidence and assessment of the snowpack.  That being said, you want your forecast to be as accurate as possible and backed by confirmation against other information.  Today avalanche forecasters use field reports and additional information as part of their forecasting to increase the accuracy of the information in the forecast.  The Open Avalanche Project doesn't have this today, so we are only releasing these forecasts for model evaluation and development and not for hazard evaluation.  It's important to start the conversation about how to better incorporate machine learning and data science techniques into this field as well as to solve some of the problems which currently exist in avalanche forecasting such as:
+        </p>
+        <ul>
+            <li>
+                How do we share data?
+            </li>
+            <li>
+                How do we statistically evaluate forecasts and innovate in forecasting?
+            </li>
+            <li>
+                What role does machine learning, data science, open source and open data plan in avalanche forecasting?
+            </li>
+        </ul>
+        <h4>People</h4>
+        <p>
+            The Open Avalanche Project is committed to a people first approach.  We set out to augment and improve upon the existing human capacity for the snow professionals of the world.  We are committed to working with the avalanche centers around the world to have the conversation about how we can move forward on the common goal of reducing avalanche fatalities and impacts while building upon the rich legacy of innovation and safety the avalanche centers have earned.
+        </p>
+    </div>
+    <h2>What is possible today?</h2>
+    <div class="col-md-12">
+        <p>
+            This initial release is a minimum viable product.  It contains three models limited in scope to the Washington and Oregon and three models focused on the Western US.  The Northwest models can be evaluated for accuracy while the Western US models cannot.  We can't evaluate the accuracy of the Western US models as we don't have historical forecast information from regions outside Washington and Oregon today. We are working on collecting this data. The Western US models were primarily built to ensure the Operational aspects of the Open Avalanche Project could scale out and support our goal of world coverage.  The three models only predict one thing: avalanche danger for the day of the forecast.
+        </p>
+    </div>
+    <h2>Contributing</h2>
+    <div class="col-md-12">
+        <p>
+            The entire source code and data for the Open Avalanche Project is public and made available under the MIT license (see the Github site for more information).   You are free to fork the code, train your models and ideally contribute back to the project.
+        </p>
+    </div>
+    <h2>Support</h2>
+    <div class="col-md-12">
+        <p>
+            In support of the openness principal, I am making all the costs associated with the project public as well (see the GitHub repo).  I haven't been running the live site long enough to estimate the full ongoing costs of just running the site, but I believe it will be in the several hundred dollars a month up to $5000/month if we get to global scale.  I've volunteered hundreds of hours and paid several thousand dollars out of pocket to get the project to this point.  Building a community is about relying on one another and I'm relying on you to help support this project. If you can do even a small part consider helping get this project off the ground by supporting the project via one of the donate links above.  The future described above can only come about with community support.
+        </p>
+    </div>
+    <div class="col-md-12">
+        <h3>Thanks!</h3>
+        <h4>Scott Chamberlin--The Open Avalanche Project</h4>
     </div>
 </div>

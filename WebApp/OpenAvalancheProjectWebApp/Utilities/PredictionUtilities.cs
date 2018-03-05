@@ -215,6 +215,7 @@ namespace OpenAvalancheProjectWebApp.Utilities
             var forecastNw = new Forecast(mappedPredictionsOnlyNorthWest);
             db.SaveForecast(forecast);
             db.SaveForecast(forecastNw);
+            db.SaveForecastDate(new ForecastDate(dateToAdd));
         }
     }
 }

@@ -242,11 +242,13 @@
     <Compile Include="Domain\IForecastRepository.cs" />
     <Compile Include="Entities\Forecast.cs" />
     <Compile Include="Entities\ForecastModel.cs" />
+    <Compile Include="Entities\ForecastDate.cs" />
     <Compile Include="Entities\ForecastPoint.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\DateForecastNameViewModel.cs" />
     <Compile Include="Models\ForecastViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
