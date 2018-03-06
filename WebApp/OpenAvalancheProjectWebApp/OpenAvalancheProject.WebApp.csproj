@@ -271,6 +271,8 @@
     <Content Include="Content\Images\DangerAboveTreelineV1NWAccuracy.jpg" />
     <Content Include="Content\Images\DangerBelowTreelineV1NWAccuracy.JPG" />
     <Content Include="Content\Images\DangerNearTreelineV1NWAccuracy.JPG" />
+    <Content Include="Content\Images\mast.png" />
+    <Content Include="Content\Images\powderalarm.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />

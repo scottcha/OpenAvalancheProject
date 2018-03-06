@@ -32,5 +32,11 @@ namespace OpenAvalancheProjectWebApp.Domain
             var op = TableOperation.InsertOrMerge(date);
             context.ForecastDateTable.Execute(op);
         }
+
+        public void SaveForecastPoint(ForecastPoint point)
+        {
+            var op = TableOperation.InsertOrMerge(point);
+            context.Table.Execute(op);
+        }
     }
 }

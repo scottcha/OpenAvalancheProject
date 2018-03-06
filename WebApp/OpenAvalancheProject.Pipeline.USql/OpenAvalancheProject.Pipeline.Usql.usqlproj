@@ -23,6 +23,7 @@
     <Script Include="AdHocNam.usql" />
     <Script Include="AdHocSnotel.usql" />
     <Script Include="AuditTable.usql" />
+    <Script Include="InvestigateHourly.usql" />
     <Script Include="CreateUSWestInputFeatures.v1.usql" />
     <Script Include="CreateUSWestLookback.v1.usql" />
     <Script Include="DropAssembly.usql" />
@@ -41,6 +42,9 @@
     </ScriptCode>
     <ScriptCode Include="AuditTable.usql.cs">
       <DependentUpon>AuditTable.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="InvestigateHourly.usql.cs">
+      <DependentUpon>InvestigateHourly.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="CreateUSWestInputFeatures.v1.usql.cs">
       <DependentUpon>CreateUSWestInputFeatures.v1.usql</DependentUpon>

@@ -13,6 +13,6 @@ namespace OpenAvalancheProjectWebApp.Domain
         IQueryable<ForecastDate> ForecastDates{ get; }
         void SaveForecast(Forecast forecast);
         void SaveForecastDate(ForecastDate date);
-        
+        void SaveForecastPoint(ForecastPoint point);
     }
 }
