@@ -72,9 +72,6 @@ namespace OpenAvalancheProject.Pipeline.Functions
                 }
                 checkDate = checkDate.AddDays(1);
             }
-            DateTime filter = new DateTime(2018, 3, 6);
-            //debug-skip today
-            listOfDatesToPredict = listOfDatesToPredict.Where(d => d < filter).ToList(); 
             //execute the predictions
             foreach (var d in listOfDatesToPredict)
             {
