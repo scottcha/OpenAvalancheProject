@@ -45,7 +45,7 @@ namespace OpenAvalancheProjectWebApp.Controllers
             var forecastPoints = repository.ForecastPoints;
 
             //Check that we have a forecast for that date, if now get the most recent one before that
-            var dateResult = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateOfForecast, modelId)).Select(p => p.Date);
+            var dateResult = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateOfForecast, modelId) && p.RegionName != "Unknown").Select(p => p.Date);
             DateTime dateToQuery = dateOfForecast;
             //didn't exist for that date & model combination; find the next most recent date
             if(dateResult.ToList().Count() == 0)
@@ -54,7 +54,7 @@ namespace OpenAvalancheProjectWebApp.Controllers
                 dateToQuery = DateTime.ParseExact(dateResult2, "yyyyMMdd", null); 
             }
 
-            var result = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateToQuery, modelId)).ToList();
+            var result = forecastPoints.Where(p => p.PartitionKey == ForecastPoint.GeneratePartitionKey(dateToQuery, modelId) && p.RegionName != "Unknown").ToList();
             if (result.Count > 0)
             {
                 return View(new ForecastViewModel(new Forecast(result)));

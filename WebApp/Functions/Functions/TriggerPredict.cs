@@ -55,6 +55,8 @@ namespace OpenAvalancheProject.Pipeline.Functions
             //find ones we need to fill
             var checkDate = DateTime.UtcNow.AddDays(-1*numberOfDaysToCheck).Date;
             var listOfDatesToPredict = new List<DateTime>();
+
+
             while (checkDate < DateTime.UtcNow)
             {
                 string fileName = CreatePredictFileName(checkDate);

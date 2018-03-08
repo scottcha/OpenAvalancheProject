@@ -37,6 +37,11 @@
     <h2>How To Read This Forecast</h2>
     <ul>
         <li>
+            <h4>
+                Use the model selector on the top bar to select other forecast types.  Models ending in "NW" cover the northwest only and have an accuracy value, models not ending in NW cover the Western US and do not have an accuracy value.
+            </h4>
+        </li>
+        <li>
             <h4>The current forecast is only interpretable in mountainous regions which overlapp existing forecast areas</h4>
             <p>
                 The current forecasts produced do not distinguish between mountainous and non-mountainous regions and produce uninterpretable results in non-mountainous regions.
@@ -91,7 +96,7 @@
             colorscale: scl,
             cmin: 0,
             cmax: 1,
-            opacity: 0.4,
+            opacity: 0.6,
             size: 7
         },
         name: '@Html.Raw(Model.ForecastForView.ForecastTitle)',

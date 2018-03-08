@@ -6,7 +6,8 @@
     "typeProperties": {
       "frequency": "Hour",
       "interval": "24",
-      "startTime": "2018-3-5T05:00:00Z",
+      "startTime": "2018-3-6T05:00:00Z",
+      "endTime": "2018-3-7T05:00:00Z",
       "maxConcurrency": 1  //This needs to be 1 as the last activities depends on previous days output and running in parallel can cause that to fail
     },
     "pipeline": {
