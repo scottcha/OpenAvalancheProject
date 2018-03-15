@@ -42,13 +42,12 @@ namespace OpenAvalancheProject.Pipeline.Functions
                     else
                     {
                         
-                        //Dates in the file are local times; need to change them to UTC
+                        //Dates in the file are local times; need to change them to UTC -8
                         var splitLine = line.Split(',');
                         if (firstLine == false && splitLine.Length > 1)
                         {
                             var localTimeOfForecast = DateTime.Parse(splitLine[0]);
-                            var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-                            var utcTimeOfForecast = TimeZoneInfo.ConvertTimeToUtc(localTimeOfForecast, localTimeZone);
+                            var utcTimeOfForecast = localTimeOfForecast.AddHours(-8);
                             splitLine[0] = utcTimeOfForecast.ToString("yyyyMMdd HH:00");
                             line = String.Join(",", splitLine);
                         }
