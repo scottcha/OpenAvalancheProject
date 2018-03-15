@@ -16,7 +16,7 @@ namespace OpenAvalancheProject.Pipeline
 {
     public static class NAMBlobToTable
     {
-        [FunctionName("NAMBlobToTable"), Disable()]
+        [FunctionName("NAMBlobToTable")]
         [return: Table("filedownloadtracker")]
         public static FileProcessedTracker Run([BlobTrigger("nam-grib-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
         {
