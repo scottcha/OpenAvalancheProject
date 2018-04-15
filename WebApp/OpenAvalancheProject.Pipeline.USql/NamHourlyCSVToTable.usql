@@ -2,7 +2,7 @@
 
 REFERENCE ASSEMBLY [westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 
-DECLARE EXTERNAL @SliceStart = "20180105";
+DECLARE EXTERNAL @SliceStart = "20180331";
 DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileHour}forecastHour00.csv";
 
 //1. Extract hourly nam forecast data
@@ -118,7 +118,6 @@ CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
     DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @namData;
 */
-
 INSERT INTO dbo.HourlyWeatherForecast
 (
     DatePart,
@@ -144,4 +143,4 @@ INSERT INTO dbo.HourlyWeatherForecast
     __fileHour,
     __fileDate 
 )
-SELECT * FROM @namData;
+SELECT * FROM @namDataFinal;
