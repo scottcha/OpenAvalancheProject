@@ -13,7 +13,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class SnotelBlobToADLS
     {
-        [FunctionName("SnotelBlobToADLS"), Disable()]
+        [FunctionName("SnotelBlobToADLS")]
         [return: Table("snoteltracker")]
         public static FileProcessedTracker Run([BlobTrigger("snotel-csv-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
         {
@@ -42,13 +42,13 @@ namespace OpenAvalancheProject.Pipeline.Functions
                     else
                     {
                         
-                        //Dates in the file are local times; need to change them to UTC
+                        //Dates in the file are local times; need to change them to UTC which is +8
+                        //These dates don't adjust for daylight savings time
                         var splitLine = line.Split(',');
                         if (firstLine == false && splitLine.Length > 1)
                         {
                             var localTimeOfForecast = DateTime.Parse(splitLine[0]);
-                            var localTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-                            var utcTimeOfForecast = TimeZoneInfo.ConvertTimeToUtc(localTimeOfForecast, localTimeZone);
+                            var utcTimeOfForecast = localTimeOfForecast.AddHours(+8);
                             splitLine[0] = utcTimeOfForecast.ToString("yyyyMMdd HH:00");
                             line = String.Join(",", splitLine);
                         }
