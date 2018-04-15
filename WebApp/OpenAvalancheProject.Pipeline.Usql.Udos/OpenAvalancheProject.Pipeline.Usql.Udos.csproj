@@ -62,14 +62,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.Analytics.Interfaces" />
     <Reference Include="Microsoft.Analytics.Types" />
-    <Reference Include="XGBoost, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\PicNet.XGBoost.0.1.3\lib\net40\XGBoost.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CombinerNearestStation.cs" />
     <Compile Include="InterpolateMissingValuesReducer.cs" />
-    <Compile Include="PredictReducerV1.cs" />
+    <Compile Include="MalformedNAMReducer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

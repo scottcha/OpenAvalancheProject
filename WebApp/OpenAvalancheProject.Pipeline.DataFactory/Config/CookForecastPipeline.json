@@ -128,6 +128,28 @@
             "SliceStart": "@Pipeline().parameters.SliceStart"
           }
         }
+      },
+      {
+        "name": "GeneratePredict",
+        "type": "WebActivity",
+        "dependsOn": [
+          {
+            "activity": "CreateUSWestLookbackV1",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.00:00:15",
+          "retry": 1,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false
+        },
+        "typeProperties": {
+          "url": "https://openavalancheprojectprod.azurewebsites.net/api/Predict/@{Pipeline().parameters.SliceStart}",
+          "method": "GET"
+        }
       }
     ],
     "parameters": {

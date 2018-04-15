@@ -20,7 +20,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         static string partitionName = "snotel-merged-csv-westus-v1";
         static string csvDirectory = "/snotel-csv-westus-v1/";
 
-        [FunctionName("MergeStateSnotelFiles"), Disable()]
+        [FunctionName("MergeStateSnotelFiles")]
         public static void Run([TimerTrigger("0 30 * * * *", RunOnStartup = true)]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# Timer trigger function executed at: {DateTime.Now}");

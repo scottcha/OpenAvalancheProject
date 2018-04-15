@@ -11,7 +11,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 {
     public static class DetectSnotelReadyForDownload
     {
-        [FunctionName("DetectSnotelReadyForDownload"), Disable()]
+        [FunctionName("DetectSnotelReadyForDownload")]
         [return: Queue("filereadytodownloadqueue")]
         public static void Run([TimerTrigger("0 20 * * * *", RunOnStartup = true)]TimerInfo myTimer, 
                                [Queue("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 
@@ -88,9 +88,8 @@ namespace OpenAvalancheProject.Pipeline.Functions
         public static string CreateSnotelUrl(DateTime readingDateUtc, string state, string snotelTemplate)
         {
             var snotelUrl = snotelTemplate.Replace("%STATE%", state);
-            //Date is utc, need to make it local to the request location
-            TimeZoneInfo timeInfo = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-            var readingDateLocal = TimeZoneInfo.ConvertTimeFromUtc(readingDateUtc, timeInfo);
+            //Date is utc, snotel is allways GMT - 8 
+            var readingDateLocal = readingDateUtc.AddHours(-8);
             var tmpDate = readingDateLocal.ToString("yyyy-MM-dd");
             snotelUrl = snotelUrl.Replace("%yyyy-MM-dd%", tmpDate);
             //odd case where you need to include a whitespace to get this to work per C# docs

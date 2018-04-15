@@ -1,5 +1,5 @@
 ﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20180305";
+DECLARE EXTERNAL @SliceStart = "20180311";
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 
