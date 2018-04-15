@@ -18,7 +18,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         /// </summary>
         /// <param name="myTimer"></param>
         /// <param name="log"></param>
-        [FunctionName("DetectSnodasReadyForDownload"), Disable()]
+        [FunctionName("DetectSnodasReadyForDownload")]
         [return: Queue("downloadandunpacksnodas")]
         public static void Run([TimerTrigger("0 10 3/3 1/1 * *", RunOnStartup = true)]TimerInfo myTimer,
                                [Queue("downloadandunpacksnodas", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem,

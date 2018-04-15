@@ -41,12 +41,12 @@ namespace OpenAvalancheProjectWebApp.Entities
             }
 
             //TODO: move this to dynamically updatable from a table or blob
-            if (lat > 42.752975 && lat < 49.210265 && lon > -122.191917 && lon < -121.42812)
+            if (lat > 42.752975 && lat < 44.74359 && lon > -122.191917 && lon < -121.42812)
             {
                 //this needs to be before cascades as they overlap
                 RegionName = "Central Oregon";
             }
-            else if (lat > 42.027657 && lat < 44.743586 && lon > -122.144597 && lon < -120.172867)
+            else if (lat > 42.027657 && lat < 49.21027 && lon > -122.144597 && lon < -120.172867)
             {
                 RegionName = "Cascades";
             }
