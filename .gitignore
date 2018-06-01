@@ -291,3 +291,4 @@ __pycache__/
 *.xsd.cs
 WebApp/OpenAvalancheProjectWebApp/WebSecret.config
 WebApp/OpenAvalancheProjectWebApp/local.settings.json
+ML/.ipynb_checkpoints/
