@@ -291,5 +291,4 @@ __pycache__/
 *.xsd.cs
 WebApp/OpenAvalancheProjectWebApp/WebSecret.config
 WebApp/OpenAvalancheProjectWebApp/local.settings.json
-GetTrainingData/nwackey.py
 ML/.ipynb_checkpoints/
