@@ -1,5 +1,5 @@
-﻿USE DATABASE [westus-v1];
-DECLARE EXTERNAL @SliceStart = "20171130";
+﻿USE DATABASE [dev-westus-v1];
+DECLARE EXTERNAL @SliceStart = "20180331";
 DECLARE @SnotelSliceStart = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null).AddDays(-1).ToString("yyyyMMdd");
 
 DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1/" + @SnotelSliceStart + ".{__fileHour}.snotel.csv";
@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS dbo.HourlySnotelReadings
     DISTRIBUTED BY RANGE(DatePart) 
 ) AS SELECT * FROM @snotelData;
 */
+
 INSERT INTO dbo.HourlySnotelReadings
 (
     DatePart,
@@ -71,3 +72,4 @@ INSERT INTO dbo.HourlySnotelReadings
 )
 SELECT *
 FROM @snotelData;
+*/

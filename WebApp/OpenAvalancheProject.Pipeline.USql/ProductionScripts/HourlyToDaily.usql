@@ -1,13 +1,15 @@
-﻿USE DATABASE [westus-v1];
+﻿USE DATABASE [dev-westus-v1];
 
-REFERENCE ASSEMBLY [westus-v1].[MathNet.Numerics];
-REFERENCE ASSEMBLY [westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
+REFERENCE ASSEMBLY [dev-westus-v1].[MathNet.Numerics];
+REFERENCE ASSEMBLY [dev-westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE EXTERNAL @DebugCounts bool = false;
 
-DECLARE EXTERNAL @SliceStart = "20180311";
+DECLARE EXTERNAL @SliceStart = "20180331";
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
+
+DECLARE @regionFilter string = @"/regions-v1/AvalancheRegions.csv";
 
 //Read in data from nam for file date at forecast time (84 hours) & snotel (readings of previous 24 hours of forecast date)
 
@@ -573,6 +575,26 @@ DECLARE @inputFileSnodas string = @"/snodas-csv-westus-v1/" + @ForecastDate.AddD
     FROM @inputFileSnodas
     USING Extractors.Csv(skipFirstNRows : 2, silent : false);
 
+//filter SNODAS only to avalanche regions
+//filter the data to only points in the avy regions
+@avyRegions =
+    EXTRACT Country string,
+            Region string,
+            LatMin double,
+            LatMax double,
+            LonMin double,
+            LonMax double 
+    FROM @regionFilter
+    USING Extractors.Csv(skipFirstNRows : 1);
+
+@snodasData =
+    SELECT n.*
+    FROM @snodasData AS n
+         CROSS JOIN
+             @avyRegions AS r
+    WHERE (n.Lat BETWEEN r.LatMin AND r.LatMax)
+          AND (n.Lon BETWEEN r.LonMin AND r.LonMax);
+
 @snodasData = 
     SELECT
         DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
@@ -650,15 +672,21 @@ IF @Debug THEN
         USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
      
 END;
+
 /*
+OUTPUT @allSources
+        TO @"/debug-out/allSources.csv"
+        USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+*/
+
 CREATE TABLE IF NOT EXISTS dbo.DailyWeatherAndSnow
 ( 
     INDEX idx  
     CLUSTERED(__fileDate ASC, Lat, Lon)
     DISTRIBUTED BY RANGE(__fileDate) 
 ) AS SELECT * FROM @allSources;
-*/
 
+/*
 INSERT INTO dbo.DailyWeatherAndSnow
 (
     __fileDate,
@@ -778,3 +806,4 @@ INSERT INTO dbo.DailyWeatherAndSnow
     SNOWDAS_LiquidPrecip_kgpersquarem,
     SNOWDAS_SnowpackAveTemp_k
 ) SELECT * FROM @allSources;
+*/

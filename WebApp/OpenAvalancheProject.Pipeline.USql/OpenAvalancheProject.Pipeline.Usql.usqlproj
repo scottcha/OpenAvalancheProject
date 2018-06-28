@@ -1,4 +1,4 @@
-﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?><Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -20,48 +20,57 @@
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Script Include="AdHocNam.usql" />
-    <Script Include="AdHocSnotel.usql" />
-    <Script Include="AuditTable.usql" />
-    <Script Include="CreateUSWestInputFeatures.v1.usql" />
-    <Script Include="CreateUSWestLookback.v1.usql" />
-    <Script Include="DropAssembly.usql" />
-    <Script Include="DropRows.usql" />
-    <Script Include="PredictUSWestV1.usql" />
-    <Script Include="SnotelConcatHourlyCSVToTable.usql" />
-    <Script Include="HourlyToDaily.usql" />
-    <Script Include="NamHourlyCSVToTable.usql" />
-    <Script Include="RegisterAssembley.usql" />
-    <Script Include="TruncateTable.usql" />
-    <ScriptCode Include="AdHocNam.usql.cs">
-      <DependentUpon>AdHocNam.usql</DependentUpon>
+    <Script Include="AdHocScripts\AdHocNam.usql" />
+    <Script Include="AdHocScripts\AdHocSnotel.usql" />
+    <Script Include="AdHocScripts\AuditTable.usql" />
+    <Script Include="AdHocScripts\DropAssembly.usql" />
+    <Script Include="AdHocScripts\DropRows.usql" />
+    <Script Include="AdHocScripts\RegisterAssembley.usql" />
+    <Script Include="AdHocScripts\TruncateTable.usql" />
+    <Script Include="ProductionScripts\CreateUSWestInputFeatures.v1.usql" />
+    <Script Include="ProductionScripts\CreateUSWestLookback.v1.usql" />
+    <Script Include="ProductionScripts\HourlyToDaily.usql" />
+    <Script Include="ProductionScripts\NamHourlyCSVToTable.usql" />
+    <Script Include="ProductionScripts\PredictUSWestV1.usql" />
+    <Script Include="ProductionScripts\SnotelConcatHourlyCSVToTable.usql" />
+    <ScriptCode Include="AdHocScripts\AdHocNam.usql.cs">
+      <DependentUpon>AdHocScripts\AdHocNam.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="AdHocSnotel.usql.cs">
-      <DependentUpon>AdHocSnotel.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\AdHocSnotel.usql.cs">
+      <DependentUpon>AdHocScripts\AdHocSnotel.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="AuditTable.usql.cs">
-      <DependentUpon>AuditTable.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\AuditTable.usql.cs">
+      <DependentUpon>AdHocScripts\AuditTable.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="CreateUSWestInputFeatures.v1.usql.cs">
-      <DependentUpon>CreateUSWestInputFeatures.v1.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\DropAssembly.usql.cs">
+      <DependentUpon>AdHocScripts\DropAssembly.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="CreateUSWestLookback.v1.usql.cs">
-      <DependentUpon>CreateUSWestLookback.v1.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\DropRows.usql.cs">
+      <DependentUpon>AdHocScripts\DropRows.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="DropAssembly.usql.cs">
-      <DependentUpon>DropAssembly.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\RegisterAssembley.usql.cs">
+      <DependentUpon>AdHocScripts\RegisterAssembley.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="DropRows.usql.cs">
-      <DependentUpon>DropRows.usql</DependentUpon>
+    <ScriptCode Include="AdHocScripts\TruncateTable.usql.cs">
+      <DependentUpon>AdHocScripts\TruncateTable.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="PredictUSWestV1.usql.cs">
-      <DependentUpon>PredictUSWestV1.usql</DependentUpon>
+    <ScriptCode Include="ProductionScripts\CreateUSWestInputFeatures.v1.usql.cs">
+      <DependentUpon>ProductionScripts\CreateUSWestInputFeatures.v1.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="RegisterAssembley.usql.cs">
-      <DependentUpon>RegisterAssembley.usql</DependentUpon>
+    <ScriptCode Include="ProductionScripts\CreateUSWestLookback.v1.usql.cs">
+      <DependentUpon>ProductionScripts\CreateUSWestLookback.v1.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="TruncateTable.usql.cs">
-      <DependentUpon>TruncateTable.usql</DependentUpon>
+    <ScriptCode Include="ProductionScripts\HourlyToDaily.usql.cs">
+      <DependentUpon>ProductionScripts\HourlyToDaily.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="ProductionScripts\NamHourlyCSVToTable.usql.cs">
+      <DependentUpon>ProductionScripts\NamHourlyCSVToTable.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="ProductionScripts\PredictUSWestV1.usql.cs">
+      <DependentUpon>ProductionScripts\PredictUSWestV1.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="ProductionScripts\SnotelConcatHourlyCSVToTable.usql.cs">
+      <DependentUpon>ProductionScripts\SnotelConcatHourlyCSVToTable.usql</DependentUpon>
     </ScriptCode>
   </ItemGroup>
   <ItemGroup>
@@ -72,5 +81,12 @@
       <Private>True</Private>
     </Reference>
   </ItemGroup>
-  <Import Project="$(AppData)\Microsoft\DataLake\MsBuild\1.0\Usql.targets" />
+  <ItemGroup>
+    <Folder Include="AdHocScripts" />
+    <Folder Include="ProductionScripts" />
+  </ItemGroup>
+  <Import Project="$(AppData)\Microsoft\DataLake\MsBuild\1.0\Usql.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+  <!--target for CICD command line build added by project migration tool-->
+  <Import Project="USqlSDKBuild.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true' And  Exists('USqlSDKBuild.targets')" />
+  <Import Project="$(USQLSDKPath)\USqlSDKBuild.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true' And !Exists('USqlSDKBuild.targets') And '$(USQLSDKPath)' != '' And Exists('$(USQLSDKPath)\USqlSDKBuild.targets')" />
 </Project>

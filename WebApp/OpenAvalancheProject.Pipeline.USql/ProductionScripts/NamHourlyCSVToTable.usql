@@ -1,9 +1,11 @@
-﻿USE DATABASE [westus-v1];
+﻿USE DATABASE [dev-westus-v1];
 
-REFERENCE ASSEMBLY [westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
+REFERENCE ASSEMBLY [dev-westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 
 DECLARE EXTERNAL @SliceStart = "20180331";
 DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileHour}forecastHour00.csv";
+
+DECLARE @regionFilter string = @"/regions-v1/AvalancheRegions.csv";
 
 //1. Extract hourly nam forecast data
 @namData =
@@ -29,16 +31,36 @@ DECLARE @inputFileNam string = @"/nam-csv-westus-v1/" + @SliceStart + "T{__fileH
     FROM @inputFileNam
     USING Extractors.Csv(skipFirstNRows : 1, silent : true);
 
+//filter the data to only points in the avy regions
+@avyRegions =
+    EXTRACT Country string,
+            Region string,
+            LatMin double,
+            LatMax double,
+            LonMin double,
+            LonMax double 
+    FROM @regionFilter
+    USING Extractors.Csv(skipFirstNRows : 1);
+
+@namDataFiltered =
+    SELECT n.*
+    FROM @namData AS n
+         CROSS JOIN
+             @avyRegions AS r
+    WHERE (n.Lat BETWEEN r.LatMin AND r.LatMax)
+          AND (n.Lon BETWEEN r.LonMin AND r.LonMax);
+
+
 //Sometimes the NAM Hour 0 data comes in malformed.  TmpSurface is listed by itself at the correct hour but 
 //all the other data is listed several hours in to the future in the same filehour.  Need to reduce to fix this
 @namHour0 =
     SELECT *
-    FROM @namData
+    FROM @namDataFiltered
     WHERE __fileHour == 0;
 
 @namHourNot0 =
     SELECT *
-    FROM @namData
+    FROM @namDataFiltered
     WHERE __fileHour != 0;
 
 @reducedNamHour0 = 
@@ -110,14 +132,15 @@ OUTPUT @namDataFinal
 TO @"/debug-out/reduceddebug.csv"    
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 */
-/*
+
 CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
 ( 
     INDEX idx  
     CLUSTERED(DatePart ASC, Lat, Lon)
     DISTRIBUTED BY RANGE(DatePart) 
-) AS SELECT * FROM @namData;
-*/
+) AS SELECT * FROM @namDataFinal;
+
+/*
 INSERT INTO dbo.HourlyWeatherForecast
 (
     DatePart,
@@ -144,3 +167,4 @@ INSERT INTO dbo.HourlyWeatherForecast
     __fileDate 
 )
 SELECT * FROM @namDataFinal;
+*/
