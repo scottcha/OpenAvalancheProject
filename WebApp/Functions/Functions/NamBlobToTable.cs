@@ -18,7 +18,7 @@ namespace OpenAvalancheProject.Pipeline
     {
         [FunctionName("NAMBlobToTable")]
         [return: Table("filedownloadtracker")]
-        public static FileProcessedTracker Run([BlobTrigger("nam-grib-westus-v1/{name}", Connection = "AzureWebJobsStorage")]Stream myBlob, string name, TraceWriter log)
+        public static FileProcessedTracker Run([BlobTrigger("nam-grib-westus-v1/{name}", Connection = "AzureWebJobsStorage"), Disable()]Stream myBlob, string name, TraceWriter log)
         {
             log.Info($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
             log.Info($"Double Checking if {name} already exists.");
@@ -66,7 +66,7 @@ namespace OpenAvalancheProject.Pipeline
             var adlsFileSystemClient = new DataLakeStoreFileSystemManagementClient(creds);
             try
             {
-                adlsFileSystemClient.FileSystem.UploadFile(adlsAccountName, localFileName, "/nam-grib-westus-v1/" + name, uploadAsBinary: true, overwrite: true);
+                adlsFileSystemClient.FileSystem.UploadFile(adlsAccountName, localFileName, "/dev/nam-grib-westus-v1/" + name, uploadAsBinary: true, overwrite: true);
                 log.Info($"Uploaded file: {localFileName}");
             }
             catch (Exception e)
@@ -105,7 +105,7 @@ namespace OpenAvalancheProject.Pipeline
 
             try
             {
-                adlsFileSystemClient.FileSystem.Create(adlsAccountName, "/nam-csv-westus-v1/" + fileName, s, overwrite: true);
+                adlsFileSystemClient.FileSystem.Create(adlsAccountName, "/dev/nam-csv-westus-v1/" + fileName, s, overwrite: true);
                 log.Info($"Uploaded csv stream: {localFileName}");
             }
             catch (Exception e)

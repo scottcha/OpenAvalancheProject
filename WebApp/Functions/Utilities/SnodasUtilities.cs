@@ -1,4 +1,5 @@
 ﻿using OSGeo.GDAL;
+using SharpCompress.Common;
 using SharpCompress.Readers;
 using System;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ namespace OpenAvalancheProject.Pipeline.Utilities
     public static class SnodasUtilities
     {
         public static List<string> UnpackSnodasArchive(string snodasFileToUncompress)
-        { 
+        {
             using (Stream stream = File.OpenRead(snodasFileToUncompress))
             {
                 return UnpackSnodasStream(stream);
@@ -31,7 +32,7 @@ namespace OpenAvalancheProject.Pipeline.Utilities
                     {
                         string filePath = Path.Combine(Path.GetTempPath(), reader.Entry.Key);
                         files.Add(filePath);
-                        
+
                         reader.WriteEntryToDirectory(Path.GetTempPath(), new ExtractionOptions()
                         {
                             ExtractFullPath = true,
@@ -85,7 +86,7 @@ namespace OpenAvalancheProject.Pipeline.Utilities
                 outContents = regex.Replace(contents, "0");
             }
 
-            if(outFilePath == null)
+            if (outFilePath == null)
             {
                 outFilePath = filePath;
             }
@@ -101,18 +102,18 @@ namespace OpenAvalancheProject.Pipeline.Utilities
                                                               List<string> filePaths)
         {
             var results = new Dictionary<(double Lat, double Lon), SnodasRow>();
-            foreach(var file in filePaths)
+            foreach (var file in filePaths)
             {
                 SnowdasListForCoordinates(coordinates, results, file);
             }
             return results.Values.ToList();
         }
 
-        public static void SnowdasListForCoordinates(List<(double Lat,double Lon)> coordinates,
+        public static void SnowdasListForCoordinates(List<(double Lat, double Lon)> coordinates,
                                                      Dictionary<(double Lat, double Lon), SnodasRow> results,
                                                      string filePath)
         {
-            if(!filePath.EndsWith(".Hdr"))
+            if (!filePath.EndsWith(".Hdr"))
             {
                 throw new ArgumentException($"filePaths must end with .Hdr extension for file: {filePath}");
             }
@@ -132,7 +133,7 @@ namespace OpenAvalancheProject.Pipeline.Utilities
                 {
                     throw new Exception($"Error reading raster {error}");
                 }
-                foreach(var coordinate in coordinates)
+                foreach (var coordinate in coordinates)
                 {
                     SnodasRow row;
                     if (results.ContainsKey(coordinate))

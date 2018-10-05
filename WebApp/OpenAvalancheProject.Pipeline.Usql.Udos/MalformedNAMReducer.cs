@@ -44,20 +44,35 @@ namespace OpenAvalancheProject.Pipeline.Usql.Udos
                             WindDirection80m = r.Get<double?>("WindDirection80m"),
                             WindSpeedTrop = r.Get<double?>("WindSpeedTrop"),
                             WindDirectionTrop = r.Get<double?>("WindDirectionTrop"),
-                            __fileHour = r.Get<int>("__fileHour")
+                            __fileHour = r.Get<int>("__fileHour"),
+                            __fileDate = r.Get<DateTime>("__fileDate")
                         }).ToList();
 
             NamRow r1 = null;
             NamRow r2 = null;
             if (rows.Count() == 1)
             {
-                r1 = rows.First();
-                r2 = rows.First();
+                try
+                {
+                    r1 = rows.First();
+                    r2 = rows.First();
+                }
+                catch(InvalidOperationException e)
+                {
+                    throw new InvalidOperationException(string.Format("InvalidOperationException on row with count 1, __fileDate: {0}, Lat {1}, Lon {2}", rows[0].__fileDate, rows[0].Lat, rows[0].Lon));
+                }
             }
             else if (rows.Count() == 2)
             {
-                r1 = rows.Where(rtmp => rtmp.ParsedHour == 0).First();
-                r2 = rows.Where(rtmp => rtmp.ParsedHour != 0).First();
+                try
+                {
+                    r1 = rows.Where(rtmp => rtmp.ParsedHour == 0).First();
+                    r2 = rows.Where(rtmp => rtmp.ParsedHour != 0).First();
+                }
+                catch (InvalidOperationException e)
+                {
+                    throw new InvalidOperationException(string.Format("InvalidOperationException on row with count 2, __fileDate: {0}, Lat {1}, Lon {2}; check that there aren't overlapping regions", rows[0].__fileDate, rows[0].Lat, rows[0].Lon));
+                }
             }
             else
             {
@@ -84,6 +99,7 @@ namespace OpenAvalancheProject.Pipeline.Usql.Udos
             output.Set<double?>("WindSpeedTrop", r2.WindSpeedTrop);
             output.Set<double?>("WindDirectionTrop", r2.WindDirectionTrop);
             output.Set<int>("__fileHour", r2.__fileHour);
+            output.Set<DateTime>("__fileDate", r2.__fileDate);
             yield return output.AsReadOnly();
         }
     }
@@ -116,5 +132,6 @@ namespace OpenAvalancheProject.Pipeline.Usql.Udos
         public double?    WindSpeedTrop { get; set; }
         public double?    WindDirectionTrop { get; set; }
         public int    __fileHour { get; set; }
+        public DateTime __fileDate { get; set; }
     }
 }

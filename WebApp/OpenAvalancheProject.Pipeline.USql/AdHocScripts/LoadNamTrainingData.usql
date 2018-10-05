@@ -1,0 +1,204 @@
+﻿USE DATABASE [dev-westus-v2];
+
+REFERENCE ASSEMBLY [dev-westus-v2].[OpenAvalancheProject.Pipeline.Usql.Udos];
+
+DECLARE EXTERNAL @SliceStart = "20171101";
+DECLARE EXTERNAL @SliceEnd = "20180430";
+DECLARE @inputFileNam string = @"/nam-csv-westus-v1.1/{date:yyyy}/{date:M}/{date:d}/{date:yyyy}{date:MM}{date:dd}" + "T{__fileHour}forecastHour00.csv";
+
+DECLARE @regionFilter string = @"/regions-v1/AvalancheRegions.csv";
+
+DECLARE EXTERNAL @Debug bool = false;
+
+//1. Extract hourly nam forecast data
+@namData =
+    EXTRACT DateString string,
+            Lat double,
+            Lon double,
+            APCPsurface double?,
+            APCPStepSize int?,
+            CSNOWsurface int?,
+            CRAINsurface int?,
+            TMPsurface double?,
+            Tmp2mAboveGround double?,
+            RH2mAboveGround double?,
+            TMP80mAboveGround double?,
+            TMPTrop double?,
+            WindSpeed10m double?,
+            WindDirection10m double?,
+            WindSpeed80m double?,
+            WindDirection80m double?,
+            WindSpeedTrop double?,
+            WindDirectionTrop double?,
+            date DateTime,
+            __fileHour int
+    FROM @inputFileNam
+    USING Extractors.Csv(skipFirstNRows : 1, silent : true);
+
+//filter the data to only points in the avy regions
+@avyRegions =
+    EXTRACT Country string,
+            Region string,
+            LatMin double,
+            LatMax double,
+            LonMin double,
+            LonMax double 
+    FROM @regionFilter
+    USING Extractors.Csv(skipFirstNRows : 1);
+
+@namData = 
+    SELECT 
+        DateString,
+        Lat,
+        Lon,
+        APCPsurface,
+        APCPStepSize,
+        CSNOWsurface,
+        CRAINsurface,
+        TMPsurface,
+        Tmp2mAboveGround,
+        RH2mAboveGround,
+        TMP80mAboveGround,
+        TMPTrop,
+        WindSpeed10m,
+        WindDirection10m,
+        WindSpeed80m,
+        WindDirection80m,
+        WindSpeedTrop,
+        WindDirectionTrop,
+        __fileHour,
+        date AS __fileDate                
+    FROM @namData
+    WHERE date BETWEEN DateTime.ParseExact(@SliceStart, "yyyyMMdd", null) AND DateTime.ParseExact(@SliceEnd, "yyyyMMdd", null);
+
+@namDataFiltered =
+    SELECT n.*
+    FROM @namData AS n
+         CROSS JOIN
+             @avyRegions AS r
+    WHERE (n.Lat BETWEEN r.LatMin AND r.LatMax)
+          AND (n.Lon BETWEEN r.LonMin AND r.LonMax);
+
+
+//Sometimes the NAM Hour 0 data comes in malformed.  TmpSurface is listed by itself at the correct hour but 
+//all the other data is listed several hours in to the future in the same filehour.  Need to reduce to fix this
+@namHour0 =
+    SELECT *
+    FROM @namDataFiltered
+    WHERE __fileHour == 0;
+
+@namHourNot0 =
+   SELECT *
+   FROM @namDataFiltered
+   WHERE __fileHour != 0;
+
+IF(@Debug) THEN
+    OUTPUT @namHour0
+    TO @"/debug-out/reduceddebug.csv"    
+    USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+END;
+
+@reducedNamHour0 = 
+    REDUCE @namHour0
+    ON Lat, Lon, __fileDate 
+    PRODUCE 
+        DateString string,
+        Lat double,
+        Lon double,
+        TMPsurface double?,
+        APCPsurface double?,
+        APCPStepSize int?,
+        CSNOWsurface int?,
+        CRAINsurface int?,
+        Tmp2mAboveGround double?,
+        RH2mAboveGround double?,
+        TMP80mAboveGround double?,
+        TMPTrop double?,
+        WindSpeed10m double?,
+        WindDirection10m double?,
+        WindSpeed80m double?,
+        WindDirection80m double?,
+        WindSpeedTrop double?,
+        WindDirectionTrop double?,
+        __fileHour int,
+        __fileDate DateTime
+    USING new OpenAvalancheProject.Pipeline.Usql.Udos.MalformedNAMReducer();
+
+
+//put them back together again
+@cleanData =
+    SELECT *
+    FROM @reducedNamHour0
+    UNION ALL BY NAME
+    SELECT *
+    FROM @namHourNot0;
+
+@namDataFinal =
+    SELECT DateTime.ParseExact(DateString, "yyyyMMdd HH:00", null) AS Date,
+           DateString,
+           Lat,
+           Lon,
+           APCPsurface,
+           APCPStepSize,
+           CSNOWsurface ?? -9999 AS CSNOWsurface,
+           CRAINsurface ?? -9999 AS CRAINsurface,
+           (TMPsurface != null? (float) TMPsurface * 1.8 - 459.67 : (float) -9999) AS TMPsurfaceF, //Convert temp from Kelvin to farenheit
+           (Tmp2mAboveGround != null? (float) Tmp2mAboveGround * 1.8 - 459.67 : (float) -9999) AS Tmp2mAboveGroundF,
+           RH2mAboveGround ?? -9999 AS RH2mAboveGround,
+           (TMP80mAboveGround != null? (float) TMP80mAboveGround * 1.8 - 459.67 : (float) -9999) AS TMP80mAboveGroundF,
+           (TMPTrop != null? (float) TMPTrop * 1.8 - 459.67 : (float) -9999) AS TMPTropF,
+           WindSpeed10m ?? -9999 AS WindSpeed10m,
+           WindDirection10m ?? -9999 AS WindDirection10m,
+           WindSpeed80m ?? -9999 AS WindSpeed80m,
+           WindDirection80m ?? -9999 AS WindDirection80m,
+           WindSpeedTrop ?? -9999 AS WindSpeedTrop,
+           WindDirectionTrop ?? -9999 AS WindDirectionTrop,
+           __fileHour,
+           __fileDate
+    FROM @cleanData
+    WHERE __fileHour < 85;
+
+@namDataFinal =
+    SELECT Date.Date AS DatePart,
+           *
+    FROM @namDataFinal;
+
+/*
+OUTPUT @namDataFinal
+TO @"/debug-out/reduceddebug.csv"    
+USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+*/
+
+// CREATE TABLE IF NOT EXISTS dbo.HourlyWeatherForecast
+// ( 
+//     INDEX idx  
+//     CLUSTERED(DatePart ASC, Lat, Lon)
+//     DISTRIBUTED BY RANGE(DatePart) 
+// ) AS SELECT * FROM @namDataFinal;
+
+INSERT INTO dbo.HourlyWeatherForecast
+(
+  DatePart,
+  Date,
+  DateString,
+  Lat,
+  Lon,
+  APCPsurface,
+  APCPStepSize,
+  CSNOWsurface,
+  CRAINsurface,
+  TMPsurfaceF,  
+  Tmp2mAboveGroundF,
+  RH2mAboveGround,
+  TMP80mAboveGroundF, 
+  TMPTropF, 
+  WindSpeed10m,
+  WindDirection10m,
+  WindSpeed80m,
+  WindDirection80m,
+  WindSpeedTrop,
+  WindDirectionTrop,
+  __fileHour,
+  __fileDate 
+)
+SELECT * FROM @namDataFinal;
