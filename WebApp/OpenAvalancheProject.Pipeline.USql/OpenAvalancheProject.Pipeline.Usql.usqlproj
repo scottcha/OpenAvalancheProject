@@ -1,5 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <USQLProjectVersion>2</USQLProjectVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
@@ -21,10 +23,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Script Include="AdHocScripts\AdHocNam.usql" />
+    <Script Include="AdHocScripts\AdHocNamFromTable.usql" />
     <Script Include="AdHocScripts\AdHocSnotel.usql" />
     <Script Include="AdHocScripts\AuditTable.usql" />
+    <Script Include="AdHocScripts\LoadJoinWithTrainingLabels.usql" />
+    <Script Include="AdHocScripts\loadmarchdatafromfile.usql" />
+    <Script Include="AdHocScripts\LoadUSWestInputFeatures.usql" />
     <Script Include="AdHocScripts\DropAssembly.usql" />
     <Script Include="AdHocScripts\DropRows.usql" />
+    <Script Include="AdHocScripts\LoadDailyTrainingData.usql" />
+    <Script Include="AdHocScripts\LoadNamTrainingData.usql" />
+    <Script Include="AdHocScripts\LoadSnotelTrainingData.usql" />
+    <Script Include="AdHocScripts\LoadUSWestLookback.v1.usql" />
     <Script Include="AdHocScripts\RegisterAssembley.usql" />
     <Script Include="AdHocScripts\TruncateTable.usql" />
     <Script Include="ProductionScripts\CreateUSWestInputFeatures.v1.usql" />
@@ -36,17 +46,41 @@
     <ScriptCode Include="AdHocScripts\AdHocNam.usql.cs">
       <DependentUpon>AdHocScripts\AdHocNam.usql</DependentUpon>
     </ScriptCode>
+    <ScriptCode Include="AdHocScripts\AdHocNamFromTable.usql.cs">
+      <DependentUpon>AdHocScripts\AdHocNamFromTable.usql</DependentUpon>
+    </ScriptCode>
     <ScriptCode Include="AdHocScripts\AdHocSnotel.usql.cs">
       <DependentUpon>AdHocScripts\AdHocSnotel.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="AdHocScripts\AuditTable.usql.cs">
       <DependentUpon>AdHocScripts\AuditTable.usql</DependentUpon>
     </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadJoinWithTrainingLabels.usql.cs">
+      <DependentUpon>AdHocScripts\LoadJoinWithTrainingLabels.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\loadmarchdatafromfile.usql.cs">
+      <DependentUpon>AdHocScripts\loadmarchdatafromfile.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadUSWestInputFeatures.usql.cs">
+      <DependentUpon>AdHocScripts\LoadUSWestInputFeatures.usql</DependentUpon>
+    </ScriptCode>
     <ScriptCode Include="AdHocScripts\DropAssembly.usql.cs">
       <DependentUpon>AdHocScripts\DropAssembly.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="AdHocScripts\DropRows.usql.cs">
       <DependentUpon>AdHocScripts\DropRows.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadDailyTrainingData.usql.cs">
+      <DependentUpon>AdHocScripts\LoadDailyTrainingData.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadNamTrainingData.usql.cs">
+      <DependentUpon>AdHocScripts\LoadNamTrainingData.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadSnotelTrainingData.usql.cs">
+      <DependentUpon>AdHocScripts\LoadSnotelTrainingData.usql</DependentUpon>
+    </ScriptCode>
+    <ScriptCode Include="AdHocScripts\LoadUSWestLookback.v1.usql.cs">
+      <DependentUpon>AdHocScripts\LoadUSWestLookback.v1.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="AdHocScripts\RegisterAssembley.usql.cs">
       <DependentUpon>AdHocScripts\RegisterAssembley.usql</DependentUpon>
@@ -69,9 +103,6 @@
     <ScriptCode Include="ProductionScripts\PredictUSWestV1.usql.cs">
       <DependentUpon>ProductionScripts\PredictUSWestV1.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="ProductionScripts\SnotelConcatHourlyCSVToTable.usql.cs">
-      <DependentUpon>ProductionScripts\SnotelConcatHourlyCSVToTable.usql</DependentUpon>
-    </ScriptCode>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MathNet.Numerics">
@@ -85,8 +116,8 @@
     <Folder Include="AdHocScripts" />
     <Folder Include="ProductionScripts" />
   </ItemGroup>
-  <Import Project="$(AppData)\Microsoft\DataLake\MsBuild\1.0\Usql.targets" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+  <!--target for CICD build added by project migration tool-->
+  <Import Project="USqlSDKBuild.targets" Condition="Exists('USqlSDKBuild.targets')" />
+  <Import Project="$(USQLSDKPath)\USqlSDKBuild.targets" Condition="!Exists('USqlSDKBuild.targets') And '$(USQLSDKPath)' != '' And Exists('$(USQLSDKPath)\USqlSDKBuild.targets')" />
   <!--target for CICD command line build added by project migration tool-->
-  <Import Project="USqlSDKBuild.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true' And  Exists('USqlSDKBuild.targets')" />
-  <Import Project="$(USQLSDKPath)\USqlSDKBuild.targets" Condition="'$(BuildingInsideVisualStudio)' != 'true' And !Exists('USqlSDKBuild.targets') And '$(USQLSDKPath)' != '' And Exists('$(USQLSDKPath)\USqlSDKBuild.targets')" />
 </Project>

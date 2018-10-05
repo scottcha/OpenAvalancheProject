@@ -24,7 +24,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         }
 
         [FunctionName("TriggerPredict"), Disable()]
-        public static void Run([TimerTrigger("0 0 1 1/1 * *", RunOnStartup = true)]TimerInfo myTimer, TraceWriter log)
+        public static void Run([TimerTrigger("0 0 1 1/1 * *", RunOnStartup = true), Disable()]TimerInfo myTimer, TraceWriter log)
         {
             log.Info($"C# TriggerPredict trigger function executed at: {DateTime.Now}");
 

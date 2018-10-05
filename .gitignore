@@ -293,3 +293,5 @@ WebApp/OpenAvalancheProjectWebApp/WebSecret.config
 WebApp/OpenAvalancheProjectWebApp/local.settings.json
 ML/.ipynb_checkpoints/
 ML/azure_storage_config.py
+.ipynb_checkpoints
+*.orig

@@ -6,10 +6,12 @@ REFERENCE ASSEMBLY [dev-westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE EXTERNAL @DebugCounts bool = false;
 
-DECLARE EXTERNAL @SliceStart = "20180331";
+DECLARE EXTERNAL @SliceStart = "20131120";
 DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 
 DECLARE @regionFilter string = @"/regions-v1/AvalancheRegions.csv";
+
+DECLARE @LatLonConversionFactor = 100000;
 
 //Read in data from nam for file date at forecast time (84 hours) & snotel (readings of previous 24 hours of forecast date)
 
@@ -537,7 +539,9 @@ END;
            @snotelDaily.SnowDepthIn,
            @snotelDaily.TempMinF,
            @snotelDaily.TempMaxF,
-           @snotelDaily.TempAveF
+           @snotelDaily.TempAveF,
+           (int)(@namWithStations.Lat * @LatLonConversionFactor) AS JoinLat,
+           (int)(@namWithStations.Lon * @LatLonConversionFactor) AS JoinLon
     FROM @namWithStations
          LEFT OUTER JOIN
              @snotelDaily
@@ -557,7 +561,7 @@ IF @Debug THEN
 END;
 
 //Snodas is available ~ 7am for a UTC hour 0 forecast we need to use the previous day
-DECLARE @inputFileSnodas string = @"/snodas-csv-westus-v1/" + @ForecastDate.AddDays(-1).ToString("yyyyMMdd") + "Snodas.csv";
+DECLARE @inputFileSnodas string = string.Format(@"/snodas-csv-westus-v1.1/{0:yyyy}/{0:yyyyMMdd}Snodas.csv",  @ForecastDate.AddDays(-1));
 //Join With Snodas
 @snodasData = 
     EXTRACT 
@@ -607,12 +611,121 @@ DECLARE @inputFileSnodas string = @"/snodas-csv-westus-v1/" + @ForecastDate.AddD
         SNOWDAS_SublimationBlowing_micromm,
         SNOWDAS_SolidPrecip_kgpersquarem,
         SNOWDAS_LiquidPrecip_kgpersquarem,
-        SNOWDAS_SnowpackAveTemp_k
+        SNOWDAS_SnowpackAveTemp_k,
+        (int)(Lat * @LatLonConversionFactor) AS JoinLat,
+        (int)(Lon * @LatLonConversionFactor) AS JoinLon
     FROM @snodasData;
 
 @allSources = 
     SELECT 
-        @namWithStationsAndSnotel.*,
+        @namWithStationsAndSnotel.__fileDate,
+        @namWithStationsAndSnotel.Lat,
+        @namWithStationsAndSnotel.Lon,
+        @namWithStationsAndSnotel.APCPSurface,
+        @namWithStationsAndSnotel.MaxTempSurfaceF,
+        @namWithStationsAndSnotel.MinTempSurfaceF,
+        @namWithStationsAndSnotel.AvgTempSurfaceF,
+        @namWithStationsAndSnotel.MaxTemp2mAboveGroundF,
+        @namWithStationsAndSnotel.MinTemp2mAboveGroundF,
+        @namWithStationsAndSnotel.AvgTemp2mAboveGroundF,
+        @namWithStationsAndSnotel.MaxTemp80mAboveGroundF,
+        @namWithStationsAndSnotel.MinTemp80mAboveGroundF,
+        @namWithStationsAndSnotel.AvgTemp80mAboveGroundF,
+        @namWithStationsAndSnotel.MaxTempTropF,
+        @namWithStationsAndSnotel.MinTempTropF,
+        @namWithStationsAndSnotel.AvgTempTropF,
+        @namWithStationsAndSnotel.AvgRH2mAboveGround,
+        @namWithStationsAndSnotel.AvgWindDirection10m,
+        @namWithStationsAndSnotel.AvgWindDirection80m,
+        @namWithStationsAndSnotel.AvgWindDirectionTrop,
+        @namWithStationsAndSnotel.AvgWindSpeed10m,
+        @namWithStationsAndSnotel.MaxWindSpeed10m,
+        @namWithStationsAndSnotel.AvgWindSpeed80m,
+        @namWithStationsAndSnotel.MaxWindSpeed80m,
+        @namWithStationsAndSnotel.AvgWindSpeedTrop,
+        @namWithStationsAndSnotel.MaxWindSpeedTrop,
+        @namWithStationsAndSnotel.APCPSurface_Day1,
+        @namWithStationsAndSnotel.MaxTempSurfaceF_Day1,
+        @namWithStationsAndSnotel.MinTempSurfaceF_Day1,
+        @namWithStationsAndSnotel.AvgTempSurfaceF_Day1,
+        @namWithStationsAndSnotel.MaxTemp2mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.MinTemp2mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.AvgTemp2mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.MaxTemp80mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.MinTemp80mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.AvgTemp80mAboveGroundF_Day1,
+        @namWithStationsAndSnotel.MaxTempTropF_Day1,
+        @namWithStationsAndSnotel.MinTempTropF_Day1,
+        @namWithStationsAndSnotel.AvgTempTropF_Day1,
+        @namWithStationsAndSnotel.AvgRH2mAboveGround_Day1,
+        @namWithStationsAndSnotel.AvgWindDirection10m_Day1,
+        @namWithStationsAndSnotel.AvgWindDirection80m_Day1,
+        @namWithStationsAndSnotel.AvgWindDirectionTrop_Day1,
+        @namWithStationsAndSnotel.AvgWindSpeed10m_Day1,
+        @namWithStationsAndSnotel.MaxWindSpeed10m_Day1,
+        @namWithStationsAndSnotel.AvgWindSpeed80m_Day1,
+        @namWithStationsAndSnotel.MaxWindSpeed80m_Day1,
+        @namWithStationsAndSnotel.AvgWindSpeedTrop_Day1,
+        @namWithStationsAndSnotel.MaxWindSpeedTrop_Day1,
+        @namWithStationsAndSnotel.APCPSurface_Day2,
+        @namWithStationsAndSnotel.MaxTempSurfaceF_Day2,
+        @namWithStationsAndSnotel.MinTempSurfaceF_Day2,
+        @namWithStationsAndSnotel.AvgTempSurfaceF_Day2,
+        @namWithStationsAndSnotel.MaxTemp2mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.MinTemp2mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.AvgTemp2mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.MaxTemp80mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.MinTemp80mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.AvgTemp80mAboveGroundF_Day2,
+        @namWithStationsAndSnotel.MaxTempTropF_Day2,
+        @namWithStationsAndSnotel.MinTempTropF_Day2,
+        @namWithStationsAndSnotel.AvgTempTropF_Day2,
+        @namWithStationsAndSnotel.AvgRH2mAboveGround_Day2,
+        @namWithStationsAndSnotel.AvgWindDirection10m_Day2,
+        @namWithStationsAndSnotel.AvgWindDirection80m_Day2,
+        @namWithStationsAndSnotel.AvgWindDirectionTrop_Day2,
+        @namWithStationsAndSnotel.AvgWindSpeed10m_Day2,
+        @namWithStationsAndSnotel.MaxWindSpeed10m_Day2,
+        @namWithStationsAndSnotel.AvgWindSpeed80m_Day2,
+        @namWithStationsAndSnotel.MaxWindSpeed80m_Day2,
+        @namWithStationsAndSnotel.AvgWindSpeedTrop_Day2,
+        @namWithStationsAndSnotel.MaxWindSpeedTrop_Day2,
+        @namWithStationsAndSnotel.APCPSurface_Day3,
+        @namWithStationsAndSnotel.MaxTempSurfaceF_Day3,
+        @namWithStationsAndSnotel.MinTempSurfaceF_Day3,
+        @namWithStationsAndSnotel.AvgTempSurfaceF_Day3,
+        @namWithStationsAndSnotel.MaxTemp2mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.MinTemp2mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.AvgTemp2mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.MaxTemp80mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.MinTemp80mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.AvgTemp80mAboveGroundF_Day3,
+        @namWithStationsAndSnotel.MaxTempTropF_Day3,
+        @namWithStationsAndSnotel.MinTempTropF_Day3,
+        @namWithStationsAndSnotel.AvgTempTropF_Day3,
+        @namWithStationsAndSnotel.AvgRH2mAboveGround_Day3,
+        @namWithStationsAndSnotel.AvgWindDirection10m_Day3,
+        @namWithStationsAndSnotel.AvgWindDirection80m_Day3,
+        @namWithStationsAndSnotel.AvgWindDirectionTrop_Day3,
+        @namWithStationsAndSnotel.AvgWindSpeed10m_Day3,
+        @namWithStationsAndSnotel.MaxWindSpeed10m_Day3,
+        @namWithStationsAndSnotel.AvgWindSpeed80m_Day3,
+        @namWithStationsAndSnotel.MaxWindSpeed80m_Day3,
+        @namWithStationsAndSnotel.AvgWindSpeedTrop_Day3,
+        @namWithStationsAndSnotel.MaxWindSpeedTrop_Day3,
+        @namWithStationsAndSnotel.DistanceToStationKm,
+        @namWithStationsAndSnotel.StationName,
+        @namWithStationsAndSnotel.ElevationFt,
+        @namWithStationsAndSnotel.SnotelLat,
+        @namWithStationsAndSnotel.SnotelLon,
+        @namWithStationsAndSnotel.SnotelState,
+        @namWithStationsAndSnotel.SnowWaterEquivalentIn,
+        @namWithStationsAndSnotel.PrecipIncrementSnowIn,
+        @namWithStationsAndSnotel.PrecipitationAccumulation,
+        @namWithStationsAndSnotel.SnowDepthIn,
+        @namWithStationsAndSnotel.TempMinF,
+        @namWithStationsAndSnotel.TempMaxF,
+        @namWithStationsAndSnotel.TempAveF,
         @snodasData.SNOWDAS_SnowDepth_mm,
         @snodasData.SNOWDAS_SWE_mm,
         @snodasData.SNOWDAS_SnowmeltRunoff_micromm,
@@ -622,8 +735,8 @@ DECLARE @inputFileSnodas string = @"/snodas-csv-westus-v1/" + @ForecastDate.AddD
         @snodasData.SNOWDAS_LiquidPrecip_kgpersquarem,
         @snodasData.SNOWDAS_SnowpackAveTemp_k
     FROM @namWithStationsAndSnotel
-    INNER JOIN @snodasData ON @namWithStationsAndSnotel.Lat == @snodasData.Lat 
-                              AND @namWithStationsAndSnotel.Lon == @snodasData.Lon;
+    INNER JOIN @snodasData ON @namWithStationsAndSnotel.JoinLat == @snodasData.JoinLat
+                              AND @namWithStationsAndSnotel.JoinLon == @snodasData.JoinLon;
 
 IF @Debug THEN
 
@@ -679,14 +792,15 @@ OUTPUT @allSources
         USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 */
 
+/*
 CREATE TABLE IF NOT EXISTS dbo.DailyWeatherAndSnow
 ( 
     INDEX idx  
     CLUSTERED(__fileDate ASC, Lat, Lon)
     DISTRIBUTED BY RANGE(__fileDate) 
 ) AS SELECT * FROM @allSources;
+*/
 
-/*
 INSERT INTO dbo.DailyWeatherAndSnow
 (
     __fileDate,
@@ -806,4 +920,3 @@ INSERT INTO dbo.DailyWeatherAndSnow
     SNOWDAS_LiquidPrecip_kgpersquarem,
     SNOWDAS_SnowpackAveTemp_k
 ) SELECT * FROM @allSources;
-*/
