@@ -19,7 +19,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         //Execute every three hours starting 3am (approximate time t00 forcast is fully available) times are UTC
         [FunctionName("DetectNAMGribReadyForDownload")]
         [return: Queue("filereadytodownloadqueue")]
-        public static void Run([TimerTrigger("0 0 3/3 1/1 * *", RunOnStartup = true)]TimerInfo myTimer, 
+        public static void Run([TimerTrigger("0 0 3/3 1/1 * *", RunOnStartup = true), Disable()]TimerInfo myTimer, 
                                [Queue("filereadytodownloadqueue", Connection = "AzureWebJobsStorage")] ICollector<FileReadyToDownloadQueueMessage> outputQueueItem, 
                                TraceWriter log)
         {

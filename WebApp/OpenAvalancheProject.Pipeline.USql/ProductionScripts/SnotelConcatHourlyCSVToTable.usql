@@ -72,4 +72,3 @@ INSERT INTO dbo.HourlySnotelReadings
 )
 SELECT *
 FROM @snotelData;
-*/

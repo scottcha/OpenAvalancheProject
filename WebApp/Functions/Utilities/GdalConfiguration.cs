@@ -63,7 +63,7 @@ namespace OpenAvalancheProject.Pipeline.Utilities
 
             var gdalPath = Path.Combine(executingDirectory, "gdal");
             var nativePath = Path.Combine(gdalPath, GetPlatform());
-            
+
             // Prepend native path to environment path, to ensure the
             // right libs are being used.
             var path = Environment.GetEnvironmentVariable("PATH");

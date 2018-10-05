@@ -1,46 +1,49 @@
-﻿DECLARE @ForecastDate DateTime = DateTime.ParseExact("20171204", "yyyyMMdd", null);
+﻿
+USE DATABASE [dev-westus-v2];
+
+DECLARE @ForecastDateStart DateTime = DateTime.ParseExact("20180310", "yyyyMMdd", null);
+DECLARE @ForecastDateEnd DateTime = DateTime.ParseExact("20180315", "yyyyMMdd", null);
 
 @snotelData =
-    SELECT *
-    FROM dbo.HourlySnotelReadings
-    WHERE (DatePart ==  @ForecastDate.AddDays(-1).Date);
+   SELECT *
+   FROM dbo.HourlySnotelReadings
+   WHERE DatePart BETWEEN @ForecastDateStart AND @ForecastDateEnd;
 
-//some snotel stations, for some reason, report with a couple different lat/lon, choose one
-@distinctLatLonStations = 
-    SELECT DISTINCT StationName,
-           FIRST_VALUE(Lat) OVER(PARTITION BY StationName ORDER BY Date ASC) AS Lat,
-           FIRST_VALUE(Lon) OVER(PARTITION BY StationName ORDER BY Date ASC) AS Lon
-    FROM @snotelData;
-
-@snotelData = 
-    SELECT
-        @snotelData.DatePart,
-        @snotelData.Date, 
-        @snotelData.DateString,
-        @snotelData.StationName, 
-        @snotelData.ElevationFt,
-        @distinctLatLonStations.Lat,
-        @distinctLatLonStations.Lon,
-        @snotelData.SnowWaterEquivalentIn,
-        @snotelData.PrecipitationAccumulation,
-        @snotelData.SnowDepthIn,
-        @snotelData.AirTemperatureObservedF,
-        @snotelData.SnotelState,
-        @snotelData.__fileHour,
-        @snotelData.__fileDate
-    FROM @snotelData
-    INNER JOIN @distinctLatLonStations ON @snotelData.StationName == @distinctLatLonStations.StationName;
-
-/*
-@snotelData =
-    SELECT *
-    FROM dbo.HourlySnotelReadings
-    WHERE (Date BETWEEN @ForecastDate.AddDays(-1) AND @ForecastDate) AND StationName IN ("Howell Canyon", "Bostetter R.S.");
- */   
+////some snotel stations, for some reason, report with a couple different lat/lon, choose one
+//@distinctLatLonStations = 
+//    SELECT DISTINCT StationName,
+//           FIRST_VALUE(Lat) OVER(PARTITION BY StationName ORDER BY Date ASC) AS Lat,
+//           FIRST_VALUE(Lon) OVER(PARTITION BY StationName ORDER BY Date ASC) AS Lon
+//    FROM @snotelData;
+//
+//@snotelData = 
+//    SELECT
+//        @snotelData.DatePart,
+//        @snotelData.Date, 
+//        @snotelData.DateString,
+//        @snotelData.StationName, 
+//        @snotelData.ElevationFt,
+//        @distinctLatLonStations.Lat,
+//        @distinctLatLonStations.Lon,
+//        @snotelData.SnowWaterEquivalentIn,
+//        @snotelData.PrecipitationAccumulation,
+//        @snotelData.SnowDepthIn,
+//        @snotelData.AirTemperatureObservedF,
+//        @snotelData.SnotelState,
+//        @snotelData.__fileHour,
+//        @snotelData.__fileDate
+//    FROM @snotelData
+//    INNER JOIN @distinctLatLonStations ON @snotelData.StationName == @distinctLatLonStations.StationName;
+//
+//@snotelData =
+//    SELECT *
+//    FROM dbo.HourlySnotelReadings
+//    WHERE (Date BETWEEN @ForecastDate.AddDays(-1) AND @ForecastDate) AND StationName IN ("Howell Canyon", "Bostetter R.S.");
+//
 OUTPUT @snotelData
 TO @"/debug-out/adhocsnotel.csv"    
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
-OUTPUT @distinctLatLonStations
-TO @"/debug-out/adhocDistinctLatLonStations.csv"    
-USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+//
+//OUTPUT @distinctLatLonStations
+//TO @"/debug-out/adhocDistinctLatLonStations.csv"    
+//USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);

@@ -20,7 +20,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
         [FunctionName("DownloadAndUnpackSnodas")]
         [StorageAccount("AzureWebJobsStorage")]
         [return: Table("snodasdownloadtracker")]
-        public static FileProcessedTracker Run([QueueTrigger("downloadandunpacksnodas", Connection = "AzureWebJobsStorage")]FileReadyToDownloadQueueMessage myQueueItem,
+        public static FileProcessedTracker Run([QueueTrigger("downloadandunpacksnodas", Connection = "AzureWebJobsStorage"), Disable()]FileReadyToDownloadQueueMessage myQueueItem,
                                TraceWriter log)
         {
             log.Info($"C# Queue trigger function processed snodas date: {myQueueItem.FileDate}");

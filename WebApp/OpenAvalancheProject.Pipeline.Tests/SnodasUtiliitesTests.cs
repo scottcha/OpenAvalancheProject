@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenAvalancheProject.Pipeline.Utilities;
 using OSGeo.GDAL;
 using System.Linq;
+using OpenAvalancheProject.Pipeline.Utilities;
 
 namespace OpenAvalancheProject.Pipeline.Tests
 {

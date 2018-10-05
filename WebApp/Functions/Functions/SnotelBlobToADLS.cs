@@ -79,7 +79,7 @@ namespace OpenAvalancheProject.Pipeline.Functions
 
             try
             {
-                adlsFileSystemClient.FileSystem.Create(adlsAccountName, "/snotel-csv-westus-v1/" + name, s, overwrite: true);
+                adlsFileSystemClient.FileSystem.Create(adlsAccountName, "/dev/snotel-csv-westus-v1/" + name, s, overwrite: true);
                 log.Info($"Uploaded csv stream: {name}");
             }
             catch (Exception e)
