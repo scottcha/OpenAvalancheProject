@@ -35,5 +35,6 @@ namespace OpenAvalancheProjectWebApp.Utilities
 
         //website strings
         public const string TrainingWarning = "Warning: Data outside Washington and Oregon has not been evaluated for accuracy and it can be extremely inaccurate. Do not use it for anything!  It is only being provided here to demonstrate the generalization of the machine learning prediction.  We are working on collecting the data from other regions to train and evaluate future models.";
+        public const string TrainingWarningInaccurateModel = "Warning: Models/Data deployed for the 17-18 season had poor forcast accuracy. We are working on both improved models and improved accuracy evaluation for the 18-19 season.";
     }
 }

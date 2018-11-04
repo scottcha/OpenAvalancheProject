@@ -75,14 +75,15 @@
 <div class="col-md-6">
     @{
         string accuracyString = "";
-        if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
-        {
-            accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
-        }
-        else
-        {
-            accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
-        }
+        //if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
+        //{
+        //    accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
+        //}
+        //else
+        //{
+        //    accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
+        //}
+        accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarningInaccurateModel);
 
         @Html.Raw(accuracyString);
     }
