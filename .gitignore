@@ -295,3 +295,4 @@ ML/.ipynb_checkpoints/
 ML/azure_storage_config.py
 .ipynb_checkpoints
 *.orig
+ML/.vscode/
