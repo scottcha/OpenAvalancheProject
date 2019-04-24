@@ -1,8 +1,8 @@
 ﻿
-USE DATABASE [dev-westus-v2];
+USE DATABASE [dev-westus-v1];
 
-DECLARE @ForecastDateStart DateTime = DateTime.ParseExact("20180310", "yyyyMMdd", null);
-DECLARE @ForecastDateEnd DateTime = DateTime.ParseExact("20180315", "yyyyMMdd", null);
+DECLARE @ForecastDateStart DateTime = DateTime.ParseExact("20171101", "yyyyMMdd", null);
+DECLARE @ForecastDateEnd DateTime = DateTime.ParseExact("20180330", "yyyyMMdd", null);
 
 @snotelData =
    SELECT *

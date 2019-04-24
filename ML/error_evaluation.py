@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix, accuracy_score, classification_report 
-import matplotlib
+#import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import Normalizer
 
@@ -13,12 +13,14 @@ def evaluateSingleClass(y_test, result):
     print("Accuracy: " + str(accuracy))
     print("Classification Report")
     print(classification_report(y_test.values, result))
+    return classification_report(y_test.values, result, output_dict=True)
 
 def evaluateSingleClassShort(y_test, result):
     accuracy = accuracy_score(y_test.values, result)
     print("Accuracy: " + str(accuracy))
     print("Classification Report")
     print(classification_report(y_test.values, result))
+    return classification_report(y_test.values, result, output_dict=True)
 
 #nice confustion matrix plot taken from scikit-learn docs
 def plot_confusion_matrix(cm, classes,
@@ -29,6 +31,8 @@ def plot_confusion_matrix(cm, classes,
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+
+    fig = plt.figure()
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -52,6 +56,7 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+    return fig
 
 def add_location_to_prediciton(row, region_df):
     regions = region_df['Region'].values

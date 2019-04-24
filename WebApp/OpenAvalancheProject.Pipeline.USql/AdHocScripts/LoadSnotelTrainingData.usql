@@ -1,6 +1,6 @@
-﻿USE DATABASE [dev-westus-v2];
+﻿USE DATABASE [dev-westus-v1];
 DECLARE EXTERNAL @SliceStart = "20171101";
-DECLARE EXTERNAL @SliceEnd = "20180430";
+DECLARE EXTERNAL @SliceEnd = "20180330";
 
 DECLARE @inputFileSnotel string = "/snotel-merged-csv-westus-v1.1/{date:yyyy}/{date:MM}/{date:dd}/{date:yyyy}{date:MM}{date:dd}" + ".{__fileHour}.snotel.csv";
 

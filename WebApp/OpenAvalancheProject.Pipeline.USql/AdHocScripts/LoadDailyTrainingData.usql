@@ -1,7 +1,7 @@
-﻿USE DATABASE [dev-westus-v2];
+﻿USE DATABASE [dev-westus-v1];
 
-REFERENCE ASSEMBLY [dev-westus-v2].[MathNet.Numerics];
-REFERENCE ASSEMBLY [dev-westus-v2].[OpenAvalancheProject.Pipeline.Usql.Udos];
+REFERENCE ASSEMBLY [dev-westus-v1].[MathNet.Numerics];
+REFERENCE ASSEMBLY [dev-westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 
 DECLARE EXTERNAL @Debug bool = false;
 DECLARE EXTERNAL @DebugCounts bool = false;
@@ -9,7 +9,7 @@ DECLARE EXTERNAL @LoadData = true;
 
 //only works across a single season, not across multiple seasons
 DECLARE EXTERNAL @SliceStart = "20171102";
-DECLARE EXTERNAL @SliceEnd = "20180430";
+DECLARE EXTERNAL @SliceEnd = "20180330";
 DECLARE @SliceStartDate = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 DECLARE @SliceEndDate = DateTime.ParseExact(@SliceEnd, "yyyyMMdd", null);
 //DECLARE @ForecastDate DateTime = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);

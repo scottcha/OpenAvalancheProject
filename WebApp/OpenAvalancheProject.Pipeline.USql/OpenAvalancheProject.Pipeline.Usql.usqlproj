@@ -36,6 +36,7 @@
     <Script Include="AdHocScripts\LoadSnotelTrainingData.usql" />
     <Script Include="AdHocScripts\LoadUSWestLookback.v1.usql" />
     <Script Include="AdHocScripts\LoadUSWestLookback30days.v1.usql" />
+    <Script Include="AdHocScripts\LoadUSWestTimeSeriesFeatures.usql" />
     <Script Include="AdHocScripts\RegisterAssembley.usql" />
     <Script Include="AdHocScripts\TruncateTable.usql" />
     <Script Include="ProductionScripts\CreateUSWestInputFeatures.v1.usql" />
@@ -59,20 +60,11 @@
     <ScriptCode Include="AdHocScripts\loadmarchdatafromfile.usql.cs">
       <DependentUpon>AdHocScripts\loadmarchdatafromfile.usql</DependentUpon>
     </ScriptCode>
-    <ScriptCode Include="AdHocScripts\LoadUSWestInputFeatures.usql.cs">
-      <DependentUpon>AdHocScripts\LoadUSWestInputFeatures.usql</DependentUpon>
-    </ScriptCode>
     <ScriptCode Include="AdHocScripts\DropAssembly.usql.cs">
       <DependentUpon>AdHocScripts\DropAssembly.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="AdHocScripts\DropRows.usql.cs">
       <DependentUpon>AdHocScripts\DropRows.usql</DependentUpon>
-    </ScriptCode>
-    <ScriptCode Include="AdHocScripts\LoadDailyTrainingData.usql.cs">
-      <DependentUpon>AdHocScripts\LoadDailyTrainingData.usql</DependentUpon>
-    </ScriptCode>
-    <ScriptCode Include="AdHocScripts\LoadNamTrainingData.usql.cs">
-      <DependentUpon>AdHocScripts\LoadNamTrainingData.usql</DependentUpon>
     </ScriptCode>
     <ScriptCode Include="AdHocScripts\LoadUSWestLookback30days.v1.usql.cs">
       <DependentUpon>AdHocScripts\LoadUSWestLookback30days.v1.usql</DependentUpon>

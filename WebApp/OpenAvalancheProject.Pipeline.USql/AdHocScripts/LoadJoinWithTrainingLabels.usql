@@ -5,7 +5,7 @@ DECLARE EXTERNAL @SliceEnd = "20180430";
 DECLARE @SliceStartDate = DateTime.ParseExact(@SliceStart, "yyyyMMdd", null);
 DECLARE @SliceEndDate = DateTime.ParseExact(@SliceEnd, "yyyyMMdd", null);
 
-DECLARE @inputFileTrainingLabels string = "/training-labels-v2/CleanedForecastsNWACandUAC.V1.csv";
+DECLARE @inputFileTrainingLabels string = "/training-labels-v2/CleanedForecastsNWAC_CAIC_UAC.V1.csv";
 DECLARE @regionFilter string = @"/regions-v1/TrainingRegions.csv";
 
 DECLARE EXTERNAL @Debug bool = false;
@@ -896,7 +896,7 @@ END;
 // SELECT * FROM @renamedColumns;
 
 OUTPUT @joinedData
-TO @"/debug-out/V1.1FeaturesWithLabels30Days" + @SliceStart + "To" + @SliceEnd + ".csv"
+TO @"/debug-out/V1.1CIAC_UAC_NWAC_FeaturesWithLabels30Days" + @SliceStart + "To" + @SliceEnd + ".csv"
 USING Outputters.Csv(quoting : false, dateTimeFormat : null, outputHeader : true);
 
 @auditTrainingData = 

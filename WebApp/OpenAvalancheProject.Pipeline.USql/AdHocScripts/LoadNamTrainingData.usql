@@ -1,9 +1,9 @@
-﻿USE DATABASE [dev-westus-v2];
+﻿USE DATABASE [dev-westus-v1];
 
-REFERENCE ASSEMBLY [dev-westus-v2].[OpenAvalancheProject.Pipeline.Usql.Udos];
+REFERENCE ASSEMBLY [dev-westus-v1].[OpenAvalancheProject.Pipeline.Usql.Udos];
 
 DECLARE EXTERNAL @SliceStart = "20171101";
-DECLARE EXTERNAL @SliceEnd = "20180430";
+DECLARE EXTERNAL @SliceEnd = "20180330";
 DECLARE @inputFileNam string = @"/nam-csv-westus-v1.1/{date:yyyy}/{date:M}/{date:d}/{date:yyyy}{date:MM}{date:dd}" + "T{__fileHour}forecastHour00.csv";
 
 DECLARE @regionFilter string = @"/regions-v1/AvalancheRegions.csv";

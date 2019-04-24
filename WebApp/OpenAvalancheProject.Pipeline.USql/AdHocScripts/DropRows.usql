@@ -20,19 +20,19 @@
 // INSERT INTO dbo.HourlySnotelReadings
 // SELECT * FROM @rowsToSave1;
 
-// @rowsToSave2 =
-//     SELECT *
-//     FROM dbo.DailyWeatherAndSnow
-//     WHERE __fileDate >= DateTime.ParseExact("20171101", "yyyyMMdd", null);
+ @rowsToSave2 =
+     SELECT *
+     FROM dbo.DailyWeatherAndSnow
+     WHERE __fileDate < DateTime.ParseExact("20171101", "yyyyMMdd", null);
 
-// //TRUNCATE TABLE dbo.DailyWeatherAndSnow;
-
+ TRUNCATE TABLE dbo.DailyWeatherAndSnow;
+//
 // OUTPUT @rowsToSave2 
 // TO @"/debug-out/2018tmpload.csv"
 // USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
-// INSERT INTO dbo.DailyWeatherAndSnow
-// SELECT * FROM @rowsToSave2;
+ INSERT INTO dbo.DailyWeatherAndSnow
+ SELECT * FROM @rowsToSave2;
 
 @rowsToSave3 =
     SELECT *
@@ -53,6 +53,28 @@ TRUNCATE TABLE dbo.[USWestFullInputFeaturesV1.1];
 
 INSERT INTO dbo.[USWestFullInputFeaturesV1.1]
 SELECT * FROM @rowsToSave4;
+
+
+@rowsToSave6 =
+    SELECT *
+    FROM dbo.[USWestFullInputFeatures14DaysV1.1]
+    WHERE Date < DateTime.ParseExact("20171101", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.[USWestFullInputFeatures14DaysV1.1];
+
+INSERT INTO dbo.[USWestFullInputFeatures14DaysV1.1]
+SELECT * FROM @rowsToSave6;
+
+
+@rowsToSave7 =
+    SELECT *
+    FROM dbo.[USWestFullInputFeatures30DaysV1.1]
+    WHERE Date < DateTime.ParseExact("20171101", "yyyyMMdd", null);
+
+TRUNCATE TABLE dbo.[USWestFullInputFeatures30DaysV1.1];
+
+INSERT INTO dbo.[USWestFullInputFeatures30DaysV1.1]
+SELECT * FROM @rowsToSave7;
 
 // @rowsToSave5 =
 //     SELECT *

@@ -71,26 +71,26 @@ TO @"/audit-out/auditInputRows.csv"
 USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 */
 //Check date ranges
- @datesOfHourlySnotel =
-     SELECT __fileDate,
-            COUNT( * ) AS CountOfRows
-     FROM dbo.HourlySnotelReadings
-     GROUP BY __fileDate;
+//  @datesOfHourlySnotel =
+//      SELECT __fileDate,
+//             COUNT( * ) AS CountOfRows
+//      FROM dbo.HourlySnotelReadings
+//      GROUP BY __fileDate;
 
- OUTPUT @datesOfHourlySnotel
- TO @"/audit-out/datesOfHourlySnotel.csv"    
- USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+//  OUTPUT @datesOfHourlySnotel
+//  TO @"/audit-out/datesOfHourlySnotel.csv"    
+//  USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
- @datesOfHourlyWeather =
-     SELECT __fileDate,
-            COUNT( * ) AS CountOfRows
-     FROM dbo.HourlyWeatherForecast
-     GROUP BY __fileDate;
+//  @datesOfHourlyWeather =
+//      SELECT __fileDate,
+//             COUNT( * ) AS CountOfRows
+//      FROM dbo.HourlyWeatherForecast
+//      GROUP BY __fileDate;
 
- OUTPUT @datesOfHourlyWeather
- TO @"/audit-out/datesOfHourlyWeather.csv"    
- USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
+//  OUTPUT @datesOfHourlyWeather
+//  TO @"/audit-out/datesOfHourlyWeather.csv"    
+//  USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+//
  @datesOfDailyWeatherAndSnow =
      SELECT __fileDate,
             COUNT( * ) AS CountOfRows
@@ -101,26 +101,45 @@ USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
  TO @"/audit-out/datesOfDailyWeatherAndSnow.csv"    
  USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
- @datesOfDailyInputFeaturesV1 =
-     SELECT __fileDate,
-            COUNT( * ) AS CountOfRows
-     FROM dbo.[USWestDailyInputFeaturesV1.1]
-     GROUP BY __fileDate;
+//  @datesOfDailyInputFeaturesV1 =
+//      SELECT __fileDate,
+//             COUNT( * ) AS CountOfRows
+//      FROM dbo.[USWestDailyInputFeaturesV1.1]
+//      GROUP BY __fileDate;
+//
+//  OUTPUT @datesOfDailyInputFeaturesV1
+//  TO @"/audit-out/datesOfDailyInputFeaturesV1.csv"    
+//  USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 
- OUTPUT @datesOfDailyInputFeaturesV1
- TO @"/audit-out/datesOfDailyInputFeaturesV1.csv"    
- USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
-@datesOfFullInputFeaturesV1 =
-    SELECT Date,
-           COUNT( * ) AS CountOfRows
-    FROM dbo.[USWestFullInputFeaturesV1.1]
-    GROUP BY Date;
-
-OUTPUT @datesOfFullInputFeaturesV1
-TO @"/audit-out/datesOfFullInputFeaturesV1.csv"    
-USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
-
+// @datesOfFullInputFeaturesV1 =
+//     SELECT Date,
+//            COUNT( * ) AS CountOfRows
+//     FROM dbo.[USWestFullInputFeaturesV1.1]
+//     GROUP BY Date;
+//
+// OUTPUT @datesOfFullInputFeaturesV1
+// TO @"/audit-out/datesOfFullInputFeaturesV1.csv"    
+// USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+//
+//@datesOf30DayFullInputFeaturesV1 =
+//     SELECT Date,
+//            COUNT( * ) AS CountOfRows
+//     FROM dbo.[USWestFullInputFeatures30DaysV1.1]
+//     GROUP BY Date;
+//
+// OUTPUT @datesOf30DayFullInputFeaturesV1
+// TO @"/audit-out/datesOfFullInputFeatures30DaysV1.csv"    
+// USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
+//
+//@datesOf14DayFullInputFeaturesV1 =
+//     SELECT Date,
+//            COUNT( * ) AS CountOfRows
+//     FROM dbo.[USWestFullInputFeatures14DaysV1.1]
+//     GROUP BY Date;
+//
+// OUTPUT @datesOf14DayFullInputFeaturesV1
+// TO @"/audit-out/datesOfFullInputFeatures14DaysV1.csv"    
+// USING Outputters.Csv(quoting:false, dateTimeFormat:null, outputHeader:true);
 // @datesOfFullTrainingFeaturesV1 =
 //     SELECT Date,
 //            COUNT( * ) AS CountOfRows
