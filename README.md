@@ -3,6 +3,11 @@ Open source project to bring data and ml to avalanche forecasting
 
 Homepage is https://openavalancheproject.org
 
+Note: The project is in the middle of a major refactor to resolve a few issues.  You can view the branches tab and look at the active branches for progress.  The goals of the refactor are:
+1. Move to the US GFS model as the basis for the weather forecats
+2. Improve the data processing such that it will scale to worldwide predictions
+3. Adopt an improved set of tooling for gis and data maniuplation better suited to the pydata ecosystem (see pangeo as the basis https://pangeo.io/)
+
 Directories are organized as follows:
 - Data--Contains a zip file containing three CSVs
     CleanedForecastsNWAC.csv: is only the NWAC cleaned forecast data used for training 
