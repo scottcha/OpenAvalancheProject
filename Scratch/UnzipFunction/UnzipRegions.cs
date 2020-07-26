@@ -28,6 +28,7 @@ namespace OAP
                     CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
                     CloudBlobContainer container = blobClient.GetContainerReference(destinationContainer);
 
+
                     bool result = await container.CreateIfNotExistsAsync();
                     if(result)
                     {
