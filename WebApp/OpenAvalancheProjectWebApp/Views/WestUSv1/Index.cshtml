@@ -15,6 +15,7 @@
         <div class="alert alert-warning">
             <h4>Experimental--Not For Hazard Evaluation!</h4>
             <h5>Please visit <a href="http://nwac.us">NWAC</a> to use the official forecast for this region if you are making backcountry travel plans.</h5>
+            <h5>Summary of previous season accuracy and plans going forward is available <a href="https://blog.openavalancheproject.org/18-19-season-preview/">here</a></h5>
         </div>
         </div>
     <div class="col-md-3 my-auto">
@@ -74,14 +75,15 @@
 <div class="col-md-6">
     @{
         string accuracyString = "";
-        if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
-        {
-            accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
-        }
-        else
-        {
-            accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
-        }
+        //if (string.IsNullOrEmpty(Model.ForecastForView.ForecastAccuracyImagePath))
+        //{
+        //    accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarning);
+        //}
+        //else
+        //{
+        //    accuracyString = string.Format("<img src=\"{0}\" />", Model.ForecastForView.ForecastAccuracyImagePath);
+        //}
+        accuracyString = string.Format("<br><div class=\"alert alert-warning\"><h4>{0}<h4></div>", Constants.TrainingWarningInaccurateModel);
 
         @Html.Raw(accuracyString);
     }

@@ -1,2 +1,0 @@
-﻿TRUNCATE TABLE dbo.USWestFullInputFeaturesv1;
-TRUNCATE TABLE dbo.[USWestFullInputFeaturesv1.1];

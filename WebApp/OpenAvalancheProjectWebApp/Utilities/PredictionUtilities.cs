@@ -37,7 +37,8 @@ namespace OpenAvalancheProjectWebApp.Utilities
                     //if no value then 0
                     float val = 0;
                     float.TryParse(line[i], out val);
-                    //-9999 indicates missing, set to 0 for prediction
+                    //-9999 indicates missing, set to 0 for prediction 
+                    //TODO: (v1 was using 0 and this was incorrect and causing issues with snodas data); need to figure out how to set this to empty in the dataset
                     if(val == -9999)
                     {
                         val = 0;
