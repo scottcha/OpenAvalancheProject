@@ -19,11 +19,17 @@ namespace GetNWACData
         {
             using (StreamWriter file = new StreamWriter(@"..\..\..\nwacforecasts.csv"))
             {
-                var years = new List<int>() { 2013, 2014, 2015, 2016, 2017, 2018 };
-                var months = new List<int>() { 11, 12, 1, 2, 3, 4, 5 };
+                //var years = new List<int>() { 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 };
+                var years = new List<int>() { 2018, 2019, 2020 };
+                var months = new Dictionary<int, List<int>>()
+                {
+                    [2018] = new List<int>{11, 12},
+                    [2019] = new List<int>{1, 2, 3, 4, 11, 12},
+                    [2020] = new List<int>{1, 2, 3, 4}
+                };
                 foreach (var year in years)
                 {
-                    foreach (var month in months)
+                    foreach (var month in months[year])
                     {
                         for (int day = 1; day <= 31; day++)
                         {
@@ -60,7 +66,7 @@ namespace GetNWACData
         /// <param name="file">file to write results to</param>
         private static void GetForecast(int year, int month, int day, StreamWriter file)
         {
-            string url = String.Format(@"http://www.nwac.us/api/v3/avalanche-forecast/?day1_date={0}-{1}-{2}&app=<app>&loc=<loc>", year.ToString(), month.ToString(), day.ToString());
+            string url = String.Format(@"http://www.nwac.us/api/v3/avalanche-forecast/?day1_date={0}-{1}-{2}&app=<appcode from nwac>", year.ToString(), month.ToString(), day.ToString());
             try
             {
                 var parsedResult = GetAsync(url).Result;

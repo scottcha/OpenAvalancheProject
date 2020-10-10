@@ -5,24 +5,6 @@ VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAvalancheProject.WebApp", "OpenAvalancheProjectWebApp\OpenAvalancheProject.WebApp.csproj", "{13B6F1CD-3E2F-4AE2-8F25-76C4983065DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenAvalancheProject.Pipeline", "Functions\OpenAvalancheProject.Pipeline.csproj", "{EFC8F344-6837-4D81-A282-62C2DEF7A59F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAvalancheProject.Pipeline.Tests", "OpenAvalancheProject.Pipeline.Tests\OpenAvalancheProject.Pipeline.Tests.csproj", "{21DF24FF-4DA7-4996-BDD0-AE8CC1B4A38B}"
-EndProject
-Project("{F5034706-568F-408A-B7B3-4D38C6DB8A32}") = "OpenAvalancheProject.Pipeline.DataFactory", "OpenAvalancheProject.Pipeline.DataFactory\OpenAvalancheProject.Pipeline.DataFactory.pssproj", "{6CAFC0C6-A428-4D30-A9F9-700E829FEA51}"
-EndProject
-Project("{182E2583-ECAD-465B-BB50-91101D7C24CE}") = "OpenAvalancheProject.Pipeline.Usql", "OpenAvalancheProject.Pipeline.USql\OpenAvalancheProject.Pipeline.Usql.usqlproj", "{B42C888C-D95F-4264-BFDA-705D6E5BDD31}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAvalancheProject.Pipeline.Usql.Udos", "OpenAvalancheProject.Pipeline.Usql.Udos\OpenAvalancheProject.Pipeline.Usql.Udos.csproj", "{C27116DE-0F22-4C2F-97EA-497351FC2502}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetNWACData", "..\GetTrainingData\GetNWACData\GetNWACData.csproj", "{0EE11A80-0CD8-4F50-BEDE-1ED0CBF06BEE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateSnodasTrainingData", "CreateSnodasTrainingData\CreateSnodasTrainingData.csproj", "{3A56ACB8-4F49-425E-A97E-EECF0BAFD8A0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateNamTrainingData", "CreateNamTrainingData\CreateNamTrainingData.csproj", "{D025FCC2-F2D7-4010-ABBB-C3C02F956E11}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrganizeFiles", "OrganizeFiles\OrganizeFiles.csproj", "{44DBB658-8FC7-4524-BECF-ACA527D475D2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

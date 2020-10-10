@@ -1,1 +1,0 @@
-An Azure Function to aid moving files to azure storage.  Since the data files are large we need to upload them in batches of .zip files.  Function triggers to expand the files so they can be used via blob storage as .nc files.

@@ -295,7 +295,7 @@ ML/.ipynb_checkpoints/
 ML/azure_storage_config.py
 .ipynb_checkpoints
 *.orig
-ML/.vscode/
+.vscode/
 
 #Dask
 *dask_worker_space/

@@ -1,7 +1,0 @@
-﻿USE DATABASE [dev-westus-v2];
-TRUNCATE TABLE dbo.HourlySnotelReadings;
-TRUNCATE TABLE dbo.DailyWeatherAndSnow;
-TRUNCATE TABLE dbo.HourlyWeatherForecast;
-//TRUNCATE TABLE dbo.[USWestDailyInputFeaturesV1.1];
-//TRUNCATE TABLE dbo.[USWestFullInputFeaturesV1.1];
-//TRUNCATE TABLE dbo.[USWestFullTrainingDataWithLabelsV1.1];
