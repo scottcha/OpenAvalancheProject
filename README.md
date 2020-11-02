@@ -3,6 +3,8 @@ Open source project to bring data and ml to avalanche forecasting
 
 Homepage is https://openavalancheproject.org
 
+We are starting to try and improve communications on the group here https://groups.google.com/g/openavalancheproject
+
 Note: The project is in the middle of a major refactor to resolve a few issues.  You can view the branches tab and look at the active branches for progress.  The goals of the refactor are:
 1. Move to the US GFS model as the basis for the weather forecats
 2. Improve the data processing such that it will scale to worldwide predictions
