@@ -43,30 +43,41 @@ Click Continue and wait for it to validate your selections.
 The next page allows you to further subset your data.  There are a few important things here.  
 
     1. Verify that the dates are correct.  
-    2. We want the output as netCDF 
+    2. We want the output as grib (same as input) 
     3. Download all vertical levels.  
     4. Select only the 3-24 hour forecasts in the gridded products as currently OAP doesn't use more than this.  
     5. You can also then select the bounding box for the area you want to download. Once you have a bounding box you like write down the lat/lon values so its easier to input when we come back for other date ranges.
-    6. Select a compression as the files are very large.
 
-![NCAR Subset Selection](Tutorial/NCAR_Subset.png?raw=true "NCAR Subset")
+![NCAR Subset Selection](Tutorial/NCAR_Subset2.png?raw=true "NCAR Subset")
 
-Once the selections are correct and you can eventually click through to submit your request.  You should get a confirmation page of your selections and the system will start to retrieve your data.  This usually takes a few hours and you will get an email when its ready for download.  At this point if you want additional date/time ranges you can submit the requests and they will get queued and made avalable for download when they are ready.  In this example the downloaded files were 1.5GB.
+Once the selections are correct and you can eventually click through to submit your request.  You should get a confirmation page of your selections and the system will start to retrieve your data.  This usually takes a few hours and you will get an email when its ready for download.  At this point if you want additional date/time ranges you can submit the requests and they will get queued and made avalable for download when they are ready.  In this example the downloaded files were 1.1 GB.
 
-Extract and decompress all the files until you have a per forecast netCDF (*.nc) and ensure all the .nc files have been moved in to a single directory. If you are using Linux this stackoverflow post may help https://askubuntu.com/questions/146634/shell-script-to-move-all-files-from-subfolders-to-parent-folder.
+Extract and decompress all the files until you have a per forecast grib file and ensure all the files have been moved in to a single directory (per season per location). If you are using Linux this stackoverflow post may help https://askubuntu.com/questions/146634/shell-script-to-move-all-files-from-subfolders-to-parent-folder.
 
-Once you have all the files as .nc files in a single directory for that date and location (i.e., 15-16/Washington/) there are a couple final cleaning steps.  Due to the download process sometimes some files earlier than 11/1 are included.  You can just delete those files (the file date is)
+Once you have all the files as grib files in a single directory for that date and location (i.e., 15-16/Washington/) there are a couple final cleaning steps.  Due to the download process sometimes some files earlier than 11/1 are included.  You can just delete those files (the file date is)
     
-_Its worth a brief interlude in to understanding how these files are encoded.  Here is a typical file name gfs.0p25.2015110100.f003.grib2.chamberlin455705.nc.  Lets break that down gfs: is the model we are using.  0p25 I beleive is the resolution at .25 degress but I haven't seen this documented.  2015110100 is the encoded date of the model runtime.  You will see in your dataset that there are four models run per day: 00, 06, 12, 18.  Currently we are only using the 00 model (the first of the day).  The next component is .f003 which is the forecast for 3 hours from the model runtime.  grib2 is the input file format.  chamberlin455705 is the enocded download request. nc is the output file extension for netCDF._
+_Its worth a brief interlude in to understanding how these files are encoded.  Here is a typical file name gfs.0p25.2015110100.f003.grib2.chamberlin455705.  Lets break that down gfs: is the model we are using.  0p25 I beleive is the resolution at .25 degress but I haven't seen this documented.  2015110100 is the encoded date of the model runtime.  You will see in your dataset that there are four models run per day: 00, 06, 12, 18.  Currently we are only using the 00 model (the first of the day).  The next component is .f003 which is the forecast for 3 hours from the model runtime.  grib2 is the input file format.  chamberlin455705 is the enocded download request. 
 
 Next delete all files which have a model run hour other than 00 (i.e., 06, 12, 18).  Check that you have 1456 files at this point (8 files per day for 182 days, my download is missing the last 4 files which isn't a big deal as a subsequent steps averages these hourly forecasts to daily forecasts).  The total size of the input files at this point is ~900MB.
 
-The final step is to remove the download request label in the filename which is easily accomplished using the rename command.
+Now remove the download request label in the filename which is easily accomplished using the rename command.
 
-    rename 's/(.*)\.chamberlin455705.nc/$1.nc/g' *
+    rename 's/(.*)\.grib2.chamberlin455705/$1.grib2/g' *
 
+![File List Example](Tutorial/files_example2.png?raw=true "File List Example")
 
-![File List Example](Tutorial/files_example.png?raw=true "File List Example")
+The final step is to ensure the input data is in the correct folder structure.  All data for this project will sit off a path you define as the base path.  The GFS input data then needs to be in subfolders of that path delineated by season and state (or country).
+For example if our past path in this example is:
+
+    /media/scottcha/E1/Data/OAPMLData/
+
+The place this data in 
+
+    /media/scottcha/E1/Data/OAPMLData/1.RawWeatherData/15-16/Washington/
+
+Notes:
+
+* There is an option to covert the file to NetCDF in the NCAR/UCAR UI.  Don't use this as it will result in a .nc file which isn't in the same format as the one we are going to use.
 
 ### 2. Transform and Filtering the Data
 
@@ -81,6 +92,22 @@ _This environment file was adopted from the (Pangeo project)[https://pangeo.io/]
 Once the environment has been created you can activate it with
 
     conda activate pangeo_small
+
+There is one step we need to take before going through the notebooks and that is converting the grib2 files to NetCDF.  We do this for a couple of reasons but primarily that using this tool efficiently collapses the vertical dimensions (called level) in to the variable definitions so we can more easily get it to the ML format we need.  The utility to do this is called wgrib2 and should have been installed in the pangeo_small environment.
+
+Using a terminal prompt change directory to the folder where you downloaded and unpacked the weather model files.  
+
+    /media/scottcha/E1/Data/OAPMLData/1.RawWeatherData/15-16/Washington/
+
+In that directory you can execute this command to iterate through all the files and tranform them:
+
+    for i in *.grib2; do wgrib2 $i -netcdf $i.nc; done
+
+Rexecute a rename command to remove the grib extension:
+
+    rename 's/(.*)\.grib2/$1.nc/g' *
+
+_There are ways of improving the efficiency of this by doing this in parallel so feel free to improve on this._
 
 Change directory to the /Scratch/Notebooks folder and launch jupyter
 

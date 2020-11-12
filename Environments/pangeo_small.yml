@@ -1,7 +1,6 @@
-name: pangeo_small
+name: pangeo_small3
 channels:
   - oggm
-  - fastai
   - conda-forge
   - defaults
 dependencies:
@@ -58,7 +57,6 @@ dependencies:
   - dask-gateway=0.7.1=py37hc8dfbb8_0
   - dask-glm=0.2.0=py37_0
   - dask-kubernetes=0.10.1=py_0
-  - dask-ml=1.4.0=py_0
   - dataclasses=0.7=py37_0
   - dbus=1.13.14=hb2f20db_0
   - decorator=4.4.2=py_0
@@ -68,7 +66,6 @@ dependencies:
   - eccodes=2.17.0=h59f7be3_1
   - entrypoints=0.3=py37_0
   - expat=2.2.9=he1b5a44_2
-  - fastai=1.0.60=1
   - fasteners=0.15=py_0
   - fastparquet=0.3.2=py37heb32a55_0
   - fastprogress=0.2.3=py_0
@@ -192,7 +189,6 @@ dependencies:
   - numexpr=2.7.1=py37h423224d_0
   - numpy=1.18.1=py37h4f9e942_0
   - numpy-base=1.18.1=py37hde5b4d6_1
-  - nvidia-ml-py3=7.352.0=py_0
   - oauthlib=3.1.0=py_0
   - olefile=0.46=py37_0
   - openjpeg=2.3.1=h981e76c_3
@@ -297,8 +293,9 @@ dependencies:
   - wcwidth=0.2.4=py_0
   - webencodings=0.5.1=py37_1
   - websocket-client=0.57.0=py37_1
+  - wgrib2
   - wheel=0.34.2=py37_0
-  - xarray=0.15.1=py_0
+  - xarray=0.16.1=py_0
   - xerces-c=3.2.2=h8412b87_1004
   - xorg-kbproto=1.0.7=h14c3975_1002
   - xorg-libice=1.0.10=h516909a_0
@@ -322,12 +319,8 @@ dependencies:
   - zstd=1.4.4=h6597ccf_3
   - pip:
     - dask-labextension==1.0.0
-    - dask-xgboost==0.1.10
     - easyprocess==0.2.10
     - pyqt5-sip==4.19.18
     - pyqtwebengine==5.12.1
-    - python-graphviz==0.13.2
     - pyts==0.11.0
     - pyunpack==0.1.2
-    - xgboost==1.0.2
-prefix: /home/scottcha/anaconda3/envs/pangeo_small
