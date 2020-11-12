@@ -107,7 +107,7 @@ Rexecute a rename command to remove the grib extension:
 
     rename 's/(.*)\.grib2/$1.nc/g' *
 
-_There are ways of improving the efficiency of this by doing this in parallel so feel free to improve on this._
+_There are ways of improving the efficiency by doing this in parallel so feel free to improve on this._
 
 Change directory to the /Scratch/Notebooks folder and launch jupyter
 
