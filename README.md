@@ -117,6 +117,20 @@ Then from the jupyter UI open the _1.ParseGFS_ notebook.   You can execute throu
 
 ![ParseGFS Parameters](Tutorial/ParseGFS_Notebook1.png?raw=true "ParseGFS Parameters")
 
+Completing 1.ParseGFS notebook bascially takes the raw input weather data and leaves us with data slightly transformed but filtered to only the coordinates in the avalanche regions for that location.  For example here is what a regional view of one of the parameters (U component of wind vector) looks like when both interpolated 4x and viewed across the entire Washington region:
+
+![Washington Wind Component](Tutorial/Wind_Example.png?raw=true "Washington Wind Component")
+
+We've used this geojson definition of the avalanche regions to subset that view in to much smaller views focused on the avalanche forecast regions.  Here are all the US regions.
+
+![US Avalanche Regions](Tutorial/US_Avy_Regions.png?raw=true "US Avalanche Regions")
+
+And then this is what it looks like when filtered to only the Olympics avalanche region (the small one in the top left of the US regions):
+
+![Olympics Wind Component](Tutorial/Wind_Region_Example.png?raw=true "Olympics Wind Component")
+
+
+
 
 
 
