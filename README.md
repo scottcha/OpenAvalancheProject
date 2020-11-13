@@ -129,6 +129,8 @@ And then this is what it looks like when filtered to only the Olympics avalanche
 
 ![Olympics Wind Component](Tutorial/Wind_Region_Example.png?raw=true "Olympics Wind Component")
 
+The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible.  Open the _2.ConvertToZarr_ notebook.  
+
 
 
 
