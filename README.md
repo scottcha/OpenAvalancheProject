@@ -113,7 +113,10 @@ Change directory to the /Scratch/Notebooks folder and launch jupyter
 
     jupyter notebook
 
-Then from the jupyter UI open the _1.ParseGFS_ notebook.   You can execute through this notebook and review the documentation as you do.  Due to some instability in writing the netcdf files this notebook isn't intentended to be executed as a whole process but will involve some error checking to ensure that all the potential data has been transformed and written correctly.  The only required steps is to correctly set these parameters:
+### 1.ParseGFS 
+#### Parsing and filtering the input files
+
+From the jupyter UI open the _1.ParseGFS_ notebook.   You can execute through this notebook and review the documentation as you do.  Due to some instability in writing the netcdf files this notebook isn't intentended to be executed as a whole process but will involve some error checking to ensure that all the potential data has been transformed and written correctly.  The only required steps is to correctly set these parameters:
 
 ![ParseGFS Parameters](Tutorial/ParseGFS_Notebook1.png?raw=true "ParseGFS Parameters")
 
@@ -129,20 +132,41 @@ And then this is what it looks like when filtered to only the Olympics avalanche
 
 ![Olympics Wind Component](Tutorial/Wind_Region_Example.png?raw=true "Olympics Wind Component")
 
-The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible.  Open the _2.ConvertToZarr_ notebook.  
+### 2.ConvertToZarr
+#### Reformat data in to efficient Zarr format
+The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible.  Open the _2.ConvertToZarr_ notebook.  This notebook can be run entirely end to end once you are sure the parameters are set correctly.  It does take about 6 hours on my workstation using all cores.  The imporant item about this notebook is that we are essentially indexing the data to be accessed efficiently when we create our ML datasets. 
 
+### 3.PrepMLData
+#### Converting the data in to a memmapped numpy timeseries (samples, feature, timestep)
+This notebook needs to be run once to create a dataset to be used in a subsequent ML step.  The way to think about this notebook is that we use the set of valid labels + the valid lat/lon pairs as an index in to the data.  Its important to understand the regions are geographically large and usually cover many lat/lon pairs in our gridded dataset while the labels apply to an entire region (multiple lat/lon pairs).  For example the _WA Cascades East, Central_ region coveres 24 lat/lon pairs so if on Jan 1 there was a label we wanted to predict our dataset would have 24 lat/lon pairs in that region associated with that label.  There are pros and cons for this approach.
 
+Pros:
+1. Reasonable data augmentation approach
+2. Aligns with how we utltimatly want to provide predictions--more granular, not restricted to established regions
 
+Cons:
+1. Could be contributing to overfitting
+2. The data becomes very large
 
+That being said the notebook will calculate this index for every label/lat/lon point and then we'll split this in to train and test sets.  Its important to ensure that the train test split is done in time (i.e., I usually use 15-16 through 18-19 as the training set and then 19-20 as the test set) as if you don't there will be data leakage.  
 
+Once the train test split is done on the labels there is a process to build up the dataset.  This is still a slow process even when doing it in parallel and agains the indexed Zarr data.  I've spent a lot of time trying various ways of optimizing this but I'm sure this could use more work.  The primary method for doign this is called _get_xr_batch_ and takes several parameters:
 
+1. labels: list of the train or test set labels
+2. lookback_days: the number of previous days to include in the dataset.  For example if the label is for Jan 1, then a lookback_days of 14 will also include the previous 14 days.  I've been typically using 180 days as lookback (if a lookback extends prior to Nov 1 then we just fill in NaN as the data is likly irrelevant) but its possible that a lower value might give better results.
+3. batch_size: the size of the batch you want returned
+4. y_column: the label you want to use
+5. label_values: the possible values of the label from y_column.  We include this as the method can implement oversampling to adjust for the imbalanced data.
+6. oversample: dict which indicates which labels should be oversampled.  
+7. random_state: random variable initilizer
+8. n_jobs: number of processes to use
 
+In the tutorial the notebook produced one train batche of 10,000 rows and one test batch of 500 rows and then concats them in a single memapped file.
 
+### 4.TimeseriesAI
+#### Demonstrate using the data as the input to a deep learning training process
 
+#### Note: TimeseriesAI just had a large update this weekend so I'm not posting the text of the tutorial until I have a chance to update it.  The notebook is available and is relatively easy to understand.
 
-
-
-
-
-### Citations
+## Citations
 National Centers for Environmental Prediction/National Weather Service/NOAA/U.S. Department of Commerce. 2015, updated daily. NCEP GFS 0.25 Degree Global Forecast Grids Historical Archive. Research Data Archive at the National Center for Atmospheric Research, Computational and Information Systems Laboratory. https://doi.org/10.5065/D65D8PWK. Accessed April, 2020
