@@ -168,8 +168,10 @@ In the tutorial the notebook produced one train batche of 10,000 rows and one te
 
 ### 4.TimeseriesAI
 #### Demonstrate using the data as the input to a deep learning training process
+Now that our data is in the right format we can try and do some machine learning on it.  The below notebook is only to demonstrate the process to do this as today the results are overfitting and the acheived results are not good.  That being said this area has only had minimal investment to date and is where focus is now being applied.  The current issue is overfitting and that will need to be addresssed before both exapnding the dataset size or training for additional epochs.
 
-#### Note: TimeseriesAI just had a large update this weekend so I'm not posting the text of the tutorial until I have a chance to update it.  The notebook is available and is relatively easy to understand.
+The Notebook 4.TimeseriesAI leverages the Timeseries Deep Learning library https://github.com/timeseriesAI/tsai based on FastAI https://github.com/fastai/fastai and it realitvely straightforward to understand especially if you are familiar with FastAI.  As progress is made here this notbook will be updated to reflect the current state.
+
 
 ## Citations
 National Centers for Environmental Prediction/National Weather Service/NOAA/U.S. Department of Commerce. 2015, updated daily. NCEP GFS 0.25 Degree Global Forecast Grids Historical Archive. Research Data Archive at the National Center for Atmospheric Research, Computational and Information Systems Laboratory. https://doi.org/10.5065/D65D8PWK. Accessed April, 2020
