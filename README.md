@@ -26,7 +26,7 @@ Directories are organized as follows:
 
 This aspect of the tutorial will cover how you can obtain new weather input data for a new date range or region.  This part assumes you have avalanche forecast labels for the dates and region (OAP currently has historical forecast labels for three avalanche centers in the US from the 15-16 season through the 19-20 season and is working on expanding that).
 
-Due to the large size of the input GFS data and the fact that its already hosted by NCAR OAP isn't currently providing copies of this data.  If you want to start a data processing pipeline from the original data you can star with this process here.
+Due to the large size of the input GFS data and the fact that its already hosted by NCAR OAP isn't currently providing copies of this data.  If you want to start a data processing pipeline from the original data you can start with this process here.  If you aren't interested in the data processing steps and only in the ML steps you can download the labels here: https://oapstorageprod.blob.core.windows.net/oap-training-data/Data/V1.1FeaturesWithLabels2013-2020.zip and a subset of training data here: https://oapstorageprod.blob.core.windows.net/oap-training-data/Data/MLDataWashington.zip and skip to the fourth notebook 4.TimeseriesAi
 
 The input data is derived from the .25 degree GFS model hosted by NCAR hosted at this site: https://rda.ucar.edu/datasets/ds084.1/
 You'll need to create an account and once you are logged in you can visit the above link and then click on the Data Access tab.  One note is that I've found that chromium based browsers don't work well on this site so I recommend you use Firefox for at least downloading the data.
@@ -168,9 +168,11 @@ In the tutorial the notebook produced one train batche of 10,000 rows and one te
 
 ### 4.TimeseriesAI
 #### Demonstrate using the data as the input to a deep learning training process
-Now that our data is in the right format we can try and do some machine learning on it.  The below notebook is only to demonstrate the process to do this as today the results are overfitting and the acheived results are not good.  That being said this area has only had minimal investment to date and is where focus is now being applied.  The current issue is overfitting and that will need to be addresssed before both exapnding the dataset size or training for additional epochs.
+Now that our data is in the right format we can try and do some machine learning on it.  The below notebook is only to demonstrate the process to do this as today the results are a proof of concept and not sophisticated at all.  This area has only had minimal investment to date and is where focus is now being applied.  The current issue is overfitting and that will need to be addresssed before both exapnding the dataset size or training for additional epochs.
 
 The Notebook 4.TimeseriesAI leverages the Timeseries Deep Learning library https://github.com/timeseriesAI/tsai based on FastAI https://github.com/fastai/fastai and it realitvely straightforward to understand especially if you are familiar with FastAI.  As progress is made here this notbook will be updated to reflect the current state.
+
+This notebook also depends on a different conda environment in the _Environments_ folder.  Create and activate the environment from the timeseriesai.yml file to use this notebook.
 
 
 ## Citations
