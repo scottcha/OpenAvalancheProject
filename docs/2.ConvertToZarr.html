@@ -51,21 +51,6 @@ nb_path: "Scratch/Notebooks/2.ConvertToZarr.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
-<span class="kn">import</span> <span class="nn">zarr</span>
-<span class="kn">from</span> <span class="nn">dask.distributed</span> <span class="kn">import</span> <span class="n">Client</span>
-<span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">os</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
 
 </div>
     {% endraw %}
@@ -99,7 +84,56 @@ nb_path: "Scratch/Notebooks/2.ConvertToZarr.ipynb"
            <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span>
            <span class="p">]</span>
            <span class="p">}</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;15-16&#39;</span><span class="p">,</span> <span class="s1">&#39;16-17&#39;</span><span class="p">,</span> <span class="s1">&#39;17-18&#39;</span><span class="p">,</span> <span class="s1">&#39;18-19&#39;</span><span class="p">]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;15-16&#39;</span><span class="p">]</span><span class="c1">#, &#39;16-17&#39;, &#39;17-18&#39;, &#39;18-19&#39;]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="ConvertToZarr" class="doc_header"><code>class</code> <code>ConvertToZarr</code><a href="https://github.com/scottcha/openavalancheproject/tree/master/openavalancheproject/convert_to_zarr.py#L14" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ConvertToZarr</code>(<strong><code>seasons</code></strong>, <strong><code>regions</code></strong>, <strong><code>data_root</code></strong>, <strong><code>interpolate</code></strong>=<em><code>1</code></em>)</p>
+</blockquote>
+<p>Class which encapsulates the logic to convert a set of filtered netCDF files to Zarr</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ctz</span> <span class="o">=</span> <span class="n">ConvertToZarr</span><span class="p">(</span><span class="n">seasons</span><span class="p">,</span> <span class="n">regions</span><span class="p">,</span> <span class="n">data_root</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -116,11 +150,1069 @@ nb_path: "Scratch/Notebooks/2.ConvertToZarr.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">processed_path</span> <span class="o">=</span> <span class="n">data_root</span> <span class="o">+</span> <span class="s1">&#39;/3.GFSFiltered&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;xInterpolation/&#39;</span>
-<span class="n">zarr_base_path</span> <span class="o">=</span> <span class="n">data_root</span> <span class="o">+</span> <span class="s1">&#39;/4.GFSFiltered&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">interpolation</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;xInterpolationZarr/&#39;</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ctz</span><span class="o">.</span><span class="n">convert_local</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>On Region_Snoqualmie Pass_20151101.ncOn Region_Mt Hood_20151101.ncOn Region_Olympics_20151101.ncOn Region_Stevens Pass_20151101.nc
+
+
+
+On Region_WA Cascades East, Central_20151101.ncOn Region_WA Cascades East, North_20151101.ncOn Region_WA Cascades East, South_20151101.nc
+On Region_WA Cascades West, Mt Baker_20151101.ncOn Region_WA Cascades West, Central_20151101.nc
+
+
+
+On Region_WA Cascades West, South_20151101.nc
+On Region_Stevens Pass_20151102.nc
+On Region_Mt Hood_20151102.nc
+On Region_Snoqualmie Pass_20151102.nc
+On Region_Stevens Pass_20151103.nc
+On Region_Mt Hood_20151103.nc
+On Region_Stevens Pass_20151104.nc
+On Region_Mt Hood_20151104.nc
+On Region_Snoqualmie Pass_20151103.nc
+On Region_Stevens Pass_20151105.nc
+On Region_Mt Hood_20151105.nc
+On Region_Olympics_20151102.nc
+On Region_WA Cascades East, South_20151102.nc
+On Region_Stevens Pass_20151106.nc
+On Region_WA Cascades West, Mt Baker_20151102.nc
+On Region_Snoqualmie Pass_20151104.nc
+On Region_Mt Hood_20151106.nc
+On Region_Stevens Pass_20151107.nc
+On Region_Mt Hood_20151107.nc
+On Region_WA Cascades West, Central_20151102.nc
+On Region_Snoqualmie Pass_20151105.nc
+On Region_Stevens Pass_20151108.nc
+On Region_Mt Hood_20151108.nc
+On Region_WA Cascades West, South_20151102.nc
+On Region_WA Cascades East, Central_20151102.nc
+On Region_Stevens Pass_20151109.nc
+On Region_WA Cascades East, North_20151102.nc
+On Region_Snoqualmie Pass_20151106.nc
+On Region_Mt Hood_20151109.nc
+On Region_Olympics_20151103.nc
+On Region_Stevens Pass_20151110.nc
+On Region_Mt Hood_20151110.nc
+On Region_Snoqualmie Pass_20151107.nc
+On Region_Stevens Pass_20151111.nc
+On Region_WA Cascades East, South_20151103.nc
+On Region_WA Cascades West, Mt Baker_20151103.nc
+On Region_Mt Hood_20151111.nc
+On Region_Stevens Pass_20151112.nc
+On Region_Mt Hood_20151112.nc
+On Region_Snoqualmie Pass_20151108.nc
+On Region_Stevens Pass_20151113.nc
+On Region_Mt Hood_20151113.nc
+On Region_Olympics_20151104.nc
+On Region_Snoqualmie Pass_20151109.nc
+On Region_Stevens Pass_20151114.nc
+On Region_WA Cascades West, Central_20151103.nc
+On Region_Mt Hood_20151114.nc
+On Region_Stevens Pass_20151115.nc
+On Region_Mt Hood_20151115.nc
+On Region_Snoqualmie Pass_20151110.nc
+On Region_Stevens Pass_20151116.nc
+On Region_WA Cascades East, South_20151104.nc
+On Region_WA Cascades West, Mt Baker_20151104.nc
+On Region_Mt Hood_20151116.nc
+On Region_WA Cascades West, South_20151103.nc
+On Region_WA Cascades East, Central_20151103.nc
+On Region_Stevens Pass_20151117.nc
+On Region_WA Cascades East, North_20151103.nc
+On Region_Snoqualmie Pass_20151111.nc
+On Region_Mt Hood_20151117.nc
+On Region_Olympics_20151105.nc
+On Region_Stevens Pass_20151118.nc
+On Region_Mt Hood_20151118.nc
+On Region_Snoqualmie Pass_20151112.nc
+On Region_Stevens Pass_20151119.nc
+On Region_Mt Hood_20151119.nc
+On Region_Stevens Pass_20151120.nc
+On Region_Snoqualmie Pass_20151113.nc
+On Region_Mt Hood_20151120.nc
+On Region_WA Cascades West, Central_20151104.nc
+On Region_WA Cascades East, South_20151105.nc
+On Region_Stevens Pass_20151121.nc
+On Region_WA Cascades West, Mt Baker_20151105.nc
+On Region_Mt Hood_20151121.nc
+On Region_Olympics_20151106.nc
+On Region_Snoqualmie Pass_20151114.nc
+On Region_Stevens Pass_20151122.nc
+On Region_Mt Hood_20151122.nc
+On Region_Stevens Pass_20151123.nc
+On Region_Mt Hood_20151123.nc
+On Region_Snoqualmie Pass_20151115.nc
+On Region_Stevens Pass_20151124.nc
+On Region_WA Cascades West, South_20151104.nc
+On Region_WA Cascades East, Central_20151104.nc
+On Region_Mt Hood_20151124.nc
+On Region_WA Cascades East, North_20151104.nc
+On Region_Stevens Pass_20151125.nc
+On Region_Snoqualmie Pass_20151116.nc
+On Region_Mt Hood_20151125.nc
+On Region_Olympics_20151107.nc
+On Region_WA Cascades East, South_20151106.nc
+On Region_WA Cascades West, Mt Baker_20151106.nc
+On Region_Stevens Pass_20151126.nc
+On Region_Mt Hood_20151126.nc
+On Region_Snoqualmie Pass_20151117.nc
+On Region_Stevens Pass_20151127.nc
+On Region_WA Cascades West, Central_20151105.nc
+On Region_Mt Hood_20151127.nc
+On Region_Stevens Pass_20151128.nc
+On Region_Snoqualmie Pass_20151118.nc
+On Region_Mt Hood_20151128.nc
+On Region_Stevens Pass_20151129.nc
+On Region_Olympics_20151108.nc
+On Region_Mt Hood_20151129.nc
+On Region_Snoqualmie Pass_20151119.nc
+On Region_Stevens Pass_20151130.nc
+On Region_Mt Hood_20151130.nc
+On Region_WA Cascades East, South_20151107.nc
+On Region_WA Cascades West, Mt Baker_20151107.nc
+On Region_Stevens Pass_20151201.nc
+On Region_Snoqualmie Pass_20151120.nc
+On Region_Mt Hood_20151201.nc
+On Region_WA Cascades East, Central_20151105.nc
+On Region_WA Cascades West, South_20151105.nc
+On Region_Stevens Pass_20151202.nc
+On Region_Mt Hood_20151202.nc
+On Region_Snoqualmie Pass_20151121.nc
+On Region_WA Cascades East, North_20151105.nc
+On Region_Stevens Pass_20151203.nc
+On Region_Olympics_20151109.nc
+On Region_WA Cascades West, Central_20151106.nc
+On Region_Mt Hood_20151203.nc
+On Region_Stevens Pass_20151204.nc
+On Region_Mt Hood_20151204.nc
+On Region_Snoqualmie Pass_20151122.nc
+On Region_Stevens Pass_20151205.nc
+On Region_WA Cascades East, South_20151108.nc
+On Region_Mt Hood_20151205.nc
+On Region_WA Cascades West, Mt Baker_20151108.nc
+On Region_Stevens Pass_20151206.nc
+On Region_Snoqualmie Pass_20151123.nc
+On Region_Mt Hood_20151206.nc
+On Region_Stevens Pass_20151207.nc
+On Region_Olympics_20151110.nc
+On Region_Mt Hood_20151207.nc
+On Region_Snoqualmie Pass_20151124.nc
+On Region_Stevens Pass_20151208.nc
+On Region_Mt Hood_20151208.nc
+On Region_Stevens Pass_20151209.nc
+On Region_WA Cascades East, Central_20151106.nc
+On Region_Snoqualmie Pass_20151125.nc
+On Region_WA Cascades West, South_20151106.nc
+On Region_Mt Hood_20151209.nc
+On Region_WA Cascades West, Central_20151107.nc
+On Region_Stevens Pass_20151210.nc
+On Region_WA Cascades East, South_20151109.nc
+On Region_Mt Hood_20151210.nc
+On Region_WA Cascades West, Mt Baker_20151109.nc
+On Region_Snoqualmie Pass_20151126.nc
+On Region_WA Cascades East, North_20151106.nc
+On Region_Stevens Pass_20151211.nc
+On Region_Olympics_20151111.nc
+On Region_Mt Hood_20151211.nc
+On Region_Stevens Pass_20151212.nc
+On Region_Snoqualmie Pass_20151127.nc
+On Region_Mt Hood_20151212.nc
+On Region_Stevens Pass_20151213.nc
+On Region_Mt Hood_20151213.nc
+On Region_Snoqualmie Pass_20151128.nc
+On Region_Stevens Pass_20151214.nc
+On Region_Mt Hood_20151214.nc
+On Region_Stevens Pass_20151215.nc
+On Region_WA Cascades East, South_20151110.nc
+On Region_Olympics_20151112.nc
+On Region_WA Cascades West, Mt Baker_20151110.nc
+On Region_Snoqualmie Pass_20151129.nc
+On Region_Mt Hood_20151215.nc
+On Region_Stevens Pass_20151216.nc
+On Region_WA Cascades West, Central_20151108.nc
+On Region_Mt Hood_20151216.nc
+On Region_WA Cascades West, South_20151107.nc
+On Region_WA Cascades East, Central_20151107.nc
+On Region_Snoqualmie Pass_20151130.nc
+On Region_Stevens Pass_20151217.nc
+On Region_Mt Hood_20151217.nc
+On Region_Stevens Pass_20151218.nc
+On Region_Snoqualmie Pass_20151201.nc
+On Region_Mt Hood_20151218.nc
+On Region_WA Cascades East, North_20151107.nc
+On Region_Stevens Pass_20151219.nc
+On Region_Olympics_20151113.nc
+On Region_Mt Hood_20151219.nc
+On Region_WA Cascades East, South_20151111.nc
+On Region_Stevens Pass_20151220.nc
+On Region_WA Cascades West, Mt Baker_20151111.nc
+On Region_Snoqualmie Pass_20151202.nc
+On Region_Mt Hood_20151220.nc
+On Region_Stevens Pass_20151221.nc
+On Region_Mt Hood_20151221.nc
+On Region_Snoqualmie Pass_20151203.nc
+On Region_Stevens Pass_20151222.nc
+On Region_Mt Hood_20151222.nc
+On Region_WA Cascades West, Central_20151109.nc
+On Region_Stevens Pass_20151223.nc
+On Region_Olympics_20151114.nc
+On Region_Snoqualmie Pass_20151204.nc
+On Region_Mt Hood_20151223.nc
+On Region_Stevens Pass_20151224.nc
+On Region_WA Cascades East, Central_20151108.nc
+On Region_WA Cascades West, South_20151108.nc
+On Region_Mt Hood_20151224.nc
+On Region_WA Cascades East, South_20151112.nc
+On Region_WA Cascades West, Mt Baker_20151112.nc
+On Region_Stevens Pass_20151225.nc
+On Region_Snoqualmie Pass_20151205.nc
+On Region_Mt Hood_20151225.nc
+On Region_Stevens Pass_20151226.nc
+On Region_Snoqualmie Pass_20151206.nc
+On Region_Mt Hood_20151226.nc
+On Region_WA Cascades East, North_20151108.nc
+On Region_Stevens Pass_20151227.nc
+On Region_Olympics_20151115.nc
+On Region_Mt Hood_20151227.nc
+On Region_Stevens Pass_20151228.nc
+On Region_Snoqualmie Pass_20151207.nc
+On Region_Mt Hood_20151228.nc
+On Region_Stevens Pass_20151229.nc
+On Region_WA Cascades West, Central_20151110.nc
+On Region_WA Cascades East, South_20151113.nc
+On Region_Snoqualmie Pass_20151208.nc
+On Region_WA Cascades West, Mt Baker_20151113.nc
+On Region_Mt Hood_20151229.nc
+On Region_Stevens Pass_20151230.nc
+On Region_Mt Hood_20151230.nc
+On Region_Stevens Pass_20151231.nc
+On Region_Olympics_20151116.nc
+On Region_Snoqualmie Pass_20151209.nc
+On Region_Mt Hood_20151231.nc
+On Region_Stevens Pass_20160101.nc
+On Region_WA Cascades East, Central_20151109.nc
+On Region_WA Cascades West, South_20151109.nc
+On Region_Snoqualmie Pass_20151210.nc
+On Region_Mt Hood_20160101.nc
+On Region_Stevens Pass_20160102.nc
+On Region_Stevens Pass_20160103.nc
+On Region_Mt Hood_20160102.nc
+On Region_Snoqualmie Pass_20151211.nc
+On Region_WA Cascades East, South_20151114.nc
+On Region_WA Cascades West, Mt Baker_20151114.nc
+On Region_WA Cascades East, North_20151109.nc
+On Region_Stevens Pass_20160104.nc
+On Region_Mt Hood_20160103.nc
+On Region_Olympics_20151117.nc
+On Region_Mt Hood_20160104.nc
+On Region_WA Cascades West, Central_20151111.nc
+On Region_Stevens Pass_20160105.nc
+On Region_Snoqualmie Pass_20151212.nc
+On Region_Mt Hood_20160105.nc
+On Region_Stevens Pass_20160106.nc
+On Region_Snoqualmie Pass_20151213.nc
+On Region_Mt Hood_20160106.nc
+On Region_Stevens Pass_20160107.nc
+On Region_Mt Hood_20160107.nc
+On Region_Stevens Pass_20160108.nc
+On Region_Snoqualmie Pass_20151214.nc
+On Region_Olympics_20151118.nc
+On Region_WA Cascades West, Mt Baker_20151115.nc
+On Region_WA Cascades East, South_20151115.nc
+On Region_WA Cascades East, Central_20151110.nc
+On Region_WA Cascades West, South_20151110.nc
+On Region_Mt Hood_20160108.nc
+On Region_Stevens Pass_20160109.nc
+On Region_Snoqualmie Pass_20151215.nc
+On Region_Mt Hood_20160109.nc
+On Region_Stevens Pass_20160110.nc
+On Region_Mt Hood_20160110.nc
+On Region_Stevens Pass_20160111.nc
+On Region_Snoqualmie Pass_20151216.nc
+On Region_WA Cascades West, Central_20151112.nc
+On Region_WA Cascades East, North_20151110.nc
+On Region_Mt Hood_20160111.nc
+On Region_Stevens Pass_20160112.nc
+On Region_Olympics_20151119.nc
+On Region_Mt Hood_20160112.nc
+On Region_Snoqualmie Pass_20151217.nc
+On Region_Stevens Pass_20160113.nc
+On Region_WA Cascades East, South_20151116.nc
+On Region_WA Cascades West, Mt Baker_20151116.nc
+On Region_Mt Hood_20160113.nc
+On Region_Stevens Pass_20160114.nc
+On Region_Snoqualmie Pass_20151218.nc
+On Region_Mt Hood_20160114.nc
+On Region_Stevens Pass_20160115.nc
+On Region_Mt Hood_20160115.nc
+On Region_Stevens Pass_20160116.nc
+On Region_Snoqualmie Pass_20151219.nc
+On Region_WA Cascades East, Central_20151111.nc
+On Region_Olympics_20151120.nc
+On Region_WA Cascades West, South_20151111.nc
+On Region_Mt Hood_20160116.nc
+On Region_Stevens Pass_20160117.nc
+On Region_Snoqualmie Pass_20151220.nc
+On Region_WA Cascades West, Central_20151113.nc
+On Region_Mt Hood_20160117.nc
+On Region_WA Cascades East, South_20151117.nc
+On Region_Stevens Pass_20160118.nc
+On Region_WA Cascades West, Mt Baker_20151117.nc
+On Region_Mt Hood_20160118.nc
+On Region_Stevens Pass_20160119.nc
+On Region_Snoqualmie Pass_20151221.nc
+On Region_WA Cascades East, North_20151111.nc
+On Region_Mt Hood_20160119.nc
+On Region_Stevens Pass_20160120.nc
+On Region_Olympics_20151121.nc
+On Region_Snoqualmie Pass_20151222.nc
+On Region_Mt Hood_20160120.nc
+On Region_Stevens Pass_20160121.nc
+On Region_Mt Hood_20160121.nc
+On Region_Stevens Pass_20160122.nc
+On Region_Snoqualmie Pass_20151223.nc
+On Region_WA Cascades East, South_20151118.nc
+On Region_WA Cascades West, Mt Baker_20151118.nc
+On Region_Mt Hood_20160122.nc
+On Region_Stevens Pass_20160123.nc
+On Region_WA Cascades East, Central_20151112.nc
+On Region_WA Cascades West, South_20151112.nc
+On Region_Mt Hood_20160123.nc
+On Region_Snoqualmie Pass_20151224.nc
+On Region_Stevens Pass_20160124.nc
+On Region_WA Cascades West, Central_20151114.nc
+On Region_Olympics_20151122.nc
+On Region_Mt Hood_20160124.nc
+On Region_Stevens Pass_20160125.nc
+On Region_Snoqualmie Pass_20151225.nc
+On Region_Mt Hood_20160125.nc
+On Region_Stevens Pass_20160126.nc
+On Region_Mt Hood_20160126.nc
+On Region_Stevens Pass_20160127.nc
+On Region_Snoqualmie Pass_20151226.nc
+On Region_WA Cascades East, North_20151112.nc
+On Region_WA Cascades East, South_20151119.nc
+On Region_WA Cascades West, Mt Baker_20151119.nc
+On Region_Mt Hood_20160127.nc
+On Region_Stevens Pass_20160128.nc
+On Region_Olympics_20151123.nc
+On Region_Snoqualmie Pass_20151227.nc
+On Region_Mt Hood_20160128.nc
+On Region_Stevens Pass_20160129.nc
+On Region_Stevens Pass_20160130.nc
+On Region_Mt Hood_20160129.nc
+On Region_Snoqualmie Pass_20151228.nc
+On Region_WA Cascades West, Central_20151115.nc
+On Region_Stevens Pass_20160131.nc
+On Region_WA Cascades East, Central_20151113.nc
+On Region_Mt Hood_20160130.nc
+On Region_WA Cascades West, South_20151113.nc
+On Region_Snoqualmie Pass_20151229.nc
+On Region_Stevens Pass_20160201.nc
+On Region_Olympics_20151124.nc
+On Region_Mt Hood_20160131.nc
+On Region_WA Cascades East, South_20151120.nc
+On Region_WA Cascades West, Mt Baker_20151120.nc
+On Region_Stevens Pass_20160202.nc
+On Region_Mt Hood_20160201.nc
+On Region_Snoqualmie Pass_20151230.nc
+On Region_Stevens Pass_20160203.nc
+On Region_Mt Hood_20160202.nc
+On Region_Stevens Pass_20160204.nc
+On Region_Snoqualmie Pass_20151231.nc
+On Region_Mt Hood_20160203.nc
+On Region_WA Cascades East, North_20151113.nc
+On Region_Stevens Pass_20160205.nc
+On Region_Olympics_20151125.nc
+On Region_Mt Hood_20160204.nc
+On Region_Snoqualmie Pass_20160101.nc
+On Region_WA Cascades West, Central_20151116.nc
+On Region_Stevens Pass_20160206.nc
+On Region_Mt Hood_20160205.nc
+On Region_WA Cascades East, South_20151121.nc
+On Region_WA Cascades West, Mt Baker_20151121.nc
+On Region_Stevens Pass_20160207.nc
+On Region_Mt Hood_20160206.nc
+On Region_Snoqualmie Pass_20160102.nc
+On Region_WA Cascades East, Central_20151114.nc
+On Region_WA Cascades West, South_20151114.nc
+On Region_Stevens Pass_20160208.nc
+On Region_Mt Hood_20160207.nc
+On Region_Snoqualmie Pass_20160103.nc
+On Region_Olympics_20151126.nc
+On Region_Stevens Pass_20160209.nc
+On Region_Mt Hood_20160208.nc
+On Region_Stevens Pass_20160210.nc
+On Region_Mt Hood_20160209.nc
+On Region_Snoqualmie Pass_20160104.nc
+On Region_WA Cascades East, South_20151122.nc
+On Region_Stevens Pass_20160211.nc
+On Region_WA Cascades West, Mt Baker_20151122.nc
+On Region_Mt Hood_20160210.nc
+On Region_Snoqualmie Pass_20160105.nc
+On Region_WA Cascades West, Central_20151117.nc
+On Region_Stevens Pass_20160212.nc
+On Region_Mt Hood_20160211.nc
+On Region_WA Cascades East, North_20151114.nc
+On Region_Olympics_20151127.nc
+On Region_Stevens Pass_20160213.nc
+On Region_Mt Hood_20160212.nc
+On Region_Snoqualmie Pass_20160106.nc
+On Region_Stevens Pass_20160214.nc
+On Region_Mt Hood_20160213.nc
+On Region_Stevens Pass_20160215.nc
+On Region_WA Cascades East, Central_20151115.nc
+On Region_Mt Hood_20160214.ncOn Region_Snoqualmie Pass_20160107.nc
+
+On Region_WA Cascades West, South_20151115.nc
+On Region_WA Cascades East, South_20151123.nc
+On Region_WA Cascades West, Mt Baker_20151123.nc
+On Region_Stevens Pass_20160216.nc
+On Region_Mt Hood_20160215.nc
+On Region_Olympics_20151128.nc
+On Region_Snoqualmie Pass_20160108.nc
+On Region_Stevens Pass_20160217.nc
+On Region_Mt Hood_20160216.nc
+On Region_Stevens Pass_20160218.nc
+On Region_WA Cascades West, Central_20151118.nc
+On Region_Mt Hood_20160217.nc
+On Region_Snoqualmie Pass_20160109.nc
+On Region_Stevens Pass_20160219.nc
+On Region_Mt Hood_20160218.nc
+On Region_Snoqualmie Pass_20160110.nc
+On Region_WA Cascades East, North_20151115.nc
+On Region_Stevens Pass_20160220.nc
+On Region_Mt Hood_20160219.nc
+On Region_WA Cascades East, South_20151124.nc
+On Region_Olympics_20151129.nc
+On Region_WA Cascades West, Mt Baker_20151124.nc
+On Region_Stevens Pass_20160221.nc
+On Region_Mt Hood_20160220.nc
+On Region_Snoqualmie Pass_20160111.nc
+On Region_Stevens Pass_20160222.nc
+On Region_Mt Hood_20160221.nc
+On Region_WA Cascades East, Central_20151116.nc
+On Region_WA Cascades West, South_20151116.nc
+On Region_Snoqualmie Pass_20160112.nc
+On Region_Stevens Pass_20160223.nc
+On Region_Mt Hood_20160222.nc
+On Region_Stevens Pass_20160224.nc
+On Region_Olympics_20151130.nc
+On Region_Mt Hood_20160223.nc
+On Region_Snoqualmie Pass_20160113.nc
+On Region_WA Cascades West, Central_20151119.nc
+On Region_Stevens Pass_20160225.nc
+On Region_WA Cascades East, South_20151125.nc
+On Region_WA Cascades West, Mt Baker_20151125.nc
+On Region_Mt Hood_20160224.nc
+On Region_Stevens Pass_20160226.nc
+On Region_Snoqualmie Pass_20160114.nc
+On Region_Mt Hood_20160225.nc
+On Region_Stevens Pass_20160227.nc
+On Region_Mt Hood_20160226.nc
+On Region_Snoqualmie Pass_20160115.nc
+On Region_WA Cascades East, North_20151116.nc
+On Region_Stevens Pass_20160228.nc
+On Region_Olympics_20151201.nc
+On Region_Mt Hood_20160227.nc
+On Region_Stevens Pass_20160229.nc
+On Region_Snoqualmie Pass_20160116.nc
+On Region_Mt Hood_20160228.nc
+On Region_WA Cascades East, South_20151126.nc
+On Region_Stevens Pass_20160301.nc
+On Region_WA Cascades West, South_20151117.nc
+On Region_WA Cascades East, Central_20151117.nc
+On Region_WA Cascades West, Mt Baker_20151126.nc
+On Region_Mt Hood_20160229.nc
+On Region_Snoqualmie Pass_20160117.nc
+On Region_WA Cascades West, Central_20151120.nc
+On Region_Stevens Pass_20160302.nc
+On Region_Mt Hood_20160301.nc
+On Region_Stevens Pass_20160303.nc
+On Region_Olympics_20151202.nc
+On Region_Snoqualmie Pass_20160118.nc
+On Region_Mt Hood_20160302.nc
+On Region_Stevens Pass_20160304.nc
+On Region_Mt Hood_20160303.nc
+On Region_Snoqualmie Pass_20160119.nc
+On Region_Stevens Pass_20160305.nc
+On Region_Mt Hood_20160304.nc
+On Region_WA Cascades East, South_20151127.nc
+On Region_WA Cascades West, Mt Baker_20151127.nc
+On Region_Stevens Pass_20160306.nc
+On Region_Snoqualmie Pass_20160120.nc
+On Region_Mt Hood_20160305.nc
+On Region_WA Cascades East, North_20151117.nc
+On Region_Olympics_20151203.nc
+On Region_Stevens Pass_20160307.nc
+On Region_Mt Hood_20160306.nc
+On Region_WA Cascades West, Central_20151121.nc
+On Region_Snoqualmie Pass_20160121.nc
+On Region_Stevens Pass_20160308.nc
+On Region_WA Cascades West, South_20151118.nc
+On Region_Mt Hood_20160307.nc
+On Region_WA Cascades East, Central_20151118.nc
+On Region_Stevens Pass_20160309.nc
+On Region_Snoqualmie Pass_20160122.nc
+On Region_Mt Hood_20160308.nc
+On Region_Stevens Pass_20160310.nc
+On Region_WA Cascades East, South_20151128.nc
+On Region_Mt Hood_20160309.nc
+On Region_WA Cascades West, Mt Baker_20151128.nc
+On Region_Olympics_20151204.nc
+On Region_Snoqualmie Pass_20160123.nc
+On Region_Stevens Pass_20160311.nc
+On Region_Mt Hood_20160310.nc
+On Region_Stevens Pass_20160312.nc
+On Region_Mt Hood_20160311.nc
+On Region_Snoqualmie Pass_20160124.nc
+On Region_Stevens Pass_20160313.nc
+On Region_Mt Hood_20160312.nc
+On Region_Stevens Pass_20160314.nc
+On Region_Snoqualmie Pass_20160125.nc
+On Region_WA Cascades West, Central_20151122.nc
+On Region_WA Cascades East, North_20151118.nc
+On Region_Mt Hood_20160313.nc
+On Region_Olympics_20151205.nc
+On Region_Stevens Pass_20160315.nc
+On Region_WA Cascades East, South_20151129.nc
+On Region_WA Cascades West, Mt Baker_20151129.nc
+On Region_Mt Hood_20160314.nc
+On Region_WA Cascades West, South_20151119.nc
+On Region_Snoqualmie Pass_20160126.nc
+On Region_WA Cascades East, Central_20151119.nc
+On Region_Stevens Pass_20160316.nc
+On Region_Mt Hood_20160315.nc
+On Region_Stevens Pass_20160317.nc
+On Region_Snoqualmie Pass_20160127.nc
+On Region_Mt Hood_20160316.nc
+On Region_Stevens Pass_20160318.nc
+On Region_Mt Hood_20160317.nc
+On Region_Olympics_20151206.nc
+On Region_Snoqualmie Pass_20160128.nc
+On Region_Stevens Pass_20160319.nc
+On Region_Mt Hood_20160318.nc
+On Region_WA Cascades West, Mt Baker_20151130.nc
+On Region_WA Cascades East, South_20151130.nc
+On Region_Stevens Pass_20160320.nc
+On Region_WA Cascades West, Central_20151123.nc
+On Region_Snoqualmie Pass_20160129.nc
+On Region_Mt Hood_20160319.nc
+On Region_Stevens Pass_20160321.nc
+On Region_Mt Hood_20160320.nc
+On Region_WA Cascades East, North_20151119.nc
+On Region_Snoqualmie Pass_20160130.nc
+On Region_Stevens Pass_20160322.nc
+On Region_Mt Hood_20160321.nc
+On Region_Olympics_20151207.nc
+On Region_WA Cascades West, South_20151120.nc
+On Region_Stevens Pass_20160323.nc
+On Region_WA Cascades East, Central_20151120.nc
+On Region_Snoqualmie Pass_20160131.nc
+On Region_Mt Hood_20160322.nc
+On Region_Stevens Pass_20160324.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160324.nc
+On Region_Stevens Pass_20160325.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160325.nc
+On Region_Stevens Pass_20160326.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160326.nc
+On Region_Stevens Pass_20160327.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160327.nc
+On Region_Stevens Pass_20160328.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160328.nc
+On Region_Stevens Pass_20160329.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160329.nc
+On Region_Stevens Pass_20160330.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160330.nc
+On Region_Stevens Pass_20160331.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160331.nc
+On Region_Stevens Pass_20160401.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160401.nc
+On Region_Stevens Pass_20160402.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160402.nc
+On Region_Stevens Pass_20160403.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160403.nc
+On Region_Stevens Pass_20160404.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160404.nc
+On Region_Stevens Pass_20160405.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160405.nc
+On Region_Stevens Pass_20160406.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160406.nc
+On Region_Stevens Pass_20160407.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160407.nc
+On Region_Stevens Pass_20160408.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160408.nc
+On Region_Stevens Pass_20160409.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160409.nc
+On Region_Stevens Pass_20160410.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160410.nc
+On Region_Stevens Pass_20160411.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160411.nc
+On Region_Stevens Pass_20160412.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160412.nc
+On Region_Stevens Pass_20160413.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160413.nc
+On Region_Stevens Pass_20160414.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160414.nc
+On Region_Stevens Pass_20160415.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160415.nc
+On Region_Stevens Pass_20160416.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160416.nc
+On Region_Stevens Pass_20160417.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160417.nc
+On Region_Stevens Pass_20160418.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160418.nc
+On Region_Stevens Pass_20160419.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160419.nc
+On Region_Stevens Pass_20160420.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160420.nc
+On Region_Stevens Pass_20160421.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160421.nc
+On Region_Stevens Pass_20160422.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160422.nc
+On Region_Stevens Pass_20160423.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160423.nc
+On Region_Stevens Pass_20160424.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160424.nc
+On Region_Stevens Pass_20160425.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160425.nc
+On Region_Stevens Pass_20160426.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160426.nc
+On Region_Stevens Pass_20160427.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160427.nc
+On Region_Stevens Pass_20160428.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160428.nc
+On Region_Stevens Pass_20160429.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160429.nc
+On Region_Stevens Pass_20160430.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Stevens Pass_20160430.nc
+On Region_Mt Hood_20160323.nc
+On Region_WA Cascades West, Mt Baker_20151201.nc
+On Region_WA Cascades East, South_20151201.nc
+On Region_Snoqualmie Pass_20160201.nc
+On Region_Mt Hood_20160324.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160324.nc
+On Region_Mt Hood_20160325.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160325.nc
+On Region_Mt Hood_20160326.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160326.nc
+On Region_Mt Hood_20160327.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160327.nc
+On Region_Mt Hood_20160328.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160328.nc
+On Region_Mt Hood_20160329.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160329.nc
+On Region_Mt Hood_20160330.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160330.nc
+On Region_Mt Hood_20160331.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160331.nc
+On Region_Mt Hood_20160401.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160401.nc
+On Region_Mt Hood_20160402.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160402.nc
+On Region_Mt Hood_20160403.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160403.nc
+On Region_Mt Hood_20160404.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160404.nc
+On Region_Mt Hood_20160405.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160405.nc
+On Region_Mt Hood_20160406.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160406.nc
+On Region_Mt Hood_20160407.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160407.nc
+On Region_Mt Hood_20160408.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160408.nc
+On Region_Mt Hood_20160409.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160409.nc
+On Region_Mt Hood_20160410.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160410.nc
+On Region_Mt Hood_20160411.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160411.nc
+On Region_Mt Hood_20160412.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160412.nc
+On Region_Mt Hood_20160413.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160413.nc
+On Region_Mt Hood_20160414.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160414.nc
+On Region_Mt Hood_20160415.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160415.nc
+On Region_Mt Hood_20160416.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160416.nc
+On Region_Mt Hood_20160417.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160417.nc
+On Region_Mt Hood_20160418.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160418.nc
+On Region_Mt Hood_20160419.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160419.nc
+On Region_Mt Hood_20160420.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160420.nc
+On Region_Mt Hood_20160421.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160421.nc
+On Region_Mt Hood_20160422.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160422.nc
+On Region_Mt Hood_20160423.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160423.nc
+On Region_Mt Hood_20160424.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160424.nc
+On Region_Mt Hood_20160425.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160425.nc
+On Region_Mt Hood_20160426.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160426.nc
+On Region_Mt Hood_20160427.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160427.nc
+On Region_Mt Hood_20160428.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160428.nc
+On Region_Mt Hood_20160429.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160429.nc
+On Region_Mt Hood_20160430.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Mt Hood_20160430.nc
+On Region_Olympics_20151208.nc
+On Region_WA Cascades West, Central_20151124.nc
+On Region_Snoqualmie Pass_20160202.nc
+On Region_Snoqualmie Pass_20160203.nc
+On Region_WA Cascades West, Mt Baker_20151202.nc
+On Region_WA Cascades East, South_20151202.nc
+On Region_WA Cascades East, North_20151120.nc
+On Region_Snoqualmie Pass_20160204.nc
+On Region_WA Cascades West, South_20151121.nc
+On Region_Olympics_20151209.nc
+On Region_WA Cascades East, Central_20151121.nc
+On Region_Snoqualmie Pass_20160205.nc
+On Region_WA Cascades West, Central_20151125.nc
+On Region_Snoqualmie Pass_20160206.nc
+On Region_WA Cascades West, Mt Baker_20151203.nc
+On Region_WA Cascades East, South_20151203.nc
+On Region_Olympics_20151210.nc
+On Region_Snoqualmie Pass_20160207.nc
+On Region_Snoqualmie Pass_20160208.nc
+On Region_WA Cascades East, North_20151121.nc
+On Region_WA Cascades West, South_20151122.nc
+On Region_Snoqualmie Pass_20160209.nc
+On Region_Olympics_20151211.nc
+On Region_WA Cascades East, Central_20151122.nc
+On Region_WA Cascades West, Mt Baker_20151204.nc
+On Region_WA Cascades East, South_20151204.nc
+On Region_WA Cascades West, Central_20151126.nc
+On Region_Snoqualmie Pass_20160210.nc
+On Region_Snoqualmie Pass_20160211.nc
+On Region_Olympics_20151212.nc
+On Region_Snoqualmie Pass_20160212.nc
+On Region_WA Cascades West, Mt Baker_20151205.nc
+On Region_WA Cascades East, South_20151205.nc
+On Region_Snoqualmie Pass_20160213.nc
+On Region_WA Cascades West, South_20151123.nc
+On Region_WA Cascades East, North_20151122.nc
+On Region_WA Cascades East, Central_20151123.nc
+On Region_WA Cascades West, Central_20151127.nc
+On Region_Snoqualmie Pass_20160214.nc
+On Region_Olympics_20151213.nc
+On Region_Snoqualmie Pass_20160215.nc
+On Region_WA Cascades West, Mt Baker_20151206.nc
+On Region_WA Cascades East, South_20151206.nc
+On Region_Snoqualmie Pass_20160216.nc
+On Region_Olympics_20151214.nc
+On Region_Snoqualmie Pass_20160217.nc
+On Region_WA Cascades West, Central_20151128.nc
+On Region_Snoqualmie Pass_20160218.nc
+On Region_WA Cascades West, South_20151124.nc
+On Region_WA Cascades East, North_20151123.nc
+On Region_WA Cascades East, Central_20151124.nc
+On Region_WA Cascades West, Mt Baker_20151207.nc
+On Region_WA Cascades East, South_20151207.nc
+On Region_Snoqualmie Pass_20160219.nc
+On Region_Olympics_20151215.nc
+On Region_Snoqualmie Pass_20160220.nc
+On Region_Snoqualmie Pass_20160221.nc
+On Region_WA Cascades East, South_20151208.nc
+On Region_WA Cascades West, Mt Baker_20151208.nc
+On Region_Olympics_20151216.nc
+On Region_WA Cascades West, Central_20151129.nc
+On Region_Snoqualmie Pass_20160222.nc
+On Region_WA Cascades West, South_20151125.nc
+On Region_Snoqualmie Pass_20160223.nc
+On Region_WA Cascades East, Central_20151125.nc
+On Region_WA Cascades East, North_20151124.nc
+On Region_Olympics_20151217.nc
+On Region_Snoqualmie Pass_20160224.nc
+On Region_WA Cascades East, South_20151209.nc
+On Region_WA Cascades West, Mt Baker_20151209.nc
+On Region_Snoqualmie Pass_20160225.nc
+On Region_WA Cascades West, Central_20151130.nc
+On Region_Snoqualmie Pass_20160226.nc
+On Region_Olympics_20151218.nc
+On Region_Snoqualmie Pass_20160227.nc
+On Region_WA Cascades West, South_20151126.nc
+On Region_WA Cascades East, South_20151210.nc
+On Region_WA Cascades West, Mt Baker_20151210.nc
+On Region_WA Cascades East, Central_20151126.nc
+On Region_Snoqualmie Pass_20160228.nc
+On Region_WA Cascades East, North_20151125.nc
+On Region_Olympics_20151219.nc
+On Region_Snoqualmie Pass_20160229.nc
+On Region_WA Cascades West, Central_20151201.nc
+On Region_Snoqualmie Pass_20160301.nc
+On Region_WA Cascades East, South_20151211.nc
+On Region_WA Cascades West, Mt Baker_20151211.nc
+On Region_Snoqualmie Pass_20160302.nc
+On Region_Olympics_20151220.nc
+On Region_WA Cascades West, South_20151127.nc
+On Region_Snoqualmie Pass_20160303.nc
+On Region_WA Cascades East, Central_20151127.nc
+On Region_WA Cascades East, North_20151126.nc
+On Region_Snoqualmie Pass_20160304.nc
+On Region_WA Cascades West, Mt Baker_20151212.nc
+On Region_WA Cascades East, South_20151212.nc
+On Region_WA Cascades West, Central_20151202.nc
+On Region_Olympics_20151221.nc
+On Region_Snoqualmie Pass_20160305.nc
+On Region_Snoqualmie Pass_20160306.nc
+On Region_Snoqualmie Pass_20160307.nc
+On Region_WA Cascades East, South_20151213.nc
+On Region_WA Cascades West, Mt Baker_20151213.nc
+On Region_Olympics_20151222.nc
+On Region_WA Cascades West, South_20151128.nc
+On Region_Snoqualmie Pass_20160308.nc
+On Region_WA Cascades East, Central_20151128.nc
+On Region_WA Cascades West, Central_20151203.nc
+On Region_WA Cascades East, North_20151127.nc
+On Region_Snoqualmie Pass_20160309.nc
+On Region_Olympics_20151223.nc
+On Region_Snoqualmie Pass_20160310.nc
+On Region_WA Cascades East, South_20151214.nc
+On Region_WA Cascades West, Mt Baker_20151214.nc
+On Region_Snoqualmie Pass_20160311.nc
+On Region_Snoqualmie Pass_20160312.nc
+On Region_WA Cascades West, South_20151129.nc
+On Region_Olympics_20151224.nc
+On Region_WA Cascades West, Central_20151204.nc
+On Region_WA Cascades East, Central_20151129.nc
+On Region_Snoqualmie Pass_20160313.nc
+On Region_WA Cascades East, South_20151215.nc
+On Region_WA Cascades West, Mt Baker_20151215.nc
+On Region_WA Cascades East, North_20151128.nc
+On Region_Snoqualmie Pass_20160314.nc
+On Region_Olympics_20151225.nc
+On Region_Snoqualmie Pass_20160315.nc
+On Region_Snoqualmie Pass_20160316.nc
+On Region_WA Cascades East, South_20151216.nc
+On Region_WA Cascades West, Mt Baker_20151216.nc
+On Region_WA Cascades West, Central_20151205.nc
+On Region_WA Cascades West, South_20151130.nc
+On Region_Snoqualmie Pass_20160317.nc
+On Region_Olympics_20151226.nc
+On Region_WA Cascades East, Central_20151130.nc
+On Region_Snoqualmie Pass_20160318.nc
+On Region_WA Cascades East, North_20151129.nc
+On Region_Snoqualmie Pass_20160319.nc
+On Region_WA Cascades East, South_20151217.nc
+On Region_WA Cascades West, Mt Baker_20151217.nc
+On Region_Olympics_20151227.nc
+On Region_Snoqualmie Pass_20160320.nc
+On Region_WA Cascades West, Central_20151206.nc
+On Region_Snoqualmie Pass_20160321.nc
+On Region_WA Cascades West, South_20151201.nc
+On Region_WA Cascades East, South_20151218.nc
+On Region_Olympics_20151228.nc
+On Region_Snoqualmie Pass_20160322.nc
+On Region_WA Cascades West, Mt Baker_20151218.nc
+On Region_WA Cascades East, Central_20151201.nc
+On Region_Snoqualmie Pass_20160323.nc
+On Region_WA Cascades East, North_20151130.nc
+On Region_Snoqualmie Pass_20160324.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160324.nc
+On Region_Snoqualmie Pass_20160325.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160325.nc
+On Region_Snoqualmie Pass_20160326.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160326.nc
+On Region_Snoqualmie Pass_20160327.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160327.nc
+On Region_Snoqualmie Pass_20160328.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160328.nc
+On Region_Snoqualmie Pass_20160329.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160329.nc
+On Region_Snoqualmie Pass_20160330.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160330.nc
+On Region_Snoqualmie Pass_20160331.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160331.nc
+On Region_Snoqualmie Pass_20160401.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160401.nc
+On Region_Snoqualmie Pass_20160402.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160402.nc
+On Region_Snoqualmie Pass_20160403.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160403.nc
+On Region_Snoqualmie Pass_20160404.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160404.nc
+On Region_Snoqualmie Pass_20160405.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160405.nc
+On Region_Snoqualmie Pass_20160406.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160406.nc
+On Region_Snoqualmie Pass_20160407.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160407.nc
+On Region_Snoqualmie Pass_20160408.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160408.nc
+On Region_Snoqualmie Pass_20160409.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160409.nc
+On Region_Snoqualmie Pass_20160410.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160410.nc
+On Region_Snoqualmie Pass_20160411.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160411.nc
+On Region_Snoqualmie Pass_20160412.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160412.nc
+On Region_Snoqualmie Pass_20160413.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160413.nc
+On Region_Snoqualmie Pass_20160414.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160414.nc
+On Region_Snoqualmie Pass_20160415.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160415.nc
+On Region_Snoqualmie Pass_20160416.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160416.nc
+On Region_Snoqualmie Pass_20160417.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160417.nc
+On Region_Snoqualmie Pass_20160418.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160418.nc
+On Region_Snoqualmie Pass_20160419.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160419.nc
+On Region_Snoqualmie Pass_20160420.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160420.nc
+On Region_Snoqualmie Pass_20160421.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160421.nc
+On Region_Snoqualmie Pass_20160422.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160422.nc
+On Region_Snoqualmie Pass_20160423.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160423.nc
+On Region_Snoqualmie Pass_20160424.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160424.nc
+On Region_Snoqualmie Pass_20160425.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160425.nc
+On Region_Snoqualmie Pass_20160426.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160426.nc
+On Region_Snoqualmie Pass_20160427.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160427.nc
+On Region_Snoqualmie Pass_20160428.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160428.nc
+On Region_Snoqualmie Pass_20160429.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160429.nc
+On Region_Snoqualmie Pass_20160430.nc
+ missing file: /media/scottcha/E1/Data/OAPMLData//3.GFSFiltered1xInterpolation/15-16//Region_Snoqualmie Pass_20160430.nc
+On Region_Olympics_20151229.nc
+On Region_WA Cascades West, Central_20151207.nc
+On Region_WA Cascades East, South_20151219.nc
+On Region_WA Cascades West, Mt Baker_20151219.nc
+On Region_WA Cascades West, South_20151202.nc
+On Region_Olympics_20151230.nc
+On Region_WA Cascades East, Central_20151202.nc
+On Region_WA Cascades East, South_20151220.nc
+On Region_WA Cascades West, Mt Baker_20151220.nc
+On Region_WA Cascades West, Central_20151208.nc
+On Region_WA Cascades East, North_20151201.nc
+On Region_Olympics_20151231.nc
+On Region_WA Cascades West, South_20151203.nc
+On Region_WA Cascades East, South_20151221.nc
+On Region_WA Cascades West, Mt Baker_20151221.nc
+On Region_WA Cascades East, Central_20151203.nc
+On Region_Olympics_20160101.nc
+On Region_WA Cascades West, Central_20151209.nc
+On Region_WA Cascades East, North_20151202.nc
+On Region_WA Cascades East, South_20151222.nc
+On Region_WA Cascades West, Mt Baker_20151222.nc
+On Region_Olympics_20160102.nc
+On Region_WA Cascades West, South_20151204.nc
+On Region_WA Cascades East, Central_20151204.nc
+On Region_WA Cascades West, Central_20151210.nc
+On Region_Olympics_20160103.nc
+On Region_WA Cascades East, South_20151223.nc
+On Region_WA Cascades West, Mt Baker_20151223.nc
+On Region_WA Cascades East, North_20151203.nc
+On Region_Olympics_20160104.nc
+On Region_WA Cascades East, South_20151224.nc
+On Region_WA Cascades West, Mt Baker_20151224.nc
+On Region_WA Cascades West, Central_20151211.nc
+On Region_WA Cascades West, South_20151205.nc
+On Region_WA Cascades East, Central_20151205.nc
+On Region_Olympics_20160105.nc
+On Region_WA Cascades West, Mt Baker_20151225.nc
+On Region_WA Cascades East, South_20151225.nc
+On Region_WA Cascades East, North_20151204.nc
+On Region_WA Cascades West, Central_20151212.nc
+On Region_Olympics_20160106.nc
+On Region_WA Cascades West, South_20151206.nc
+On Region_WA Cascades East, Central_20151206.nc
+On Region_WA Cascades East, South_20151226.nc
+On Region_WA Cascades West, Mt Baker_20151226.nc
+On Region_Olympics_20160107.nc
+On Region_WA Cascades West, Central_20151213.nc
+On Region_WA Cascades East, North_20151205.nc
+On Region_WA Cascades East, South_20151227.nc
+On Region_WA Cascades West, Mt Baker_20151227.nc
+On Region_Olympics_20160108.nc
+On Region_WA Cascades West, South_20151207.nc
+On Region_WA Cascades East, Central_20151207.nc
+On Region_Olympics_20160109.nc
+On Region_WA Cascades East, South_20151228.nc
+On Region_WA Cascades West, Mt Baker_20151228.nc
+On Region_WA Cascades West, Central_20151214.nc
+On Region_WA Cascades East, North_20151206.nc
+On Region_Olympics_20160110.nc
+On Region_WA Cascades West, South_20151208.nc
+On Region_WA Cascades East, South_20151229.nc
+On Region_WA Cascades West, Mt Baker_20151229.nc
+On Region_WA Cascades East, Central_20151208.nc
+On Region_WA Cascades West, Central_20151215.nc
+On Region_Olympics_20160111.nc
+On Region_WA Cascades East, South_20151230.nc
+On Region_WA Cascades West, Mt Baker_20151230.nc
+On Region_WA Cascades East, North_20151207.nc
+On Region_Olympics_20160112.nc
+On Region_WA Cascades West, South_20151209.nc
+On Region_WA Cascades East, Central_20151209.nc
+On Region_WA Cascades West, Central_20151216.nc
+On Region_WA Cascades West, Mt Baker_20151231.nc
+On Region_WA Cascades East, South_20151231.nc
+On Region_Olympics_20160113.nc
+On Region_WA Cascades East, North_20151208.nc
+On Region_WA Cascades West, Central_20151217.nc
+On Region_WA Cascades West, Mt Baker_20160101.nc
+On Region_WA Cascades East, South_20160101.nc
+On Region_WA Cascades West, South_20151210.nc
+On Region_Olympics_20160114.nc
+On Region_WA Cascades East, Central_20151210.nc
+On Region_Olympics_20160115.nc
+On Region_WA Cascades East, South_20160102.nc
+On Region_WA Cascades West, Mt Baker_20160102.nc
+On Region_WA Cascades West, Central_20151218.nc
+On Region_WA Cascades East, North_20151209.nc
+On Region_WA Cascades West, South_20151211.nc
+On Region_Olympics_20160116.nc
+On Region_WA Cascades East, Central_20151211.nc
+On Region_WA Cascades East, South_20160103.nc
+On Region_WA Cascades West, Mt Baker_20160103.nc
+On Region_Olympics_20160117.nc
+On Region_WA Cascades West, Central_20151219.nc
+On Region_WA Cascades East, South_20160104.nc
+On Region_WA Cascades West, Mt Baker_20160104.nc
+On Region_WA Cascades East, North_20151210.nc
+On Region_WA Cascades West, South_20151212.nc
+On Region_WA Cascades East, Central_20151212.nc
+On Region_Olympics_20160118.nc
+On Region_WA Cascades West, Central_20151220.nc
+On Region_WA Cascades East, South_20160105.nc
+On Region_WA Cascades West, Mt Baker_20160105.nc
+On Region_Olympics_20160119.nc
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -134,106 +1226,7 @@ nb_path: "Scratch/Notebooks/2.ConvertToZarr.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">zarr_base_path</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">zarr_base_path</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">compute_region</span><span class="p">(</span><span class="n">region_name</span><span class="p">,</span> <span class="n">season</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
-    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">base_path</span> <span class="o">=</span> <span class="n">processed_path</span> <span class="o">+</span> <span class="n">season</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;/Region_&#39;</span> <span class="o">+</span> <span class="n">region_name</span> 
-    <span class="n">zarr_path</span> <span class="o">=</span> <span class="n">zarr_base_path</span> <span class="o">+</span> <span class="n">season</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">state</span> <span class="o">+</span> <span class="s1">&#39;/Region_&#39;</span> <span class="o">+</span> <span class="n">region_name</span> <span class="o">+</span> <span class="s1">&#39;.zarr&#39;</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="mi">181</span>
-    <span class="k">if</span> <span class="n">season</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;15-16&#39;</span><span class="p">,</span> <span class="s1">&#39;19-20&#39;</span><span class="p">]:</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="mi">182</span> <span class="c1">#leap years</span>
-    
-    <span class="n">snow_start_date</span> <span class="o">=</span> <span class="s1">&#39;2015-11-01&#39;</span>
-    <span class="k">if</span> <span class="n">season</span> <span class="o">==</span> <span class="s1">&#39;16-17&#39;</span><span class="p">:</span>
-        <span class="n">snow_start_date</span> <span class="o">=</span> <span class="s1">&#39;2016-11-01&#39;</span>
-    <span class="k">if</span> <span class="n">season</span> <span class="o">==</span> <span class="s1">&#39;17-18&#39;</span><span class="p">:</span>
-        <span class="n">snow_start_date</span> <span class="o">=</span> <span class="s1">&#39;2017-11-01&#39;</span>
-    <span class="k">if</span> <span class="n">season</span> <span class="o">==</span> <span class="s1">&#39;18-19&#39;</span><span class="p">:</span>
-        <span class="n">snow_start_date</span> <span class="o">=</span> <span class="s1">&#39;2018-11-01&#39;</span>
-    
-    <span class="n">date_values_pd</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">snow_start_date</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">zarr_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">z</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">z</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">date_values_pd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; already exists: &#39;</span> <span class="o">+</span> <span class="n">region_name</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">season</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">state</span><span class="p">)</span>
-                <span class="n">z</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">return</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1">#already exists but incomplete</span>
-                <span class="n">date_values_pd</span> <span class="o">=</span> <span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">date_values_pd</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">z</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; some exist but have to complete &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">date_values_pd</span><span class="p">)))</span>
-                <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-        <span class="c1">#ignore as it doesn&#39;t exist yet</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
-    
-    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">date_values_pd</span><span class="p">:</span>
-        
-        <span class="n">path</span> <span class="o">=</span>  <span class="n">base_path</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">d</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.nc&#39;</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;On &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-        
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;latitude&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">})</span>
-        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; missing file: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
-            <span class="k">continue</span>
-            
-        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">to_array</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;vars&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">chunk</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;latitude&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;longitude&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">})</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
-        
-        <span class="k">try</span><span class="p">:</span>
-
-            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
-                <span class="n">ds</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">zarr_path</span><span class="p">,</span> <span class="n">consolidated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                <span class="n">first</span><span class="o">=</span><span class="kc">False</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">ds</span><span class="o">.</span><span class="n">to_zarr</span><span class="p">(</span><span class="n">zarr_path</span><span class="p">,</span> <span class="n">consolidated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">append_dim</span><span class="o">=</span><span class="s1">&#39;time&#39;</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Value Error on &#39;</span> <span class="o">+</span> <span class="n">zarr_path</span><span class="p">)</span>
-            <span class="k">return</span>
-
-<span class="k">def</span> <span class="nf">process_tuple</span><span class="p">(</span><span class="n">t</span><span class="p">):</span> 
-    <span class="n">compute_region</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">make_list</span><span class="p">():</span>
-    <span class="n">to_process</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">seasons</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">regions</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>           
-            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">regions</span><span class="p">[</span><span class="n">state</span><span class="p">]:</span>
-                <span class="n">to_process</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">state</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">to_process</span>
-    
+<div class=" highlight hl-ipython3"><pre><span></span>    
 <span class="n">l</span> <span class="o">=</span> <span class="n">make_list</span><span class="p">()</span>     
 <span class="n">l</span>
 </pre></div>

@@ -6,7 +6,10 @@ Home-page: https://github.com/scottcha/openavalancheproject/tree/master/
 Author: Scott Chamberlin
 Author-email: scott@snowymountainworks.com
 License: MIT License
-Description: # OpenAvalancheProject
+Description: # Open Avalanche Project
+        
+        
+        
         Open source project to bring data and ml to avalanche forecasting
         
         
@@ -44,13 +47,13 @@ Description: # OpenAvalancheProject
         
         Due to the size of the files we are downloading I only recommend downloading one season and for a regional subset at a time.  In this example I'm going to download the data for Washington.  
         
-        ![NCAR Get Data](Tutorial/NCAR_GetData.png?raw=true "NCAR Get Data")
+        ![NCAR Get Data](Scratch/Notebooks/images/NCAR_GetData.png)
         
         Click on the "Get a Subset" link.
         
         The next page allows us to select both the dates and parameters we are interested in.  Currently we read all parameters so leave the parameters unchecked.  For dates choose one winter season.  In the below screenshot I've selected dates Nov 1, 2015 thorough April 30, 2016 for the 15-16 season.  The models assume the season starts Nov 1 and ends April 30 (it wouldn't be too difficult to update the data pipeline for a southern hemisphere winter but its not something I've done yet).
         
-        ![NCAR Date Selection](Tutorial/NCAR_DateSelection.png?raw=true "NCAR Date Selection")
+        ![NCAR Date Selection](Scratch/Notebooks/images/NCAR_DateSelection.png)
         
         Click Continue and wait for it to validate your selections. 
         
@@ -62,7 +65,7 @@ Description: # OpenAvalancheProject
             4. Select only the 3-24 hour forecasts in the gridded products as currently OAP doesn't use more than this.  
             5. You can also then select the bounding box for the area you want to download. Once you have a bounding box you like write down the lat/lon values so its easier to input when we come back for other date ranges.
         
-        ![NCAR Subset Selection](Tutorial/NCAR_Subset2.png?raw=true "NCAR Subset")
+        ![NCAR Subset Selection](Scratch/Notebooks/images/NCAR_Subset2.png)
         
         Once the selections are correct and you can eventually click through to submit your request.  You should get a confirmation page of your selections and the system will start to retrieve your data.  This usually takes a few hours and you will get an email when its ready for download.  At this point if you want additional date/time ranges you can submit the requests and they will get queued and made avalable for download when they are ready.  In this example the downloaded files were 1.1 GB.
         
@@ -78,7 +81,7 @@ Description: # OpenAvalancheProject
         
             rename 's/(.*)\.grib2.chamberlin455705/$1.grib2/g' *
         
-        ![File List Example](Tutorial/files_example2.png?raw=true "File List Example")
+        ![File List Example](Scratch/Notebooks/images/files_example2.png)
         
         The final step is to ensure the input data is in the correct folder structure.  All data for this project will sit off a path you define as the base path.  The GFS input data then needs to be in subfolders of that path delineated by season and state (or country).
         For example if our past path in this example is:
@@ -132,19 +135,19 @@ Description: # OpenAvalancheProject
         
         From the jupyter UI open the _1.ParseGFS_ notebook.   You can execute through this notebook and review the documentation as you do.  Due to some instability in writing the netcdf files this notebook isn't intentended to be executed as a whole process but will involve some error checking to ensure that all the potential data has been transformed and written correctly.  The only required steps is to correctly set these parameters:
         
-        ![ParseGFS Parameters](Tutorial/ParseGFS_Notebook1.png?raw=true "ParseGFS Parameters")
+        ![ParseGFS Parameters](Scratch/Notebooks/images/ParseGFS_Notebook1.png)
         
         Completing 1.ParseGFS notebook bascially takes the raw input weather data and leaves us with data slightly transformed but filtered to only the coordinates in the avalanche regions for that location.  For example here is what a regional view of one of the parameters (U component of wind vector) looks like when both interpolated 4x and viewed across the entire Washington region:
         
-        ![Washington Wind Component](Tutorial/Wind_Example.png?raw=true "Washington Wind Component")
+        ![Washington Wind Component](Scratch/Notebooks/images/Wind_Example.png)
         
         We've used this geojson definition of the avalanche regions to subset that view in to much smaller views focused on the avalanche forecast regions.  Here are all the US regions.
         
-        ![US Avalanche Regions](Tutorial/US_Avy_Regions.png?raw=true "US Avalanche Regions")
+        ![US Avalanche Regions](Scratch/Notebooks/images/US_Avy_Regions.png)
         
         And then this is what it looks like when filtered to only the Olympics avalanche region (the small one in the top left of the US regions):
         
-        ![Olympics Wind Component](Tutorial/Wind_Region_Example.png?raw=true "Olympics Wind Component")
+        ![Olympics Wind Component](Scratch/Notebooks/images/Wind_Region_Example.png)
         
         ### 2.ConvertToZarr
         #### Reformat data in to efficient Zarr format
@@ -188,6 +191,74 @@ Description: # OpenAvalancheProject
         
         ## Citations
         National Centers for Environmental Prediction/National Weather Service/NOAA/U.S. Department of Commerce. 2015, updated daily. NCEP GFS 0.25 Degree Global Forecast Grids Historical Archive. Research Data Archive at the National Center for Atmospheric Research, Computational and Information Systems Laboratory. https://doi.org/10.5065/D65D8PWK. Accessed April, 2020
+        
+        
+        # Files on disk structure
+        
+        OAPMLData/
+        
+            1.RawWeatherData/
+                gfs/
+                    <season>/
+                        /<state or country>/
+            2.GFSDaily(x)Interpolation)/
+            3.GFSFiltered(x)Interpolation)
+        
+        ## These parameters need to be set
+        
+        ```python
+        season = '15-16'
+        state = 'Washington'
+        
+        interpolate = 1 #interpolation factor: whether we can to augment the data through lat/lon interpolation; 1 no interpolation, 4 is 4x interpolation
+        
+        data_root = '/media/scottcha/E1/Data/OAPMLData/'
+        
+        n_jobs = 4 #number of parallel processes, this processing is IO bound so don't set this too high
+        ```
+        
+        ```python
+        pgfs = ParseGFS(season, state, data_root)
+        ```
+        
+            /media/scottcha/E1/Data/OAPMLData//1.RawWeatherData/gfs/15-16/Washington/ Is Input Directory
+            /media/scottcha/E1/Data/OAPMLData/2.GFSDaily1xInterpolation/15-16/ Is output directory and input to filtering
+            /media/scottcha/E1/Data/OAPMLData/3.GFSFiltered1xInterpolation/15-16/ Is output directory of filtering
+        
+        
+        ### The first step is to resample the GFS files 
+        
+        ```python
+        #limiting this to 4 jobs as fileio is the bottleneck
+        #n_jobs=4
+        #CPU times: user 1.11 s, sys: 551 ms, total: 1.66 s
+        #Wall time: 12min 22s
+        %time results = pgfs.resample_local()
+        ```
+        
+        ### Then interpolate and filter those files
+        
+        ```python
+        #it seems that n_jobs > 8 introdces a lot of errors in to the netcdf write
+        #n_jobs = 6
+        #CPU times: user 1.83 s, sys: 830 ms, total: 2.66 s
+        #Wall time: 45min 18s
+        %time results = pgfs.interpolate_and_write_local()
+        ```
+        
+        ### If interpolate and write returns errors you can retry them individually like:
+        
+        ```python
+        #individually fix any potenital file write errors
+        redo = ['20181103', '20181105', '20181220', '20181225', '20181226', '20190104', '20190214', '20190222', '20190224', '20190403']
+        #fix any errors
+        redo2 = []
+        for r in redo:
+            print('on ' + r)
+            a, b = interpolate_and_write(r)
+            if len(b) > 0:
+                redo2.append(b)
+        ```
         
 Keywords: openavalancheproject
 Platform: UNKNOWN

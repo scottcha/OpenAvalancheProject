@@ -333,6 +333,69 @@ For example if our past path in this example is:</p>
 </div>
     {% endraw %}
 
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Once-the-converstion-is-complete-for-a-set-of-seasons-and-states-we-need-to-convert-the-batch-to-Zarr">Once the converstion is complete for a set of seasons and states we need to convert the batch to Zarr<a class="anchor-link" href="#Once-the-converstion-is-complete-for-a-set-of-seasons-and-states-we-need-to-convert-the-batch-to-Zarr"> </a></h3>
+</div>
+</div>
+</div>
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#uncomment regions and seasons if doing a larger transform</span>
+<span class="n">regions</span> <span class="o">=</span> <span class="p">{</span>
+           <span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">,</span> <span class="s1">&#39;Snoqualmie Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Stevens Pass&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;WA Cascades East, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, North&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, South&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span><span class="p">]</span>
+           <span class="p">}</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;15-16&#39;</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ctz</span> <span class="o">=</span> <span class="n">ConvertToZarr</span><span class="p">(</span><span class="n">seasons</span><span class="p">,</span> <span class="n">regions</span><span class="p">,</span> <span class="n">data_root</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ctz</span><span class="o">.</span><span class="n">convert_local</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
 </div>
  
 

@@ -2,9 +2,11 @@
 
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
-index = {"ParseGFS": "1.ParseGFS.ipynb"}
+index = {"ParseGFS": "1.ParseGFS.ipynb",
+         "ConvertToZarr": "2.ConvertToZarr.ipynb"}
 
-modules = ["parse_gfs.py"]
+modules = ["parse_gfs.py",
+           "convert_to_zarr.py"]
 
 doc_url = "https://scottcha.github.io/openavalancheproject/"
 
