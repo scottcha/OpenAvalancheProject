@@ -65,8 +65,7 @@ class ParseGFS:
 
         self.filtered_path = data_root + '3.GFSFiltered' + str(interpolate) + 'xInterpolation/'+ season + '/'
 
-        #input file patterns as we'll read a full winter season in one pass
-        self.file_pattern1 = '00.f0[0-2]*.grib2'
+        #input file pattern as we'll read a full winter season in one pass
         self.file_pattern2 = '00.f0[0-2]*.nc'
 
         p = 181
@@ -85,6 +84,9 @@ class ParseGFS:
 
         if not os.path.exists(self.day_path):
             os.makedirs(self.day_path)
+
+        if not os.path.exists(self.filtered_path):
+            os.makedirs(self.filtered_path)
 
 
     def resample(self, t):
@@ -159,16 +161,16 @@ class ParseGFS:
                 dates_with_errors.append(t)
         return dates_with_errors
 
-    def resample_local(jobs=4):
+    def resample_local(self, jobs=4):
         """
         Executes the resample process on the local machine.
         Process is IO bound so don't overallocate n_jobs
         All-Nan Slice and Divide warnings can be ignored
 
         Keyword arguments:
-        n_jobs: number of parallel processs to use (default = 4)
+        jobs: number of parallel processs to use (default = 4)
         """
-        results = Parallel(n_jobs=4, backend="multiprocessing")(map(delayed(pgfs.resample), pgfs.date_values_pd.strftime('%Y%m%d')))
+        results = Parallel(n_jobs=jobs, backend="multiprocessing")(map(delayed(self.resample), self.date_values_pd.strftime('%Y%m%d')))
 
         redo = None
         if not any(results):
@@ -195,6 +197,95 @@ class ParseGFS:
             #another pass to try and fix any file corruption issues
             redo = check_resample(date_values_pd)
 
-            results = Parallel(n_jobs=1, backend="multiprocessing")(map(delayed(pgfs.resample), redo))
+            results = Parallel(n_jobs=1, backend="multiprocessing")(map(delayed(self.resample), redo))
+
+        return results
+
+
+    def interpolate_and_write(self, t):
+        """
+        interpolate and filter each day
+        don't use dask for this, much faster to process the files in parallel
+
+        Keyword arguments:
+        t: the pandas datetime to process
+        """
+        #Read in all avy region shapes and metadata
+        regions_df = gpd.read_file(self.region_path + '/USAvalancheRegions.geojson')
+        #filter to just the ones where we have lables for training
+        training_regions_df = regions_df[regions_df['is_training']==True].copy()
+
+        #TODO: this needs to not rely on a code change to add a region
+        if self.state == 'Washington':
+            training_regions_df = training_regions_df[training_regions_df['center']=='Northwest Avalanche Center']
+        elif self.state == 'Utah':
+            training_regions_df = training_regions_df[training_regions_df['center']=='Utah Avalanche Center']
+        elif self.state == 'Colorado':
+            training_regions_df = training_regions_df[training_regions_df['center']=='Colorado Avalanche Information Center']
+
+        training_regions_df.reset_index(drop=True, inplace=True)
+        #open files which were previously resampled to a single day per file
+        try:
+            with xr.open_dataset(self.day_path + self.state_path + '_' + t + '.nc') as tmp_ds:
+                print('On time: ' + str(t))
+
+                new_lon = np.linspace(tmp_ds.longitude[0], tmp_ds.longitude[-1], tmp_ds.dims['longitude'] * self.interpolate)
+                new_lat = np.linspace(tmp_ds.latitude[0], tmp_ds.latitude[-1], tmp_ds.dims['latitude'] * self.interpolate)
+                interpolated_ds = tmp_ds.interp(latitude=new_lat, longitude=new_lon)
+
+                subsets = []
+                filenames = []
+                errors = []
+                redo_date = []
+                date = tmp_ds.time.dt.strftime('%Y%m%d').values[0]
+                for _, row in training_regions_df.iterrows():
+                    #print("Calculating region: " + row['name'])
+                    f = self.filtered_path + 'Region_' + row['name'] + '_' + date + '.nc'
+                    try:
+                        if self.interpolate == 1:
+                            tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry'])
+                        else:
+                            tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry']).salem.roi(geometry=row['geometry'])
+                    except ValueError:
+                        errors.append('Value Error: Ensure the correct training regions have been provided')
+
+                        continue
+
+                    try:
+                        tmp_subset.to_netcdf(f)
+                    except Exception as err:
+                        os.remove(f)
+                        errors.append(f + ' -- ' + format(err))
+                        redo_date.append(date)
+                        continue
+        except OSError as err:
+            print('Missing files for time: ' + t + 'with error ' + format(err))
+            return None
+
+        return (errors, redo_date)
+
+    def interpolate_and_write_local(self, jobs=6):
+        """
+        Executes the interpolate and write process on the local machine.
+        Process is IO bound so don't overallocate n_jobs
+
+        Keyword arguments:
+        jobs: number of parallel processs to use (default = 6)
+        """
+
+        results = Parallel(n_jobs=6, backend="multiprocessing")(map(delayed(self.interpolate_and_write), self.date_values_pd.strftime('%Y%m%d')))
+
+        all_none = True
+        for x in results:
+            if x[0] == [] and x[1] == []:
+                continue
+            else:
+                all_none = False
+                break
+
+        if all_none:
+            print('No Errors, go to ConvertToZarr')
+        else:
+            print('errors in some files, redo those by calling interpolate_and_write on those specific files')
 
         return results

@@ -4,7 +4,7 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"ParseGFS": "1.ParseGFS.ipynb"}
 
-modules = ["1_parse_gfs.py"]
+modules = ["parse_gfs.py"]
 
 doc_url = "https://scottcha.github.io/openavalancheproject/"
 

@@ -7,24 +7,27 @@ entries:
 - folders:
   - folderitems:
     - output: web,pdf
-      title: Export to modules
-      url: /export.html
+      title: Overview
+      url: /
     - output: web,pdf
-      title: Convert to html
-      url: /export2html.html
+      title: Notebook which takes GFS model data, filteres it to relevant avalanche
+        regions and outputs it to regional .netcdf files
+      url: 1.ParseGFS.html
     - output: web,pdf
-      title: Show doc
-      url: /showdoc.html
+      title: Notebook which converts per region netCDF files to Zarr files to make
+        them more efficient when indexing
+      url: 2.ConvertToZarr.html
     - output: web,pdf
-      title: Test functions
-      url: /test.html
+      title: This notebook is the primary notebook to take data in a per region format
+        and transform it in to a format appropriate for ML problems
+      url: 3.PrepMLData.html
     - output: web,pdf
-      title: Core functions
-      url: /core.html
+      title: Notebook demonstrating the use of Timeseriesai for generating predictions
+      url: 4.TimeseriesAI.html
     - output: web,pdf
-      title: Command line functions
-      url: /cli.html
+      title: Title
+      url: XGBoostExample.html
     output: web
-    title: Notebook
+    title: openavalancheproject
   output: web
   title: Sidebar

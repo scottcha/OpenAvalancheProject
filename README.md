@@ -1,4 +1,7 @@
-# OpenAvalancheProject
+# Open Avalanche Project
+
+
+
 Open source project to bring data and ml to avalanche forecasting
 
 
@@ -36,13 +39,13 @@ You'll need to create an account and once you are logged in you can visit the ab
 
 Due to the size of the files we are downloading I only recommend downloading one season and for a regional subset at a time.  In this example I'm going to download the data for Washington.  
 
-![NCAR Get Data](Tutorial/NCAR_GetData.png?raw=true "NCAR Get Data")
+![NCAR Get Data](Scratch/Notebooks/images/NCAR_GetData.png)
 
 Click on the "Get a Subset" link.
 
 The next page allows us to select both the dates and parameters we are interested in.  Currently we read all parameters so leave the parameters unchecked.  For dates choose one winter season.  In the below screenshot I've selected dates Nov 1, 2015 thorough April 30, 2016 for the 15-16 season.  The models assume the season starts Nov 1 and ends April 30 (it wouldn't be too difficult to update the data pipeline for a southern hemisphere winter but its not something I've done yet).
 
-![NCAR Date Selection](Tutorial/NCAR_DateSelection.png?raw=true "NCAR Date Selection")
+![NCAR Date Selection](Scratch/Notebooks/images/NCAR_DateSelection.png)
 
 Click Continue and wait for it to validate your selections. 
 
@@ -54,7 +57,7 @@ The next page allows you to further subset your data.  There are a few important
     4. Select only the 3-24 hour forecasts in the gridded products as currently OAP doesn't use more than this.  
     5. You can also then select the bounding box for the area you want to download. Once you have a bounding box you like write down the lat/lon values so its easier to input when we come back for other date ranges.
 
-![NCAR Subset Selection](Tutorial/NCAR_Subset2.png?raw=true "NCAR Subset")
+![NCAR Subset Selection](Scratch/Notebooks/images/NCAR_Subset2.png)
 
 Once the selections are correct and you can eventually click through to submit your request.  You should get a confirmation page of your selections and the system will start to retrieve your data.  This usually takes a few hours and you will get an email when its ready for download.  At this point if you want additional date/time ranges you can submit the requests and they will get queued and made avalable for download when they are ready.  In this example the downloaded files were 1.1 GB.
 
@@ -70,7 +73,7 @@ Now remove the download request label in the filename which is easily accomplish
 
     rename 's/(.*)\.grib2.chamberlin455705/$1.grib2/g' *
 
-![File List Example](Tutorial/files_example2.png?raw=true "File List Example")
+![File List Example](Scratch/Notebooks/images/files_example2.png)
 
 The final step is to ensure the input data is in the correct folder structure.  All data for this project will sit off a path you define as the base path.  The GFS input data then needs to be in subfolders of that path delineated by season and state (or country).
 For example if our past path in this example is:
@@ -124,19 +127,19 @@ Change directory to the /Scratch/Notebooks folder and launch jupyter
 
 From the jupyter UI open the _1.ParseGFS_ notebook.   You can execute through this notebook and review the documentation as you do.  Due to some instability in writing the netcdf files this notebook isn't intentended to be executed as a whole process but will involve some error checking to ensure that all the potential data has been transformed and written correctly.  The only required steps is to correctly set these parameters:
 
-![ParseGFS Parameters](Tutorial/ParseGFS_Notebook1.png?raw=true "ParseGFS Parameters")
+![ParseGFS Parameters](Scratch/Notebooks/images/ParseGFS_Notebook1.png)
 
 Completing 1.ParseGFS notebook bascially takes the raw input weather data and leaves us with data slightly transformed but filtered to only the coordinates in the avalanche regions for that location.  For example here is what a regional view of one of the parameters (U component of wind vector) looks like when both interpolated 4x and viewed across the entire Washington region:
 
-![Washington Wind Component](Tutorial/Wind_Example.png?raw=true "Washington Wind Component")
+![Washington Wind Component](Scratch/Notebooks/images/Wind_Example.png)
 
 We've used this geojson definition of the avalanche regions to subset that view in to much smaller views focused on the avalanche forecast regions.  Here are all the US regions.
 
-![US Avalanche Regions](Tutorial/US_Avy_Regions.png?raw=true "US Avalanche Regions")
+![US Avalanche Regions](Scratch/Notebooks/images/US_Avy_Regions.png)
 
 And then this is what it looks like when filtered to only the Olympics avalanche region (the small one in the top left of the US regions):
 
-![Olympics Wind Component](Tutorial/Wind_Region_Example.png?raw=true "Olympics Wind Component")
+![Olympics Wind Component](Scratch/Notebooks/images/Wind_Region_Example.png)
 
 ### 2.ConvertToZarr
 #### Reformat data in to efficient Zarr format
@@ -180,3 +183,1716 @@ This notebook also depends on a different conda environment in the _Environments
 
 ## Citations
 National Centers for Environmental Prediction/National Weather Service/NOAA/U.S. Department of Commerce. 2015, updated daily. NCEP GFS 0.25 Degree Global Forecast Grids Historical Archive. Research Data Archive at the National Center for Atmospheric Research, Computational and Information Systems Laboratory. https://doi.org/10.5065/D65D8PWK. Accessed April, 2020
+
+
+# Files on disk structure
+
+OAPMLData/
+
+    1.RawWeatherData/
+        gfs/
+            <season>/
+                /<state or country>/
+    2.GFSDaily(x)Interpolation)/
+    3.GFSFiltered(x)Interpolation)
+
+## These parameters need to be set
+
+```python
+season = '15-16'
+state = 'Washington'
+
+interpolate = 1 #interpolation factor: whether we can to augment the data through lat/lon interpolation; 1 no interpolation, 4 is 4x interpolation
+
+data_root = '/media/scottcha/E1/Data/OAPMLData/'
+
+n_jobs = 4 #number of parallel processes, this processing is IO bound so don't set this too high
+```
+
+```python
+pgfs = ParseGFS(season, state, data_root)
+```
+
+    /media/scottcha/E1/Data/OAPMLData//1.RawWeatherData/gfs/15-16/Washington/ Is Input Directory
+    /media/scottcha/E1/Data/OAPMLData/2.GFSDaily1xInterpolation/15-16/ Is output directory and input to filtering
+    /media/scottcha/E1/Data/OAPMLData/3.GFSFiltered1xInterpolation/15-16/ Is output directory of filtering
+
+
+### The first step is to resample the GFS files 
+
+```python
+#limiting this to 4 jobs as fileio is the bottleneck
+#n_jobs=4
+#CPU times: user 1.11 s, sys: 551 ms, total: 1.66 s
+#Wall time: 12min 22s
+%time results = pgfs.resample_local()
+```
+
+    On time: 20151101
+    
+    On time: 20151102
+    On time: 20151103
+    
+    On time: 20151104
+    
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151105
+    
+    On time: 20151106
+    
+    On time: 20151107
+    
+    On time: 20151108
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151109
+    
+    On time: 20151110
+    
+    On time: 20151111
+    
+    On time: 20151112
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151113
+    
+    On time: 20151114
+    
+    On time: 20151115
+    
+    On time: 20151116
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151117
+    
+    On time: 20151118
+    
+    On time: 20151119
+    
+    On time: 20151120
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151121
+    
+    On time: 20151122
+    
+    On time: 20151123
+    
+    On time: 20151124
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151125
+    
+    On time: 20151126
+    
+    On time: 20151127
+    
+    On time: 20151128
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151129
+    
+    On time: 20151130
+    
+    On time: 20151201
+    
+    On time: 20151202
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151203
+    
+    On time: 20151204
+    
+    On time: 20151205
+    
+    On time: 20151206
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151207
+    
+    On time: 20151208
+    
+    On time: 20151209
+    
+    On time: 20151210
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151211
+    
+    On time: 20151212
+    
+    On time: 20151213
+    
+    On time: 20151214
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151215
+    
+    On time: 20151216
+    
+    On time: 20151217
+    
+    On time: 20151218
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151219
+    
+    On time: 20151220
+    
+    On time: 20151221
+    
+    On time: 20151222
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151223
+    
+    On time: 20151224
+    
+    On time: 20151225
+    
+    On time: 20151226
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151227
+    
+    On time: 20151228
+    
+    On time: 20151229
+    
+    On time: 20151230
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20151231
+    
+    On time: 20160101
+    
+    On time: 20160102
+    
+    On time: 20160103
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160104
+    
+    On time: 20160105
+    
+    On time: 20160106
+    
+    On time: 20160107
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160108
+    
+    On time: 20160109
+    
+    On time: 20160110
+    
+    On time: 20160111
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160112
+    
+    On time: 20160113
+    
+    On time: 20160114
+    
+    On time: 20160115
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160116
+    
+    On time: 20160117
+    
+    On time: 20160118
+    
+    On time: 20160119
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160120
+    
+    On time: 20160121
+    
+    On time: 20160122
+    
+    On time: 20160123
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160124
+    
+    On time: 20160125
+    
+    On time: 20160126
+    
+    On time: 20160127
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160128
+    
+    On time: 20160129
+    
+    On time: 20160130
+    
+    On time: 20160131
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160201
+    
+    On time: 20160202
+    
+    On time: 20160203
+    
+    On time: 20160204
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160205
+    
+    On time: 20160206
+    
+    On time: 20160207
+    
+    On time: 20160208
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160209
+    
+    On time: 20160210
+    
+    On time: 20160211
+    
+    On time: 20160212
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160213
+    
+    On time: 20160214
+    
+    On time: 20160215
+    
+    On time: 20160216
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160217
+    
+    On time: 20160218
+    
+    On time: 20160219
+    
+    On time: 20160220
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160221
+    
+    On time: 20160222
+    
+    On time: 20160223
+    
+    On time: 20160224
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160225
+    
+    On time: 20160226
+    
+    On time: 20160227
+    
+    On time: 20160228
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160229
+    
+    On time: 20160301
+    
+    On time: 20160302
+    
+    On time: 20160303
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160304
+    
+    On time: 20160305
+    
+    On time: 20160306
+    
+    On time: 20160307
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160308
+    
+    On time: 20160309
+    
+    On time: 20160310
+    
+    On time: 20160311
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160312
+    
+    On time: 20160313
+    
+    On time: 20160314
+    
+    On time: 20160315
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160316
+    
+    On time: 20160317
+    
+    On time: 20160318
+    
+    On time: 20160319
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160320
+    
+    On time: 20160321
+    
+    On time: 20160322
+    
+    On time: 20160323
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160324
+    
+    On time: 20160325
+    
+    On time: 20160326
+    
+    On time: 20160327
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160328
+    
+    On time: 20160329
+    
+    On time: 20160330
+    
+    On time: 20160331
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160401
+    
+    On time: 20160402
+    
+    On time: 20160403
+    
+    On time: 20160404
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160405
+    
+    On time: 20160406
+    
+    On time: 20160407
+    
+    On time: 20160408
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160409
+    
+    On time: 20160410
+    
+    On time: 20160411
+    
+    On time: 20160412
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160413
+    
+    On time: 20160414
+    
+    On time: 20160415
+    
+    On time: 20160416
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160417
+    
+    On time: 20160418
+    
+    On time: 20160419
+    
+    On time: 20160420
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160421
+    
+    On time: 20160422
+    
+    On time: 20160423
+    
+    On time: 20160424
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160425
+    
+    On time: 20160426
+    
+    On time: 20160427
+    
+    On time: 20160428
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    On time: 20160429
+    
+    On time: 20160430
+    
+
+
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/utils.py:31: RuntimeWarning: All-NaN slice encountered
+      return func(*args, **kwargs)
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/core.py:121: RuntimeWarning: All-NaN slice encountered
+      return func(*(_execute_task(a, cache) for a in args))
+    /home/scottcha/anaconda3/envs/pangeo_small/lib/python3.7/site-packages/dask/array/numpy_compat.py:40: RuntimeWarning: invalid value encountered in true_divide
+      x = np.divide(x1, x2, out)
+
+
+    No Errors
+    CPU times: user 1.13 s, sys: 594 ms, total: 1.73 s
+    Wall time: 12min 18s
+
+
+### Then interpolate and filter those files
+
+```python
+#it seems that n_jobs > 8 introdces a lot of errors in to the netcdf write
+#n_jobs = 6
+#CPU times: user 1.83 s, sys: 830 ms, total: 2.66 s
+#Wall time: 45min 18s
+%time results = pgfs.interpolate_and_write_local()
+```
+
+### If interpolate and write returns errors you can retry them individually like:
+
+```python
+#individually fix any potenital file write errors
+redo = ['20181103', '20181105', '20181220', '20181225', '20181226', '20190104', '20190214', '20190222', '20190224', '20190403']
+#fix any errors
+redo2 = []
+for r in redo:
+    print('on ' + r)
+    a, b = interpolate_and_write(r)
+    if len(b) > 0:
+        redo2.append(b)
+```
