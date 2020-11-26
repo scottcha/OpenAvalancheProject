@@ -24,6 +24,7 @@ class ConvertToZarr:
         seasons: list of season values to process
         regions: dictonary of Key: State and Value: List of Regions to process for that state
         data_root: the root path of the data folders which contains the 3.GFSFiltered1xInterpolation
+        interpolate: the amount of interpolation applied in in the previous ParseGFS notebook (used for finding the correct input/output paths)
         """
         self.processed_path = data_root + '/3.GFSFiltered'+ str(interpolate) + 'xInterpolation/'
         self.zarr_base_path = data_root + '/4.GFSFiltered'+ str(interpolate) + 'xInterpolationZarr/'

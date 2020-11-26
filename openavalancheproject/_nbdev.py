@@ -3,10 +3,12 @@
 __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"ParseGFS": "1.ParseGFS.ipynb",
-         "ConvertToZarr": "2.ConvertToZarr.ipynb"}
+         "ConvertToZarr": "2.ConvertToZarr.ipynb",
+         "PrepML": "3.PrepMLData.ipynb"}
 
 modules = ["parse_gfs.py",
-           "convert_to_zarr.py"]
+           "convert_to_zarr.py",
+           "prep_ml.py"]
 
 doc_url = "https://scottcha.github.io/openavalancheproject/"
 

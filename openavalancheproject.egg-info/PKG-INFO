@@ -260,6 +260,27 @@ Description: # Open Avalanche Project
                 redo2.append(b)
         ```
         
+        ### Once the converstion is complete for a set of seasons and states we need to convert the batch to Zarr
+        
+        ```python
+        #currently only have Washington regions and one season specified for the tutorial
+        #uncomment regions and seasons if doing a larger transform
+        regions = {
+                   'Washington': ['Mt Hood', 'Olympics', 'Snoqualmie Pass', 'Stevens Pass',
+                   'WA Cascades East, Central', 'WA Cascades East, North', 'WA Cascades East, South',
+                   'WA Cascades West, Central', 'WA Cascades West, Mt Baker', 'WA Cascades West, South']
+                   }
+        seasons = ['15-16']
+        ```
+        
+        ```python
+        ctz = ConvertToZarr(seasons, regions, data_root)
+        ```
+        
+        ```python
+        ctz.convert_local()
+        ```
+        
 Keywords: openavalancheproject
 Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
