@@ -21,12 +21,6 @@ entries:
       title: This notebook is the primary notebook to take data in a per region format
         and transform it in to a format appropriate for ML problems
       url: 3.PrepMLData.html
-    - output: web,pdf
-      title: Notebook demonstrating the use of Timeseriesai for generating predictions
-      url: 4.TimeseriesAI.html
-    - output: web,pdf
-      title: Title
-      url: XGBoostExample.html
     output: web
     title: openavalancheproject
   output: web
