@@ -6,7 +6,7 @@ Open source project to bring data and ml to avalanche forecasting
 
 
 Webpage is https://openavalancheproject.org
-Docs are located at https://scottcha.github.io/OpenAvalancheProject/
+
 
 We are starting to try and improve communications on the group here https://groups.google.com/g/openavalancheproject
 
