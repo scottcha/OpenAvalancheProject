@@ -6,7 +6,7 @@ Open source project to bring data and ml to avalanche forecasting
 
 
 Webpage is https://openavalancheproject.org
-
+Docs are located at https://scottcha.github.io/OpenAvalancheProject/
 
 We are starting to try and improve communications on the group here https://groups.google.com/g/openavalancheproject
 
@@ -118,7 +118,7 @@ Rexecute a rename command to remove the grib extension:
 
 _There are ways of improving the efficiency by doing this in parallel so feel free to improve on this._
 
-Change directory to the /Scratch/Notebooks folder and launch jupyter
+To start a new notebook launch jupyter
 
     jupyter notebook
 
@@ -141,7 +141,18 @@ And then this is what it looks like when filtered to only the Olympics avalanche
 
 
 
-```
+### Building the project
+To build and install the project first clone locally.
+Then you can build the project by executing
+
+    nbdev_build_lib
+    
+In the project root.  To install the modules in to your current conda environment you can then execute
+
+    pip install -e .
+    
+
+```python
 from openavalancheproject.parse_gfs import ParseGFS
 from openavalancheproject.convert_to_zarr import ConvertToZarr
 from openavalancheproject.prep_ml import PrepML
@@ -164,7 +175,7 @@ OAPMLData\
 
 ## These parameters need to be set
 
-```
+```python
 season = '15-16'
 state = 'Washington'
 
@@ -175,7 +186,7 @@ data_root = '/media/scottcha/E1/Data/OAPMLData/'
 n_jobs = 4 #number of parallel processes, this processing is IO bound so don't set this too high
 ```
 
-```
+```python
 pgfs = ParseGFS(season, state, data_root)
 ```
 
@@ -186,7 +197,7 @@ pgfs = ParseGFS(season, state, data_root)
 
 ### The first step is to resample the GFS files 
 
-```
+```python
 #limiting this to 4 jobs as fileio is the bottleneck
 #n_jobs=4
 #CPU times: user 1.11 s, sys: 551 ms, total: 1.66 s
@@ -196,7 +207,7 @@ pgfs = ParseGFS(season, state, data_root)
 
 ### Then interpolate and filter those files
 
-```
+```python
 #it seems that n_jobs > 8 introdces a lot of errors in to the netcdf write
 #n_jobs = 6
 #CPU times: user 1.83 s, sys: 830 ms, total: 2.66 s
@@ -206,7 +217,7 @@ pgfs = ParseGFS(season, state, data_root)
 
 ### If interpolate and write returns errors you can retry them individually like:
 
-```
+```python
 #individually fix any potenital file write errors
 redo = ['20151103', '20151105']
 #fix any errors
@@ -220,7 +231,7 @@ for r in redo:
 
 ### Once the converstion is complete for a set of seasons and states we need to convert the batch to Zarr
 
-```
+```python
 #currently only have Washington regions and one season specified for the tutorial
 #uncomment regions and seasons if doing a larger transform
 regions = {
@@ -236,11 +247,11 @@ seasons = ['15-16']
 The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible. This process can be run entirely end to end once you are sure the parameters are set correctly.  It does take about 6 hours on my workstation using all cores.  The imporant item about this notebook is that we are essentially indexing the data to be accessed efficiently when we create our ML datasets. 
 
 
-```
+```python
 ctz = ConvertToZarr(seasons, regions, data_root)
 ```
 
-```
+```python
 ctz.convert_local()
 ```
 
@@ -276,15 +287,15 @@ In the tutorial the notebook produced one train batche of 1,000 rows and one tes
 
 ### At this point we can generate a train and test dataset from the Zarr data
 
-```
+```python
 pml = PrepML(data_root, interpolate, date_start='2015-11-01', date_end='2016-04-30', date_train_test_cutoff='2016-04-01')
 ```
 
-```
+```python
 %time train_labels, test_labels = pml.prep_labels()
 ```
 
-```
+```python
 train_labels = train_labels[train_labels['UnifiedRegion'].isin(['Mt Hood', 
                                                               'Olympics', 
                                                               'Snoqualmie Pass',
@@ -297,7 +308,7 @@ train_labels = train_labels[train_labels['UnifiedRegion'].isin(['Mt Hood',
                                                               'WA Cascades West, South'])]
 ```
 
-```
+```python
 test_labels = test_labels[test_labels['UnifiedRegion'].isin(['Mt Hood', 
                                                               'Olympics', 
                                                               'Snoqualmie Pass',
@@ -310,17 +321,17 @@ test_labels = test_labels[test_labels['UnifiedRegion'].isin(['Mt Hood',
                                                               'WA Cascades West, South'])]
 ```
 
-```
+```python
 train_labels.head()
 ```
 
 ### Note the class imbalance and the test set not having all classes.  This isn't a good set for ML (one should use the entire 2015-2020 dataset but you need to ensure you have all the data from those dates available)
 
-```
+```python
 train_labels['Day1DangerAboveTreeline'].value_counts()
 ```
 
-```
+```python
 test_labels['Day1DangerAboveTreeline'].value_counts()
 ```
 
@@ -328,7 +339,7 @@ test_labels['Day1DangerAboveTreeline'].value_counts()
 
 Modifying the parameters so you don't run out of memory is important as its designed to append to the on disk files so as to stay within memory contraits: num_train_rows_per_file maxes out at around 50000 on my 48gb local machine.  If you want more data than then then use num_train_files parameter which will create multiple files num_train_rows_per_file and will append them in to one file at the end of the process. 
 
-```
+```python
 %time train_labels_remaining, test_labels_remaining = pml.generate_train_test_local(train_labels, test_labels, num_train_rows_per_file=1000, num_test_rows_per_file=500, num_variables=978)
 ```
 

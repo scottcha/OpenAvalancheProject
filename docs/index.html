@@ -128,7 +128,7 @@ For example if our past path in this example is:</p>
 
 </code></pre>
 <p><em>There are ways of improving the efficiency by doing this in parallel so feel free to improve on this.</em></p>
-<p>Change directory to the /Scratch/Notebooks folder and launch jupyter</p>
+<p>To start a new notebook launch jupyter</p>
 
 <pre><code>jupyter notebook
 
@@ -139,6 +139,21 @@ For example if our past path in this example is:</p>
 <p><img src="/openavalancheproject/images/US_Avy_Regions.png" alt="US Avalanche Regions"></p>
 <p>And then this is what it looks like when filtered to only the Olympics avalanche region (the small one in the top left of the US regions):</p>
 <p><img src="/openavalancheproject/images/Wind_Region_Example.png" alt="Olympics Wind Component"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Building-the-project">Building the project<a class="anchor-link" href="#Building-the-project"> </a></h3><p>To build and install the project first clone locally.
+Then you can build the project by executing</p>
+
+<pre><code>nbdev_build_lib
+
+</code></pre>
+<p>In the project root.  To install the modules in to your current conda environment you can then execute</p>
+
+<pre><code>pip install -e .</code></pre>
 
 </div>
 </div>
