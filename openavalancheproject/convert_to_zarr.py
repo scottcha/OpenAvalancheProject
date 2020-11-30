@@ -5,7 +5,6 @@ __all__ = ['ConvertToZarr']
 # Cell
 import xarray as xr
 import zarr
-from dask.distributed import Client
 from joblib import Parallel, delayed
 import pandas as pd
 import os

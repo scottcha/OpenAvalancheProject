@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: openavalancheproject
-Version: 0.0.1
+Version: 0.0.2
 Summary: "Data Pipeline Processing for Open Avalanche Project from global GFS to ML Data"
 Home-page: https://github.com/scottcha/openavalancheproject/tree/master/
 Author: Scott Chamberlin
@@ -126,7 +126,7 @@ Description: # Open Avalanche Project
         
         _There are ways of improving the efficiency by doing this in parallel so feel free to improve on this._
         
-        Change directory to the /Scratch/Notebooks folder and launch jupyter
+        To start a new notebook launch jupyter
         
             jupyter notebook
         
@@ -148,6 +148,17 @@ Description: # Open Avalanche Project
         
         
         
+        
+        ### Building the project
+        To build and install the project first clone locally.
+        Then you can build the project by executing
+        
+            nbdev_build_lib
+            
+        In the project root.  To install the modules in to your current conda environment you can then execute
+        
+            pip install -e .
+            
         
         ```python
         from openavalancheproject.parse_gfs import ParseGFS
@@ -357,7 +368,7 @@ Keywords: openavalancheproject
 Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Intended Audience :: Developers
-Classifier: License :: MIT License
+Classifier: License :: OSI Approved :: MIT License
 Classifier: Natural Language :: English
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8

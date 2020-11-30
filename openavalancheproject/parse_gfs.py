@@ -5,7 +5,6 @@ __all__ = ['ParseGFS']
 # Cell
 import xarray as xr
 import matplotlib.pyplot as plt
-import datetime as dt
 import pandas as pd
 import salem
 import numpy as np

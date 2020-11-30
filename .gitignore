@@ -299,3 +299,12 @@ ML/azure_storage_config.py
 
 #Dask
 *dask_worker_space/
+
+#pypi
+.pypirc
+.whl
+.tar.gz
+
+#nbdev
+build/
+dist/
