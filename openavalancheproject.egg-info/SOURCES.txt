@@ -1,0 +1,13 @@
+README.md
+setup.py
+openavalancheproject/__init__.py
+openavalancheproject/_nbdev.py
+openavalancheproject/convert_to_zarr.py
+openavalancheproject/parse_gfs.py
+openavalancheproject/prep_ml.py
+openavalancheproject.egg-info/PKG-INFO
+openavalancheproject.egg-info/SOURCES.txt
+openavalancheproject.egg-info/dependency_links.txt
+openavalancheproject.egg-info/entry_points.txt
+openavalancheproject.egg-info/not-zip-safe
+openavalancheproject.egg-info/top_level.txt
