@@ -308,3 +308,7 @@ ML/azure_storage_config.py
 #nbdev
 build/
 dist/
+
+#test data
+TestData/5.MLData/
+TestData/4.GFSFiltered1xInterpolationZarr/lat_lon_union.csv

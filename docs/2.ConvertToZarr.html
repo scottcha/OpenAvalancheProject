@@ -79,12 +79,12 @@ nb_path: "DataPipelineNotebooks/2.ConvertToZarr.ipynb"
            <span class="c1">#&#39;Colorado&#39;: [&#39;Grand Mesa Zone&#39;, &#39;Sangre de Cristo Range&#39;, &#39;Steamboat Zone&#39;, &#39;Front Range Zone&#39;,</span>
            <span class="c1">#&#39;Vail Summit Zone&#39;, &#39;Sawatch Zone&#39;, &#39;Aspen Zone&#39;, </span>
            <span class="c1">#&#39;North San Juan Mountains&#39;, &#39;South San Juan Mountains&#39;, &#39;Gunnison Zone&#39;],</span>
-           <span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">,</span> <span class="s1">&#39;Snoqualmie Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Stevens Pass&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;WA Cascades East, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, North&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, South&#39;</span><span class="p">,</span>
-           <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span>
-           <span class="p">]</span>
+           <span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">]</span><span class="c1">#, &#39;Snoqualmie Pass&#39;, &#39;Stevens Pass&#39;,</span>
+           <span class="c1">#&#39;WA Cascades East, Central&#39;, &#39;WA Cascades East, North&#39;, &#39;WA Cascades East, South&#39;,</span>
+           <span class="c1">#&#39;WA Cascades West, Central&#39;, &#39;WA Cascades West, Mt Baker&#39;, &#39;WA Cascades West, South&#39;</span>
+           <span class="c1">#]</span>
            <span class="p">}</span>
-<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;15-16&#39;</span><span class="p">]</span><span class="c1">#, &#39;16-17&#39;, &#39;17-18&#39;, &#39;18-19&#39;]</span>
+<span class="n">seasons</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;18-19&#39;</span><span class="p">]</span> <span class="c1">#[&#39;15-16&#39;, &#39;16-17&#39;, &#39;17-18&#39;, &#39;18-19&#39;]</span>
 </pre></div>
 
     </div>
@@ -105,7 +105,7 @@ nb_path: "DataPipelineNotebooks/2.ConvertToZarr.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="ConvertToZarr" class="doc_header"><code>class</code> <code>ConvertToZarr</code><a href="https://github.com/scottcha/openavalancheproject/tree/master/openavalancheproject/convert_to_zarr.py#L14" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ConvertToZarr</code>(<strong><code>seasons</code></strong>, <strong><code>regions</code></strong>, <strong><code>data_root</code></strong>, <strong><code>interpolate</code></strong>=<em><code>1</code></em>)</p>
+<h2 id="ConvertToZarr" class="doc_header"><code>class</code> <code>ConvertToZarr</code><a href="https://github.com/scottcha/openavalancheproject/tree/master/openavalancheproject/convert_to_zarr.py#L13" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ConvertToZarr</code>(<strong><code>seasons</code></strong>, <strong><code>regions</code></strong>, <strong><code>data_root</code></strong>, <strong><code>interpolate</code></strong>=<em><code>1</code></em>)</p>
 </blockquote>
 <p>Class which encapsulates the logic to convert a set of filtered netCDF files to Zarr</p>
 
@@ -122,6 +122,92 @@ nb_path: "DataPipelineNotebooks/2.ConvertToZarr.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#ds = xr.open_dataset(tmppath, chunks={&#39;latitude&#39;:1, &#39;longitude&#39;:1})</span>
+<span class="c1">#ds = ds.to_array(name=&#39;vars&#39;).chunk({&#39;time&#39;:1, &#39;latitude&#39;:1, &#39;longitude&#39;:1, &#39;variable&#39;:-1}).to_dataset()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
 
 </div>
     {% endraw %}
@@ -154,6 +240,381 @@ nb_path: "DataPipelineNotebooks/2.ConvertToZarr.ipynb"
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>On Region_Mt Hood_20181101.ncOn Region_Olympics_20181101.nc
+
+On Region_Mt Hood_20181102.nc
+On Region_Mt Hood_20181103.nc
+On Region_Mt Hood_20181104.nc
+On Region_Mt Hood_20181105.nc
+On Region_Olympics_20181102.nc
+On Region_Mt Hood_20181106.nc
+On Region_Mt Hood_20181107.nc
+On Region_Mt Hood_20181108.nc
+On Region_Mt Hood_20181109.nc
+On Region_Mt Hood_20181110.nc
+On Region_Olympics_20181103.nc
+On Region_Mt Hood_20181111.nc
+On Region_Mt Hood_20181112.nc
+On Region_Mt Hood_20181113.nc
+On Region_Mt Hood_20181114.nc
+On Region_Mt Hood_20181115.nc
+On Region_Olympics_20181104.nc
+On Region_Mt Hood_20181116.nc
+On Region_Mt Hood_20181117.nc
+On Region_Mt Hood_20181118.nc
+On Region_Mt Hood_20181119.nc
+On Region_Mt Hood_20181120.nc
+On Region_Olympics_20181105.nc
+On Region_Mt Hood_20181121.nc
+On Region_Mt Hood_20181122.nc
+On Region_Mt Hood_20181123.nc
+On Region_Mt Hood_20181124.nc
+On Region_Olympics_20181106.nc
+On Region_Mt Hood_20181125.nc
+On Region_Mt Hood_20181126.nc
+On Region_Mt Hood_20181127.nc
+On Region_Mt Hood_20181128.nc
+On Region_Mt Hood_20181129.nc
+On Region_Olympics_20181107.nc
+On Region_Mt Hood_20181130.nc
+On Region_Mt Hood_20181201.nc
+On Region_Mt Hood_20181202.nc
+On Region_Mt Hood_20181203.nc
+On Region_Mt Hood_20181204.nc
+On Region_Olympics_20181108.nc
+On Region_Mt Hood_20181205.nc
+On Region_Mt Hood_20181206.nc
+On Region_Mt Hood_20181207.nc
+On Region_Mt Hood_20181208.nc
+On Region_Mt Hood_20181209.nc
+On Region_Olympics_20181109.nc
+On Region_Mt Hood_20181210.nc
+On Region_Mt Hood_20181211.nc
+On Region_Mt Hood_20181212.nc
+On Region_Mt Hood_20181213.nc
+On Region_Olympics_20181110.nc
+On Region_Mt Hood_20181214.nc
+On Region_Mt Hood_20181215.nc
+On Region_Mt Hood_20181216.nc
+On Region_Mt Hood_20181217.nc
+On Region_Mt Hood_20181218.nc
+On Region_Olympics_20181111.nc
+On Region_Mt Hood_20181219.nc
+On Region_Mt Hood_20181220.nc
+On Region_Mt Hood_20181221.nc
+On Region_Mt Hood_20181222.nc
+On Region_Mt Hood_20181223.nc
+On Region_Olympics_20181112.nc
+On Region_Mt Hood_20181224.nc
+On Region_Mt Hood_20181225.nc
+On Region_Mt Hood_20181226.nc
+On Region_Mt Hood_20181227.nc
+On Region_Mt Hood_20181228.nc
+On Region_Olympics_20181113.nc
+On Region_Mt Hood_20181229.nc
+On Region_Mt Hood_20181230.nc
+On Region_Mt Hood_20181231.nc
+On Region_Mt Hood_20190101.nc
+On Region_Olympics_20181114.nc
+On Region_Mt Hood_20190102.nc
+On Region_Mt Hood_20190103.nc
+On Region_Mt Hood_20190104.nc
+On Region_Mt Hood_20190105.nc
+On Region_Mt Hood_20190106.nc
+On Region_Olympics_20181115.nc
+On Region_Mt Hood_20190107.nc
+On Region_Mt Hood_20190108.nc
+On Region_Mt Hood_20190109.nc
+On Region_Mt Hood_20190110.nc
+On Region_Mt Hood_20190111.nc
+On Region_Olympics_20181116.nc
+On Region_Mt Hood_20190112.nc
+On Region_Mt Hood_20190113.nc
+On Region_Mt Hood_20190114.nc
+On Region_Mt Hood_20190115.nc
+On Region_Mt Hood_20190116.nc
+On Region_Olympics_20181117.nc
+On Region_Mt Hood_20190117.nc
+On Region_Mt Hood_20190118.nc
+On Region_Mt Hood_20190119.nc
+On Region_Mt Hood_20190120.nc
+On Region_Olympics_20181118.nc
+On Region_Mt Hood_20190121.nc
+On Region_Mt Hood_20190122.nc
+On Region_Mt Hood_20190123.nc
+On Region_Mt Hood_20190124.nc
+On Region_Mt Hood_20190125.nc
+On Region_Olympics_20181119.nc
+On Region_Mt Hood_20190126.nc
+On Region_Mt Hood_20190127.nc
+On Region_Mt Hood_20190128.nc
+On Region_Mt Hood_20190129.nc
+On Region_Olympics_20181120.nc
+On Region_Mt Hood_20190130.nc
+On Region_Mt Hood_20190131.nc
+On Region_Mt Hood_20190201.nc
+On Region_Mt Hood_20190202.nc
+On Region_Mt Hood_20190203.nc
+On Region_Olympics_20181121.nc
+On Region_Mt Hood_20190204.nc
+On Region_Mt Hood_20190205.nc
+On Region_Mt Hood_20190206.nc
+On Region_Mt Hood_20190207.nc
+On Region_Mt Hood_20190208.nc
+On Region_Olympics_20181122.nc
+On Region_Mt Hood_20190209.nc
+On Region_Mt Hood_20190210.nc
+On Region_Mt Hood_20190211.nc
+On Region_Mt Hood_20190212.nc
+On Region_Olympics_20181123.nc
+On Region_Mt Hood_20190213.nc
+On Region_Mt Hood_20190214.nc
+On Region_Mt Hood_20190215.nc
+On Region_Mt Hood_20190216.nc
+On Region_Mt Hood_20190217.nc
+On Region_Olympics_20181124.nc
+On Region_Mt Hood_20190218.nc
+On Region_Mt Hood_20190219.nc
+On Region_Mt Hood_20190220.nc
+On Region_Mt Hood_20190221.nc
+On Region_Mt Hood_20190222.nc
+On Region_Olympics_20181125.nc
+On Region_Mt Hood_20190223.nc
+On Region_Mt Hood_20190224.nc
+On Region_Mt Hood_20190225.nc
+On Region_Mt Hood_20190226.nc
+On Region_Olympics_20181126.nc
+On Region_Mt Hood_20190227.nc
+On Region_Mt Hood_20190228.nc
+On Region_Mt Hood_20190301.nc
+On Region_Mt Hood_20190302.nc
+On Region_Mt Hood_20190303.nc
+On Region_Olympics_20181127.nc
+On Region_Mt Hood_20190304.nc
+On Region_Mt Hood_20190305.nc
+On Region_Mt Hood_20190306.nc
+On Region_Mt Hood_20190307.nc
+On Region_Mt Hood_20190308.nc
+On Region_Olympics_20181128.nc
+On Region_Mt Hood_20190309.nc
+On Region_Mt Hood_20190310.nc
+On Region_Mt Hood_20190311.nc
+On Region_Mt Hood_20190312.nc
+On Region_Olympics_20181129.nc
+On Region_Mt Hood_20190313.nc
+On Region_Mt Hood_20190314.nc
+On Region_Mt Hood_20190315.nc
+On Region_Mt Hood_20190316.nc
+On Region_Mt Hood_20190317.nc
+On Region_Olympics_20181130.nc
+On Region_Mt Hood_20190318.nc
+On Region_Mt Hood_20190319.nc
+On Region_Mt Hood_20190320.nc
+On Region_Mt Hood_20190321.nc
+On Region_Olympics_20181201.nc
+On Region_Mt Hood_20190322.nc
+On Region_Mt Hood_20190323.nc
+On Region_Mt Hood_20190324.nc
+On Region_Mt Hood_20190325.nc
+On Region_Mt Hood_20190326.nc
+On Region_Olympics_20181202.nc
+On Region_Mt Hood_20190327.nc
+On Region_Mt Hood_20190328.nc
+On Region_Mt Hood_20190329.nc
+On Region_Mt Hood_20190330.nc
+On Region_Mt Hood_20190331.nc
+On Region_Olympics_20181203.nc
+On Region_Mt Hood_20190401.nc
+On Region_Mt Hood_20190402.nc
+On Region_Mt Hood_20190403.nc
+On Region_Mt Hood_20190404.nc
+On Region_Olympics_20181204.nc
+On Region_Mt Hood_20190405.nc
+On Region_Mt Hood_20190406.nc
+On Region_Mt Hood_20190407.nc
+On Region_Mt Hood_20190408.nc
+On Region_Mt Hood_20190409.nc
+On Region_Olympics_20181205.nc
+On Region_Mt Hood_20190410.nc
+On Region_Mt Hood_20190411.nc
+On Region_Mt Hood_20190412.nc
+On Region_Mt Hood_20190413.nc
+On Region_Olympics_20181206.nc
+On Region_Mt Hood_20190414.nc
+On Region_Mt Hood_20190415.nc
+On Region_Mt Hood_20190416.nc
+On Region_Mt Hood_20190417.nc
+On Region_Mt Hood_20190418.nc
+On Region_Olympics_20181207.nc
+On Region_Mt Hood_20190419.nc
+On Region_Mt Hood_20190420.nc
+On Region_Mt Hood_20190421.nc
+On Region_Mt Hood_20190422.nc
+On Region_Olympics_20181208.nc
+On Region_Mt Hood_20190423.nc
+On Region_Mt Hood_20190424.nc
+On Region_Mt Hood_20190425.nc
+On Region_Mt Hood_20190426.nc
+On Region_Mt Hood_20190427.nc
+On Region_Olympics_20181209.nc
+On Region_Mt Hood_20190428.nc
+On Region_Mt Hood_20190429.nc
+On Region_Mt Hood_20190430.nc
+On Region_Olympics_20181210.nc
+On Region_Olympics_20181211.nc
+On Region_Olympics_20181212.nc
+On Region_Olympics_20181213.nc
+On Region_Olympics_20181214.nc
+On Region_Olympics_20181215.nc
+On Region_Olympics_20181216.nc
+On Region_Olympics_20181217.nc
+On Region_Olympics_20181218.nc
+On Region_Olympics_20181219.nc
+On Region_Olympics_20181220.nc
+On Region_Olympics_20181221.nc
+On Region_Olympics_20181222.nc
+On Region_Olympics_20181223.nc
+On Region_Olympics_20181224.nc
+On Region_Olympics_20181225.nc
+On Region_Olympics_20181226.nc
+On Region_Olympics_20181227.nc
+On Region_Olympics_20181228.nc
+On Region_Olympics_20181229.nc
+On Region_Olympics_20181230.nc
+On Region_Olympics_20181231.nc
+On Region_Olympics_20190101.nc
+On Region_Olympics_20190102.nc
+On Region_Olympics_20190103.nc
+On Region_Olympics_20190104.nc
+On Region_Olympics_20190105.nc
+On Region_Olympics_20190106.nc
+On Region_Olympics_20190107.nc
+On Region_Olympics_20190108.nc
+On Region_Olympics_20190109.nc
+On Region_Olympics_20190110.nc
+On Region_Olympics_20190111.nc
+On Region_Olympics_20190112.nc
+On Region_Olympics_20190113.nc
+On Region_Olympics_20190114.nc
+On Region_Olympics_20190115.nc
+On Region_Olympics_20190116.nc
+On Region_Olympics_20190117.nc
+On Region_Olympics_20190118.nc
+On Region_Olympics_20190119.nc
+On Region_Olympics_20190120.nc
+On Region_Olympics_20190121.nc
+On Region_Olympics_20190122.nc
+On Region_Olympics_20190123.nc
+On Region_Olympics_20190124.nc
+On Region_Olympics_20190125.nc
+On Region_Olympics_20190126.nc
+On Region_Olympics_20190127.nc
+On Region_Olympics_20190128.nc
+On Region_Olympics_20190129.nc
+On Region_Olympics_20190130.nc
+On Region_Olympics_20190131.nc
+On Region_Olympics_20190201.nc
+On Region_Olympics_20190202.nc
+On Region_Olympics_20190203.nc
+On Region_Olympics_20190204.nc
+On Region_Olympics_20190205.nc
+On Region_Olympics_20190206.nc
+On Region_Olympics_20190207.nc
+On Region_Olympics_20190208.nc
+On Region_Olympics_20190209.nc
+On Region_Olympics_20190210.nc
+On Region_Olympics_20190211.nc
+On Region_Olympics_20190212.nc
+On Region_Olympics_20190213.nc
+On Region_Olympics_20190214.nc
+On Region_Olympics_20190215.nc
+On Region_Olympics_20190216.nc
+On Region_Olympics_20190217.nc
+On Region_Olympics_20190218.nc
+On Region_Olympics_20190219.nc
+On Region_Olympics_20190220.nc
+On Region_Olympics_20190221.nc
+On Region_Olympics_20190222.nc
+On Region_Olympics_20190223.nc
+On Region_Olympics_20190224.nc
+On Region_Olympics_20190225.nc
+On Region_Olympics_20190226.nc
+On Region_Olympics_20190227.nc
+On Region_Olympics_20190228.nc
+On Region_Olympics_20190301.nc
+On Region_Olympics_20190302.nc
+On Region_Olympics_20190303.nc
+On Region_Olympics_20190304.nc
+On Region_Olympics_20190305.nc
+On Region_Olympics_20190306.nc
+On Region_Olympics_20190307.nc
+On Region_Olympics_20190308.nc
+On Region_Olympics_20190309.nc
+On Region_Olympics_20190310.nc
+On Region_Olympics_20190311.nc
+On Region_Olympics_20190312.nc
+On Region_Olympics_20190313.nc
+On Region_Olympics_20190314.nc
+On Region_Olympics_20190315.nc
+On Region_Olympics_20190316.nc
+On Region_Olympics_20190317.nc
+On Region_Olympics_20190318.nc
+On Region_Olympics_20190319.nc
+On Region_Olympics_20190320.nc
+On Region_Olympics_20190321.nc
+On Region_Olympics_20190322.nc
+On Region_Olympics_20190323.nc
+On Region_Olympics_20190324.nc
+On Region_Olympics_20190325.nc
+On Region_Olympics_20190326.nc
+On Region_Olympics_20190327.nc
+On Region_Olympics_20190328.nc
+On Region_Olympics_20190329.nc
+On Region_Olympics_20190330.nc
+On Region_Olympics_20190331.nc
+On Region_Olympics_20190401.nc
+On Region_Olympics_20190402.nc
+On Region_Olympics_20190403.nc
+On Region_Olympics_20190404.nc
+On Region_Olympics_20190405.nc
+On Region_Olympics_20190406.nc
+On Region_Olympics_20190407.nc
+On Region_Olympics_20190408.nc
+On Region_Olympics_20190409.nc
+On Region_Olympics_20190410.nc
+On Region_Olympics_20190411.nc
+On Region_Olympics_20190412.nc
+On Region_Olympics_20190413.nc
+On Region_Olympics_20190414.nc
+On Region_Olympics_20190415.nc
+On Region_Olympics_20190416.nc
+On Region_Olympics_20190417.nc
+On Region_Olympics_20190418.nc
+On Region_Olympics_20190419.nc
+On Region_Olympics_20190420.nc
+On Region_Olympics_20190421.nc
+On Region_Olympics_20190422.nc
+On Region_Olympics_20190423.nc
+On Region_Olympics_20190424.nc
+On Region_Olympics_20190425.nc
+On Region_Olympics_20190426.nc
+On Region_Olympics_20190427.nc
+On Region_Olympics_20190428.nc
+On Region_Olympics_20190429.nc
+On Region_Olympics_20190430.nc
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 

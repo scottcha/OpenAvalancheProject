@@ -79,6 +79,9 @@ class ConvertToZarr:
             #ignore as it doesn't exist yet
             pass
 
+        #sometimes vars get added, filter to only the list of vars in the first dataset for that region
+        #TODO: handle the case where the first dataset has more vars than subsequent ones
+        final_vars = None
         for d in date_values_pd:
 
             path =  base_path + '_' + d.strftime('%Y%m%d') + '.nc'
@@ -95,12 +98,15 @@ class ConvertToZarr:
             try:
 
                 if first:
+                    final_vars = list(ds.variable.values)
                     ds.to_zarr(zarr_path, consolidated=True)
                     first=False
                 else:
+                    assert(final_vars is not None)
+                    ds = ds.sel(variable=ds.variable.isin(final_vars))
                     ds.to_zarr(zarr_path, consolidated=True, append_dim='time')
             except ValueError as err:
-                print('Value Error on ' + zarr_path)
+                print('Value Error ' + format(err) + ' on ' + zarr_path )
                 return
 
     def process_tuple(self, t):

@@ -10,3 +10,5 @@ pyarrow
 scipy
 netCDF4
 descartes
+dask
+toolz
