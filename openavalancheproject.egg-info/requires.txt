@@ -1,0 +1,14 @@
+xarray
+matplotlib
+pandas
+salem
+numpy
+geopandas
+joblib
+zarr
+pyarrow
+scipy
+netCDF4
+descartes
+dask
+toolz

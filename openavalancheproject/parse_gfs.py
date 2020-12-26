@@ -5,7 +5,6 @@ __all__ = ['ParseGFS']
 # Cell
 import xarray as xr
 import matplotlib.pyplot as plt
-import datetime as dt
 import pandas as pd
 import salem
 import numpy as np
@@ -190,12 +189,12 @@ class ParseGFS:
             #fix any errors
             redo2 = []
             for r in redo:
-                b = resample(r)
+                b = self.resample(r)
                 if b is not None:
                     redo2.append(b)
 
             #another pass to try and fix any file corruption issues
-            redo = check_resample(date_values_pd)
+            redo = self.check_resample(date_values_pd)
 
             results = Parallel(n_jobs=1, backend="multiprocessing")(map(delayed(self.resample), redo))
 

@@ -154,7 +154,7 @@ class PrepML:
             return (np.datetime64('2019-11-01'), '19-20')
         else:
             #print('Unknown season ' + str(d))
-            return (-1,'Unknown')
+            return (None,'Unknown')
 
 
     def get_state_for_region(self, region):
@@ -170,7 +170,7 @@ class PrepML:
 
         raise Exception('No region with name ' + region)
 
-    def prep_labels(self, overwrite_cache=False):
+    def prep_labels(self, overwrite_cache=True):
         """
         Preps the data and lable sets in to two sets, train & test
 
@@ -180,6 +180,9 @@ class PrepML:
         returns the train & test sets
         """
 
+        #find the season
+        nc_date = np.datetime64(self.date_start)
+        nc_season = PrepML.date_to_season(nc_date)[1]
 
         #maintaining this as a dict since the arrays are ragged and its more efficient this way
         #storing one sample for each region to get the lat/lon layout
@@ -188,7 +191,7 @@ class PrepML:
         for region in self.regions.keys():
             for r in self.regions[region]:
                 region_zones.append(r)
-                region_data[r] = xr.open_dataset(self.nc_path + '15-16/' + '/Region_' + r + '_20160101.nc')
+                region_data[r] = xr.open_dataset(self.nc_path + nc_season + '/Region_' + r + '_' + pd.to_datetime(nc_date).strftime('%Y%m%d') + '.nc')
 
         #Read in all the label data
         self.labels = pd.read_csv(self.path_to_labels, low_memory=False,
@@ -224,54 +227,21 @@ class PrepML:
         self.labels['parsed_date'] = pd.to_datetime(self.labels[self.date_col], format='%Y%m%d')
 
         metadata_cols = [self.date_col, self.region_col]
-        label_cols = ['Day1DangerBelowTreeline', 'Day1DangerNearTreeline', 'Day1DangerAboveTreeline']
-        self.labels[self.region_col] = self.labels.apply(lambda x : PrepML.lookup_forecast_region(x[self.region_col]), axis=1)
-        self.labels = self.labels[self.labels[self.region_col]!='Unknown region']
-
         #ensure we are only using label data for regions we are looking at
+        #return region_zones
+        self.labels[self.region_col] = self.labels.apply(lambda x : PrepML.lookup_forecast_region(x[self.region_col]), axis=1)
         self.labels = self.labels[self.labels[self.region_col].isin(region_zones)]
 
-        #add a season column
-        tmp = pd.DataFrame.from_records(self.labels[self.parsed_date_col].apply(PrepML.date_to_season))
-        self.labels['season'] = tmp[1]
-        self.labels.reset_index(drop=True, inplace=True)
+        self.labels = self.labels[self.labels[self.region_col]!='Unknown region']
 
+        #add a season column
+        tmp = pd.DataFrame.from_records(self.labels[self.parsed_date_col].apply(PrepML.date_to_season).reset_index(drop=True))
+        self.labels.reset_index(drop=True, inplace=True)
+        self.labels['season'] = tmp[1]
         #some region/seasons have excessive errors in the data, remove those
-        self.labels = self.labels[self.labels['season'].isin(['15-16', '16-17', '17-18', '18-19'])]
+        self.labels = self.labels[self.labels['season'].isin(['15-16', '16-17', '17-18', '18-19', '19-20'])]
         self.labels = self.labels[~self.labels.index.isin(self.labels[(self.labels['season']=='15-16') & (self.labels[self.region_col]=='Steamboat Zone')].index)]
         self.labels = self.labels[~self.labels.index.isin(self.labels[(self.labels['season']=='16-17') & (self.labels[self.region_col]=='Front Range Zone')].index)]
-
-        #add extra labels which also allow us to have labels which indicate the trend in the avy direction
-        #the thought here is that predicting a rise or flat danger is usually easier than predicting when
-        #to lower the danger so seperating these in to seperate clases
-        #TODO: this should be dynamic based on label passed in, not hard coded to above treeline
-        labels_trends = pd.DataFrame()
-        for r in self.labels[self.region_col].unique():
-            for s in self.labels['season'].unique():
-                region_season_df = self.labels[self.labels['season']==s]
-                region_season_df = region_season_df[region_season_df[self.region_col]==r]
-                if(len(region_season_df) == 0):
-                    continue
-                region_season_df.sort_values(by='parsed_date', inplace=True)
-                region_season_df.reset_index(inplace=True, drop=True)
-                region_season_df['Day1DangerAboveTreelineValue'] = region_season_df['Day1DangerAboveTreeline'].map({'Low':0, 'Moderate':1, 'Considerable':2, 'High':3})
-                region_season_df.loc[0,'Day1DangerAboveTreelineWithTrend'] = region_season_df.iloc[0]['Day1DangerAboveTreeline'] + '_Initial'
-
-                for i in range(1,len(region_season_df)):
-                    prev = region_season_df.iloc[i-1]['Day1DangerAboveTreelineValue']
-                    cur = region_season_df.loc[i,'Day1DangerAboveTreelineValue']
-                    trend = '_Unknown'
-                    if prev == cur:
-                        trend = '_Flat'
-                    elif prev < cur:
-                        trend = '_Rising'
-                    elif prev >  cur:
-                        trend = '_Falling'
-
-                    region_season_df.loc[i,'Day1DangerAboveTreelineWithTrend'] = region_season_df.iloc[i]['Day1DangerAboveTreeline'] + trend
-                labels_trends = pd.concat([labels_trends,region_season_df])
-        assert(len(labels_trends)==len(self.labels))
-        self.labels = labels_trends
 
         lat_lon_union = pd.DataFrame()
         lat_lon_path = self.processed_path + 'lat_lon_union.csv'
@@ -293,10 +263,10 @@ class PrepML:
                 lat_lon_union = pd.concat([lat_lon_union, tmp_df])
 
                 #cache the data
-                lat_lon_union.to_csv()
+                lat_lon_union.to_csv(lat_lon_path)
         else:
             #load the cached data
-            lat_lon_union = pd.read_csv(self.processed_path + 'lat_lon_union.csv',float_precision='round_trip')
+            lat_lon_union = pd.read_csv(lat_lon_path,float_precision='round_trip')
         #join in with the labels so we have a label per lat/lon pair
         lat_lon_union = lat_lon_union.set_index(self.region_col, drop=False).join(self.labels.set_index(self.region_col, drop=False), how='left', lsuffix='left', rsuffix='right')
 
@@ -317,7 +287,41 @@ class PrepML:
         return labels_data_train, labels_data_test
 
 
-    def get_data_zarr(self, region, lat, lon, lookback_days, date):
+    def augment_labels_with_trends(self, label_to_add_trend_info='Day1DangerAboveTreelineValue'):
+        raise NotImplementedError('Method is not fully implemented or tested')
+        #add extra labels which also allow us to have labels which indicate the trend in the avy direction
+        #the thought here is that predicting a rise or flat danger is usually easier than predicting when
+        #to lower the danger so seperating these in to seperate clases
+        #TODO: this should be dynamic based on label passed in, not hard coded to above treeline
+        labels_trends = pd.DataFrame()
+        for r in self.labels[self.region_col].unique():
+            for s in self.labels['season'].unique():
+                region_season_df = self.labels[self.labels['season']==s]
+                region_season_df = region_season_df[region_season_df[self.region_col]==r]
+                if(len(region_season_df) == 0):
+                    continue
+                region_season_df.sort_values(by='parsed_date', inplace=True)
+                region_season_df.reset_index(inplace=True, drop=True)
+                region_season_df[label_to_add_trend_info] = region_season_df['Day1DangerAboveTreeline'].map({'Low':0, 'Moderate':1, 'Considerable':2, 'High':3})
+                region_season_df.loc[0,'Day1DangerAboveTreelineWithTrend'] = region_season_df.iloc[0]['Day1DangerAboveTreeline'] + '_Initial'
+
+                for i in range(1,len(region_season_df)):
+                    prev = region_season_df.iloc[i-1]['Day1DangerAboveTreelineValue']
+                    cur = region_season_df.loc[i,'Day1DangerAboveTreelineValue']
+                    trend = '_Unknown'
+                    if prev == cur:
+                        trend = '_Flat'
+                    elif prev < cur:
+                        trend = '_Rising'
+                    elif prev >  cur:
+                        trend = '_Falling'
+
+                    region_season_df.loc[i,'Day1DangerAboveTreelineWithTrend'] = region_season_df.iloc[i]['Day1DangerAboveTreeline'] + trend
+                labels_trends = pd.concat([labels_trends,region_season_df])
+        assert(len(labels_trends)==len(self.labels))
+        self.labels = labels_trends
+
+    def get_data_zarr(self, region, lat, lon, lookback_days, date, variables=None):
         """
         utility to get data for a specific point
 
@@ -327,6 +331,7 @@ class PrepML:
         lon: the longitude of the point to lookup
         lookback_days: the number of days prior to the date to also return
         date: the date which marks the end of the dataset (same date as the desired label)
+        variables: filter to just these variables (default: None indicates return all variables)
         """
         #print(region + ' ' + str(lat) + ', ' + str(lon) + ' ' + str(date))
         state = self.get_state_for_region(region)
@@ -336,9 +341,17 @@ class PrepML:
         #print('*Opening file ' + path)
 
         tmp_ds = xr.open_zarr(path, consolidated=True)
+
+        #filter to just the variables we want
+        #TODO: this may be more efficient if we use the open_zarr drop to not even read the variables
+        if variables is not None:
+            tmp_ds = tmp_ds.sel(variable=tmp_ds.variable.isin(variables))
+
         start_day = date - np.timedelta64(lookback_days-1, 'D')
         #print('start day ' + str(start_day))
         tmp_ds = tmp_ds.sel(latitude=lat, longitude=lon, method='nearest').sel(time=slice(start_day, date))
+
+
 
         date_values_pd = pd.date_range(start_day, periods=lookback_days, freq='D')
         #reindex should fill missing values with NA
@@ -347,8 +360,58 @@ class PrepML:
         tmp_ds = tmp_ds.reset_index(dims_or_levels='time', drop=True).load()
         return tmp_ds
 
+    def get_data_zarr_batch(self, region, season, df, lookback_days, variables=None):
+        """
+        utility to get data for a set of points
 
-    def process_sample(self, iter_tuple, lookback_days):
+        Keyword Arguments
+        region: the region the point exists in
+        season: the season the data is in
+        df: DataFrame of label rows to pull the data for (should all be from the same region and season)
+        lookback_days: the number of days prior to the date to also return
+        variables: filter to just these variables (default: None indicates return all variables)
+        """
+
+        state = self.get_state_for_region(region)
+
+
+        path = self.processed_path + '/' + season + '/' + state + '/Region_' + region + '.zarr'
+        #print('*Opening file ' + path)
+
+        tmp_ds = xr.open_zarr(path, consolidated=True)
+
+        #finds the minimal set of values for the single zarr collection and then appends
+        #the individaul data to results
+        results = []
+
+        lats = df['latitude'].unique()
+        lons = df['longitude'].unique()
+
+        tmp_ds = xr.open_zarr(path, consolidated=True)
+        min_ds = tmp_ds.sel(latitude=lats, longitude=lons)
+
+        #filter to just the variables we want
+        #TODO: this may be more efficient if we use the open_zarr drop to not even read the variables
+        if variables is not None:
+            min_ds = min_ds.sel(variable=min_ds.variable.isin(variables))
+
+        for d in df.iterrows():
+            d = d[1]
+            date = d['parsed_date']
+            start_day = date - np.timedelta64(lookback_days-1, 'D')
+
+            result_df = min_ds.sel(latitude=d['latitude'], longitude=d['longitude']).sel(time=slice(start_day, date))
+            #print(str(d['latitude']) + ' ' + str(d['longitude']) + ' ' + str(start_day) + ' ' + str(date))
+            #return result_df
+            date_values_pd = pd.date_range(start_day, periods=lookback_days, freq='D')
+            #reindex should fill missing values with NA
+            result_df = result_df.reindex({'time': date_values_pd})
+            result_df = result_df.assign_coords({'sample': date.strftime('%Y%m%d') + ' ' + region}).expand_dims('sample')
+            results.append(result_df.reset_index(dims_or_levels='time', drop=True).load())
+
+        return results
+
+    def process_sample(self, iter_tuple, lookback_days, variables=None):
         """
         Convienience method to take a tuple and pull the data for it from the zarr files
 
@@ -358,12 +421,15 @@ class PrepML:
         """
         row = iter_tuple[1]
         d = row[self.parsed_date_col]
-
+        print('date : ' + str(d))
         lat = row['latitude']
+        print('lat ' + str(lat))
         lon = row['longitude']
+        print('lon ' + str(lon))
         reg = row[self.region_col]
-        #print('region: ' + reg + ' date ' + str(d))
-        ds = self.get_data_zarr(reg, lat, lon, lookback_days, d)
+        print('reg ' + reg)
+
+        ds = self.get_data_zarr(reg, lat, lon, lookback_days, d, variables)
 
         #print("actual data")
         if ds.time.shape[0] != lookback_days:
@@ -371,8 +437,27 @@ class PrepML:
             print('Need to drop! Error, incorrect shape ' + str(ds.time.shape[0]) + ' on time ' + str(d))
         return (ds)
 
+    def process_sample2(self, iter_tuple, df, lookback_days, variables):
+        region = iter_tuple[1]['UnifiedRegion']
+        season = iter_tuple[1]['season']
+        df_r = df[df['UnifiedRegion']==region]
+        df_r_s = df_r[df_r['season']==season]
+        return self.get_data_zarr_batch(region=region,
+                                        season=season,
+                                        df=df_r_s,
+                                        lookback_days=lookback_days,
+                                        variables=variables)
 
-    def get_xr_batch(self, labels, lookback_days=14, batch_size=64, y_column='Day1DangerAboveTreeline', label_values=['Low', 'Moderate', 'Considerable', 'High'], oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True}, random_state=1, n_jobs=-1):
+    def get_xr_batch(self,
+                     labels,
+                     lookback_days=14,
+                     batch_size=64,
+                     y_column='Day1DangerAboveTreeline',
+                     label_values=['Low', 'Moderate', 'Considerable', 'High'],
+                     oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
+                     random_state=1,
+                     variables = None,
+                     n_jobs=-1):
         """
         Primary method to take a set of labels and pull the data for it
         the data is large so generally this needs to be done it batches
@@ -387,6 +472,7 @@ class PrepML:
         label_values: possible values for the y label (default: ['Low', 'Moderate', 'Considerable', 'High'])
         oversample: dictionary defining which labels from the label_values set to apply naive oversampling to (default: {'Low':True, 'Moderate':False, 'Considerable':False, 'High':True})
         random_state: define a state to force datasets to be returned in a reproducable fashion (deafault: 1)
+        varaibles: variables to include (default: None which indicates include all variables)
         n_jobs: number of processes to use (default: -1)
         """
 
@@ -420,6 +506,7 @@ class PrepML:
                 #ensure the propose sample is larger than the available values
                 if len(label_slice) < size:
                     size = len(label_slice)
+
                 if size > 0:
                     batch_lookups.append(label_slice.sample(size, random_state=random_state))
 
@@ -429,31 +516,35 @@ class PrepML:
 
 
             #sample frac=1 causes the data to be shuffled
-            batch_lookup = pd.concat(batch_lookups).sample(frac=1)
+            batch_lookup = pd.concat(batch_lookups).sample(frac=1, random_state=random_state)
             #print('lookup shape: ' + str(batch_lookup.shape))
             batch_lookup.reset_index(inplace=True, drop=True)
+            print('have n_jobs ' + str(n_jobs))
 
-            func = partial(self.process_sample, lookback_days=lookback_days)
-            data = Parallel(n_jobs=n_jobs)(map(delayed(func), batch_lookup.iterrows()))
+            tuples = batch_lookup[['UnifiedRegion', 'season']].drop_duplicates()
+            func = partial(self.process_sample2, df=batch_lookup, lookback_days=lookback_days, variables=variables)
+            data2 = Parallel(n_jobs=n_jobs)(map(delayed(func), tuples.iterrows()))
+            #return data2, batch_lookup
+            data = [item for sublist in data2 for item in sublist]
 
-            #print('data has len: ' + str(len(data)))
-            to_delete = []
+
+            #to_delete = []
             #delete backwards so we can delete by index
-            for i in reversed(range(len(data))):
-                #print('on i: ' + str(i))
-                if data[i] is None:
-                    print('deleting ' + str(i))
-                    del data[i]
-                    batch_lookup = batch_lookup.drop(i, axis=0)
+            #for i in reversed(range(len(data))):
+            #    #print('on i: ' + str(i))
+            #    if data[i] is None:
+            #        print('deleting ' + str(i))
+            #        del data[i]
+            #        batch_lookup = batch_lookup.drop(i, axis=0)
 
 
-            for d in sorted(to_delete, reverse=True):
-                print('deleting ' + str(d))
-                del data[d]
+            #for d in sorted(to_delete, reverse=True):
+            #    print('deleting ' + str(d))
+            #    del data[d]
 
-            for f in data:
-                if f is None:
-                    print('Still have none in data')
+            #for f in data:
+            #    if f is None:
+            #        print('Still have none in data')
 
             if first and len(data) > 0:
                 X = xr.concat(data, dim='sample')
@@ -465,10 +556,13 @@ class PrepML:
                 y = pd.concat([y, batch_lookup], axis=0)
 
             num_in_place = y.shape[0]
-            #print('Num: ' + str(num_in_place))
 
-        y = y.reset_index(drop=True)
-        X = X.reindex({'sample': y.apply(lambda r: str(r[self.parsed_date_col]) + ': ' + r[self.region_col], axis=1)})
+
+        X = X.sortby(['sample', 'latitude', 'longitude'])
+        y['sample'] = y['parsed_date'].dt.strftime('%Y%m%d') + ': ' + y['UnifiedRegion']
+        y = y.sort_values(['sample', 'latitude', 'longitude']).reset_index(drop=True)
+
+
         return X, y, labels_data
 
     @staticmethod
@@ -509,7 +603,10 @@ class PrepML:
         remaining_labels = labels
         for i in range(0, total_rows, batch_size):
             print(str(datetime.datetime.now()) + ' On ' + str(i) + ' of ' + str(total_rows))
-            X, y, remaining_labels = self.get_xr_batch(remaining_labels, lookback_days=lookback_days, batch_size=batch_size, n_jobs=n_jobs)
+            X, y, remaining_labels = self.get_xr_batch(remaining_labels,
+                                                       lookback_days=lookback_days,
+                                                       batch_size=batch_size,
+                                                       n_jobs=n_jobs)
             X.to_zarr(self.ml_path + 'X_' + train_or_test + '_' + str(i/batch_size) + '.zarr')
             y.to_parquet(self.ml_path + 'y_' + train_or_test + '_' + str(i/batch_size) + '.parquet')
         return remaining_labels
@@ -524,6 +621,7 @@ class PrepML:
                          y_column='Day1DangerAboveTreeline',
                          label_values=['Low', 'Moderate', 'Considerable', 'High'],
                          oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
+                         variables = None,
                          n_jobs=14):
         """
         method to enable batches to be generated based on total amount of data as well as batch size
@@ -538,33 +636,70 @@ class PrepML:
         y_column: the column in the label set to use as the label (default: Day1DangerAboveTreeline)
         label_values: possible values for the y label (default: ['Low', 'Moderate', 'Considerable', 'High'])
         oversample: dictionary defining which labels from the label_values set to apply naive oversampling to (default: {'Low':True, 'Moderate':False, 'Considerable':False, 'High':True})
+        varaibles: variables to include (default: None which indicates include all variables)
         n_jobs: number of processes to use (default: 14)
 
         Returns: tuple containing the batch *X,y) and remaining labels (labels which weren't used in the dataset creation)
         """
         remaining_labels = labels
+        Xs = []
+        ys = []
         for i in range(0, total_rows, batch_size):
             print(str(datetime.datetime.now()) + ' *On ' + str(i) + ' of ' + str(total_rows))
-            X, y, remaining_labels = self.get_xr_batch(remaining_labels, lookback_days=lookback_days, batch_size=batch_size, y_column=y_column, n_jobs=n_jobs)
+            X, y, remaining_labels = self.get_xr_batch(remaining_labels,
+                                                       lookback_days=lookback_days,
+                                                       batch_size=batch_size,
+                                                       y_column=y_column,
+                                                       label_values=label_values,
+                                                       oversample=oversample,
+                                                       variables=variables,
+                                                       n_jobs=n_jobs)
+            Xs.append(X)
+            ys.append(y)
+
+
+        X = xr.concat(Xs, dim='sample')
+        y = pd.concat(ys, axis=0)
 
         return PrepML.prepare_batch_simple(X, y), remaining_labels
 
-    #TODO: derive num_variables and lookback_days from the input set
+    #TODO: derive lookback_days from the input set
     #TODO: only write out one y file per X file
-    def create_memmapped(self, remaining_labels, train_or_test = 'train', num_variables=1131, num_rows = 10000, lookback_days=180, batch=0, batch_size=500):
+    def create_memmapped(self,
+                         remaining_labels,
+                         variables,
+                         train_or_test = 'train',
+                         num_rows = 10000,
+                         lookback_days=180,
+                         batch=0,
+                         batch_size=500,
+                         y_column='Day1DangerAboveTreeline',
+                         label_values=['Low', 'Moderate', 'Considerable', 'High'],
+                         oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
+                         file_label='',
+                         n_jobs=14):
         """
         Generate a set of batches and store them in a memmapped numpy array
         this is the technique used to prep data for timeseriesai notebook
         Will store a single numpy X file in the ML directory as well as several y parquet files (one per batch size)
+
         Keyword Arguments
         remaining_labels: the set of labels to draw from
+        variables: the variables to include, required
         train_or_test: is this a train or test set--used in the file label (default: train)
         num_variables: number of variables in the X set (default: 1131)
         num_rows: total number of rows to store in the file (deafult: 10000)
         lookback_days: number of days before the label date to include in the timeseries (default: 180)
         batch: batch number to start in (default: 0) used in case you are generating multiple files
         batch_size: number of rows to process at once to accomodate memory limitations (default: 500)
+        y_column: the column in the label set to use as the label (default: Day1DangerAboveTreeline)
+        label_values: possible values for the y label (default: ['Low', 'Moderate', 'Considerable', 'High'])
+        oversample: dictionary defining which labels from the label_values set to apply naive oversampling to (default: {'Low':True, 'Moderate':False, 'Considerable':False, 'High':True})
+        file_label: optional label for files to distinguish different datasets
+        n_jobs: number of parallel jobs to run
         """
+
+        num_variables = len(variables)
 
         # Save a small empty array
         X_temp_fn = self.ml_path + '/temp_X.npy'
@@ -572,27 +707,51 @@ class PrepML:
 
         # Create a np.memmap with desired dtypes and shape of the large array you want to save.
         # It's just a placeholder that doesn't contain any data
-        X_fn = self.ml_path + '/X' + train_or_test + '_batch_' + str(batch) + '_on_disk.npy'
+        X_fn = self.ml_path + '/X' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '_on_disk.npy'
 
         X = np.memmap(X_temp_fn, dtype='float32', shape=(num_rows, num_variables, lookback_days))
 
         # We are going to create a loop to fill in the np.memmap
         start = 0
+
         for i in range(0, num_rows, batch_size):
             print('On ' + str(i) + ' of ' + str(num_rows))
             # You now grab a chunk of your data that fits in memory
             # This could come from a pandas dataframe for example
-            dfs, remaining_labels = self.cache_batches_np(remaining_labels, batch_size=batch_size, total_rows=500)
+            #dfs, remaining_labels = self.cache_batches_np(remaining_labels,
+            #                                              batch_size=batch_size,
+            #                                              total_rows=500,
+            #                                              variables=variables,
+            #                                              y_column=y_column,
+            #                                              label_values=label_values,
+            #                                              oversample=oversample,
+            #                                              n_jobs=n_jobs)
+            X_df, y_df, remaining_labels = self.get_xr_batch(remaining_labels,
+                                                       lookback_days=lookback_days,
+                                                       batch_size=batch_size,
+                                                       y_column=y_column,
+                                                       label_values=label_values,
+                                                       oversample=oversample,
+                                                       variables=variables,
+                                                       n_jobs=n_jobs)
+
+
+            X_df, y_df = PrepML.prepare_batch_simple(X_df, y_df)
+
             #need to make sure all the variables are in the same order (there was an issue that they weren't between train and test sets)
-            X_df = dfs[0].sortby('variable')
-            y_df = dfs[1]
+            X_df = X_df.sortby('variable')
+
             end = start + batch_size
 
+            print('start: ' + str(start) + ' end: ' + str(end))
+            #print(str(X.shape))
+            print(str(X_df.vars.values.shape))
+            print(str(batch_size))
             # I now fill a slice of the np.memmap
             X[start:end] = X_df.vars.values[:batch_size] #sometimes the process will add a few extras, filter them
 
             #just save y as parquet
-            y_df[:batch_size].to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + str(i/batch_size) + '.parquet')
+            y_df[:batch_size].to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '_' + str(i/batch_size) + '.parquet')
             start = end
             del X_df, y_df
 
@@ -601,10 +760,10 @@ class PrepML:
 
         # Once the data is loaded on the np.memmap, I save it as a normal np.array
         np.save(X_fn, X)
-        return remaining_labels
+        return remaining_labels, X_fn
 
 
-    def concat_memapped(self, to_concat_filenames, dim_1_size=1131, dim_2_size=180):
+    def concat_memapped(self, to_concat_filenames, file_label='', dim_1_size=1131, dim_2_size=180, destination_path=None):
         """
         concat multiple numpy files on disk in to a single file
         required for timeseriesai notebook as input to that is a single memmapped file containing X train and test data
@@ -613,7 +772,12 @@ class PrepML:
         to_concat_filenames: the files to concat
         dim_1_size: number of variables in the files (default: 1131)
         dim_2_size: number of lookback dates in the files (length of timeseries) (default: 180)
+        destination_path: alternate path to put the concat file
         """
+
+        if destination_path is None:
+            destination_path = self.ml_path
+
         to_concat = []
         for i in range(len(to_concat_filenames)):
             to_concat.append(np.load(to_concat_filenames[i], mmap_mode='r'))
@@ -625,9 +789,9 @@ class PrepML:
             assert(to_concat[i].shape[1] == dim_1_size)
             assert(to_concat[i].shape[2] == dim_2_size)
 
-        X_temp_fn = self.ml_path + '/temp_X.npy'
+        X_temp_fn = destination_path + '/temp_X.npy'
         np.save(X_temp_fn, np.empty(1))
-        X_fn = self.ml_path + '/X_all.npy'
+        X_fn = self.ml_path + '/X_all' + '_' + file_label + '.npy'
         X = np.memmap(X_temp_fn, dtype='float32', shape=(dim_0_size, dim_1_size, dim_2_size))
         dim_0_start = 0
         for i in range(len(to_concat)):
@@ -650,9 +814,15 @@ class PrepML:
                                   test_labels,
                                   num_train_files=1,
                                   num_test_files=1,
-                                  num_train_rows_per_file=10000,
+                                  num_train_rows_per_file=1000,
                                   num_test_rows_per_file=500,
-                                  num_variables=1131):
+                                  batch_size=500,
+                                  y_column='Day1DangerAboveTreeline',
+                                  label_values=['Low', 'Moderate', 'Considerable', 'High'],
+                                  oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
+                                  file_label = '',
+                                  destination_path=None,
+                                  n_jobs=14):
         """
         create several memapped files
         we do this as the technique to create one has some memory limitations
@@ -660,28 +830,85 @@ class PrepML:
         which is why we cache the label state after every iteration so we can restart at that state
         15 mins for 10000 rows using all 16 cores on my machine
         I can generate a max of ~50000 rows per batch with 48 gb of ram before running out of memory
+
+        Keyword Arguments:
+        y_column: the column in the label set to use as the label (default: Day1DangerAboveTreeline)
+        label_values: possible values for the y label (default: ['Low', 'Moderate', 'Considerable', 'High'])
+        oversample: dictionary defining which labels from the label_values set to apply naive oversampling to (default: {'Low':True, 'Moderate':False, 'Considerable':False, 'High':True})
+        file_label: optional file label to add to the on disk files to distinguish between data sets
+        destination_path: alternate path to put the concat file
         """
+        assert num_train_rows_per_file % batch_size == 0, 'num_train_rows_per_file needs to be a multiple of batch_size'
+        assert batch_size <= num_train_rows_per_file, 'num_train_rows_per_file needs to be greater than batch_size'
+        assert num_test_rows_per_file % batch_size == 0, 'num_test_rows_per_file needs to be a multiple of batch_size'
+        assert batch_size <= num_test_rows_per_file, 'num_test_rows_per_file needs to be greater than batch_size'
+        #not all seasons have the same # of variables so find the common subset first
+        train_seasons = train['season'].unique()
+        test_seasons = test['season'].unique()
+        #find the common vars for each season
+        #pull one sample of data for each season
+        data = {}
+        for s in train_seasons:
+            label = train[train['season'] == s].sample(n = 1)
+            assert(len(label==1))
+            data[s] = self.get_data_zarr(label.iloc[0]['UnifiedRegion'], label.iloc[0]['latitude'], label.iloc[0]['longitude'], 7, label.iloc[0]['parsed_date'])
+
+        for s in test_seasons:
+            label = test[test['season'] == s].sample(n = 1)
+            assert(len(label==1))
+            data[s] = self.get_data_zarr(label.iloc[0]['UnifiedRegion'], label.iloc[0]['latitude'], label.iloc[0]['longitude'], 7, label.iloc[0]['parsed_date'])
+
+        v = []
+        for d in data.keys():
+            v.append(set(data[d].variable.values))
+        final_vars = list(set.intersection(*v))
+
 
         #get a sample so we can dump the feature labels
-        X, _, _ = self.get_xr_batch(train_labels, lookback_days=7, batch_size=4)
+        X, _, _ = self.get_xr_batch(train_labels, variables=final_vars, lookback_days=7, batch_size=4)
         pd.Series(X.variable.data).to_csv(self.ml_path + '/FeatureLabels.csv')
 
         filenames = []
+
         for i in range(0, num_train_files):
-            remaining_labels_train = self.create_memmapped(train_labels, train_or_test = 'train', num_variables=num_variables, num_rows=num_train_rows_per_file, batch=i)
-            filenames.append(self.ml_path + '/Xtrain_batch_' + str(i) + '_on_disk.npy')
+            train_labels, files = self.create_memmapped( train_labels,
+                                                                   variables = final_vars,
+                                                                   train_or_test = 'train',
+                                                                   num_rows=num_train_rows_per_file,
+                                                                   batch=i,
+                                                                   batch_size=batch_size,
+                                                                   y_column=y_column,
+                                                                   label_values=label_values,
+                                                                   oversample=oversample,
+                                                                   file_label=file_label,
+                                                                   n_jobs=n_jobs)
+            filenames.append(files)
             #with open(ml_path + 'remaining_labels_train.p', 'wb' ) as file:
             #    pickle.dump(remaining_labels_train, file)
 
 
         #same process for test
         for i in range(0, num_test_files):
-            remaining_labels_test = self.create_memmapped(test_labels, train_or_test = 'test', num_variables=num_variables, num_rows=num_test_rows_per_file, batch=i)
-            filenames.append(self.ml_path + '/Xtest_batch_' + str(i) + '_on_disk.npy')
+            test_labels, files = self.create_memmapped( test_labels,
+                                                                  variables = final_vars,
+                                                                  train_or_test = 'test',
+                                                                  num_rows=num_test_rows_per_file,
+                                                                  batch=i,
+                                                                  batch_size=batch_size,
+                                                                  y_column=y_column,
+                                                                  label_values=label_values,
+                                                                  oversample=oversample,
+                                                                  file_label=file_label,
+                                                                  n_jobs=n_jobs)
+            filenames.append(files)
             #with open(ml_path + 'remaining_labels_test.p', 'wb' ) as file:
             #    pickle.dump(remaining_labels_test, file)
 
-        self.concat_memapped(filenames, num_variables)
+        print(filenames)
+        self.concat_memapped(filenames,
+                             file_label=file_label,
+                             dim_1_size=len(final_vars),
+                             destination_path=destination_path)
 
-        return remaining_labels_train, remaining_labels_test
+        return train_labels, test_labels
 
