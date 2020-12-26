@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: openavalancheproject
-Version: 0.0.2
+Version: 0.0.3
 Summary: "Data Pipeline Processing for Open Avalanche Project from global GFS to ML Data"
 Home-page: https://github.com/scottcha/openavalancheproject/tree/master/
 Author: Scott Chamberlin
