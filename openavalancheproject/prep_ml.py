@@ -475,7 +475,7 @@ class PrepML:
         varaibles: variables to include (default: None which indicates include all variables)
         n_jobs: number of processes to use (default: -1)
         """
-
+        print('Getting a batch for label ' + y_column)
         labels_data = labels
 
         X = None
@@ -498,17 +498,28 @@ class PrepML:
                 sample_size = batch_size
 
             batch_lookups = []
-            for l in label_values:
-                print('    on label: ' + l + ' with samplesize: ' + str(int(sample_size/len(label_values))))
-                print('    len: ' + str(len(labels_data[labels_data[y_column]==l])))
-                label_slice = labels_data[labels_data[y_column]==l]
-                size = int(sample_size/len(label_values))
-                #ensure the propose sample is larger than the available values
-                if len(label_slice) < size:
-                    size = len(label_slice)
+            size = int(sample_size/len(label_values))
+            #copy this so we can modify label_values during the loop without affecting the iteration
+            label_iter = label_values.copy()
+            for l in label_iter:
+                print('    on label: ' + l + ' with samplesize: ' + str(size))
+                label_len = len(labels_data[labels_data[y_column]==l])
+                print('    len: ' + str(label_len))
+                if label_len == 0:
+                    #we don't have any more of this label, remove it from the list so we can continue efficiently
+                    print('    No more values for label: ' + l)
+                    label_values.remove(l)
+                    continue
 
-                if size > 0:
-                    batch_lookups.append(label_slice.sample(size, random_state=random_state))
+                label_slice = labels_data[labels_data[y_column]==l]
+
+                #ensure the propose sample is larger than the available values
+                pick_size = size
+                if len(label_slice) < pick_size:
+                    pick_size = len(label_slice)
+
+                if pick_size > 0:
+                    batch_lookups.append(label_slice.sample(pick_size, random_state=random_state))
 
                     if not oversample[l]:
                         labels_data = labels_data.drop(batch_lookups[-1].index, axis=0)
@@ -516,6 +527,10 @@ class PrepML:
 
 
             #sample frac=1 causes the data to be shuffled
+            if len(batch_lookups) == 0:
+                #no more data left
+                break
+
             batch_lookup = pd.concat(batch_lookups).sample(frac=1, random_state=random_state)
             #print('lookup shape: ' + str(batch_lookup.shape))
             batch_lookup.reset_index(inplace=True, drop=True)
@@ -524,27 +539,8 @@ class PrepML:
             tuples = batch_lookup[['UnifiedRegion', 'season']].drop_duplicates()
             func = partial(self.process_sample2, df=batch_lookup, lookback_days=lookback_days, variables=variables)
             data2 = Parallel(n_jobs=n_jobs)(map(delayed(func), tuples.iterrows()))
-            #return data2, batch_lookup
+
             data = [item for sublist in data2 for item in sublist]
-
-
-            #to_delete = []
-            #delete backwards so we can delete by index
-            #for i in reversed(range(len(data))):
-            #    #print('on i: ' + str(i))
-            #    if data[i] is None:
-            #        print('deleting ' + str(i))
-            #        del data[i]
-            #        batch_lookup = batch_lookup.drop(i, axis=0)
-
-
-            #for d in sorted(to_delete, reverse=True):
-            #    print('deleting ' + str(d))
-            #    del data[d]
-
-            #for f in data:
-            #    if f is None:
-            #        print('Still have none in data')
 
             if first and len(data) > 0:
                 X = xr.concat(data, dim='sample')
@@ -585,7 +581,7 @@ class PrepML:
         return X, y
 
 
-    def cache_batches(self, labels, batch_size=64, total_rows=6400, train_or_test='train', lookback_days=14, n_jobs=14):
+    #def cache_batches(self, labels, batch_size=64, total_rows=6400, train_or_test='train', lookback_days=14, n_jobs=14):
         """
         method to enable batches to be generated based on total amount of data as well as batch size
         batches stores as zarr & parquet
@@ -600,29 +596,29 @@ class PrepML:
 
         Returns: remaining labels (labels which weren't used in the dataset creation)
         """
-        remaining_labels = labels
-        for i in range(0, total_rows, batch_size):
-            print(str(datetime.datetime.now()) + ' On ' + str(i) + ' of ' + str(total_rows))
-            X, y, remaining_labels = self.get_xr_batch(remaining_labels,
-                                                       lookback_days=lookback_days,
-                                                       batch_size=batch_size,
-                                                       n_jobs=n_jobs)
-            X.to_zarr(self.ml_path + 'X_' + train_or_test + '_' + str(i/batch_size) + '.zarr')
-            y.to_parquet(self.ml_path + 'y_' + train_or_test + '_' + str(i/batch_size) + '.parquet')
-        return remaining_labels
+        #remaining_labels = labels
+        #for i in range(0, total_rows, batch_size):
+        #    print(str(datetime.datetime.now()) + ' On ' + str(i) + ' of ' + str(total_rows))
+        #    X, y, remaining_labels = self.get_xr_batch(remaining_labels,
+        #                                               lookback_days=lookback_days,
+        #                                               batch_size=batch_size,
+        #                                               n_jobs=n_jobs)
+        #    X.to_zarr(self.ml_path + 'X_' + train_or_test + '_' + str(i/batch_size) + '.zarr')
+        #    y.to_parquet(self.ml_path + 'y_' + train_or_test + '_' + str(i/batch_size) + '.parquet')
+        #return remaining_labels
 
 
-    def cache_batches_np(self,
-                         labels,
-                         batch_size=50,
-                         total_rows=10000,
-                         train_or_test='train',
-                         lookback_days=180,
-                         y_column='Day1DangerAboveTreeline',
-                         label_values=['Low', 'Moderate', 'Considerable', 'High'],
-                         oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
-                         variables = None,
-                         n_jobs=14):
+    #def cache_batches_np(self,
+    #                     labels,
+    #                     batch_size=50,
+    #                     total_rows=10000,
+    #                     train_or_test='train',
+    #                     lookback_days=180,
+    #                     y_column='Day1DangerAboveTreeline',
+    #                     label_values=['Low', 'Moderate', 'Considerable', 'High'],
+    #                     oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
+    #                     variables = None,
+    #                     n_jobs=14):
         """
         method to enable batches to be generated based on total amount of data as well as batch size
         batches returned for further processing
@@ -641,27 +637,27 @@ class PrepML:
 
         Returns: tuple containing the batch *X,y) and remaining labels (labels which weren't used in the dataset creation)
         """
-        remaining_labels = labels
-        Xs = []
-        ys = []
-        for i in range(0, total_rows, batch_size):
-            print(str(datetime.datetime.now()) + ' *On ' + str(i) + ' of ' + str(total_rows))
-            X, y, remaining_labels = self.get_xr_batch(remaining_labels,
-                                                       lookback_days=lookback_days,
-                                                       batch_size=batch_size,
-                                                       y_column=y_column,
-                                                       label_values=label_values,
-                                                       oversample=oversample,
-                                                       variables=variables,
-                                                       n_jobs=n_jobs)
-            Xs.append(X)
-            ys.append(y)
+     #   remaining_labels = labels
+     #   Xs = []
+     #   ys = []
+     #   for i in range(0, total_rows, batch_size):
+     #       print(str(datetime.datetime.now()) + ' *On ' + str(i) + ' of ' + str(total_rows))
+     #       X, y, remaining_labels = self.get_xr_batch(remaining_labels,
+     #                                                  lookback_days=lookback_days,
+     #                                                  batch_size=batch_size,
+     #                                                  y_column=y_column,
+     #                                                  label_values=label_values,
+     #                                                 oversample=oversample,
+     #                                                  variables=variables,
+     #                                                  n_jobs=n_jobs)
+     #       Xs.append(X)
+     #       ys.append(y)
+     #
+     #
+     #   X = xr.concat(Xs, dim='sample')
+     #   y = pd.concat(ys, axis=0)
 
-
-        X = xr.concat(Xs, dim='sample')
-        y = pd.concat(ys, axis=0)
-
-        return PrepML.prepare_batch_simple(X, y), remaining_labels
+     #  return PrepML.prepare_batch_simple(X, y), remaining_labels
 
     #TODO: derive lookback_days from the input set
     #TODO: only write out one y file per X file
@@ -713,19 +709,11 @@ class PrepML:
 
         # We are going to create a loop to fill in the np.memmap
         start = 0
-
+        y = pd.DataFrame()
         for i in range(0, num_rows, batch_size):
             print('On ' + str(i) + ' of ' + str(num_rows))
             # You now grab a chunk of your data that fits in memory
             # This could come from a pandas dataframe for example
-            #dfs, remaining_labels = self.cache_batches_np(remaining_labels,
-            #                                              batch_size=batch_size,
-            #                                              total_rows=500,
-            #                                              variables=variables,
-            #                                              y_column=y_column,
-            #                                              label_values=label_values,
-            #                                              oversample=oversample,
-            #                                              n_jobs=n_jobs)
             X_df, y_df, remaining_labels = self.get_xr_batch(remaining_labels,
                                                        lookback_days=lookback_days,
                                                        batch_size=batch_size,
@@ -750,8 +738,9 @@ class PrepML:
             # I now fill a slice of the np.memmap
             X[start:end] = X_df.vars.values[:batch_size] #sometimes the process will add a few extras, filter them
 
-            #just save y as parquet
-            y_df[:batch_size].to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '_' + str(i/batch_size) + '.parquet')
+
+            #y_df[:batch_size].to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '_' + str(i/batch_size) + '.parquet')
+            y = pd.concat([y, y_df[:batch_size]])
             start = end
             del X_df, y_df
 
@@ -760,10 +749,11 @@ class PrepML:
 
         # Once the data is loaded on the np.memmap, I save it as a normal np.array
         np.save(X_fn, X)
+        y.to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '.parquet')
         return remaining_labels, X_fn
 
 
-    def concat_memapped(self, to_concat_filenames, file_label='', dim_1_size=1131, dim_2_size=180, destination_path=None):
+    def concat_memapped(self, to_concat_filenames, file_label='', dim_1_size=1131, dim_2_size=180, temp_destination_path=None):
         """
         concat multiple numpy files on disk in to a single file
         required for timeseriesai notebook as input to that is a single memmapped file containing X train and test data
@@ -775,8 +765,8 @@ class PrepML:
         destination_path: alternate path to put the concat file
         """
 
-        if destination_path is None:
-            destination_path = self.ml_path
+        if temp_destination_path is None:
+            temp_destination_path = self.ml_path
 
         to_concat = []
         for i in range(len(to_concat_filenames)):
@@ -789,7 +779,7 @@ class PrepML:
             assert(to_concat[i].shape[1] == dim_1_size)
             assert(to_concat[i].shape[2] == dim_2_size)
 
-        X_temp_fn = destination_path + '/temp_X.npy'
+        X_temp_fn = temp_destination_path + '/temp_X.npy'
         np.save(X_temp_fn, np.empty(1))
         X_fn = self.ml_path + '/X_all' + '_' + file_label + '.npy'
         X = np.memmap(X_temp_fn, dtype='float32', shape=(dim_0_size, dim_1_size, dim_2_size))
@@ -821,7 +811,7 @@ class PrepML:
                                   label_values=['Low', 'Moderate', 'Considerable', 'High'],
                                   oversample={'Low':True, 'Moderate':False, 'Considerable':False, 'High':True},
                                   file_label = '',
-                                  destination_path=None,
+                                  temp_destination_path=None,
                                   n_jobs=14):
         """
         create several memapped files
@@ -836,25 +826,25 @@ class PrepML:
         label_values: possible values for the y label (default: ['Low', 'Moderate', 'Considerable', 'High'])
         oversample: dictionary defining which labels from the label_values set to apply naive oversampling to (default: {'Low':True, 'Moderate':False, 'Considerable':False, 'High':True})
         file_label: optional file label to add to the on disk files to distinguish between data sets
-        destination_path: alternate path to put the concat file
+        temp_destination_path: alternate path to put the concat file temporarily (improves disk throughput)
         """
         assert num_train_rows_per_file % batch_size == 0, 'num_train_rows_per_file needs to be a multiple of batch_size'
         assert batch_size <= num_train_rows_per_file, 'num_train_rows_per_file needs to be greater than batch_size'
         assert num_test_rows_per_file % batch_size == 0, 'num_test_rows_per_file needs to be a multiple of batch_size'
         assert batch_size <= num_test_rows_per_file, 'num_test_rows_per_file needs to be greater than batch_size'
         #not all seasons have the same # of variables so find the common subset first
-        train_seasons = train['season'].unique()
-        test_seasons = test['season'].unique()
+        train_seasons = train_labels['season'].unique()
+        test_seasons = test_labels['season'].unique()
         #find the common vars for each season
         #pull one sample of data for each season
         data = {}
         for s in train_seasons:
-            label = train[train['season'] == s].sample(n = 1)
+            label = train_labels[train_labels['season'] == s].sample(n = 1)
             assert(len(label==1))
             data[s] = self.get_data_zarr(label.iloc[0]['UnifiedRegion'], label.iloc[0]['latitude'], label.iloc[0]['longitude'], 7, label.iloc[0]['parsed_date'])
 
         for s in test_seasons:
-            label = test[test['season'] == s].sample(n = 1)
+            label = test_labels[test_labels['season'] == s].sample(n = 1)
             assert(len(label==1))
             data[s] = self.get_data_zarr(label.iloc[0]['UnifiedRegion'], label.iloc[0]['latitude'], label.iloc[0]['longitude'], 7, label.iloc[0]['parsed_date'])
 
@@ -866,40 +856,45 @@ class PrepML:
 
         #get a sample so we can dump the feature labels
         X, _, _ = self.get_xr_batch(train_labels, variables=final_vars, lookback_days=7, batch_size=4)
-        pd.Series(X.variable.data).to_csv(self.ml_path + '/FeatureLabels.csv')
+        pd.Series(X.variable.data).to_csv(self.ml_path + '/FeatureLabels_' + file_label + '.csv')
 
         filenames = []
 
         for i in range(0, num_train_files):
-            train_labels, files = self.create_memmapped( train_labels,
-                                                                   variables = final_vars,
-                                                                   train_or_test = 'train',
-                                                                   num_rows=num_train_rows_per_file,
-                                                                   batch=i,
-                                                                   batch_size=batch_size,
-                                                                   y_column=y_column,
-                                                                   label_values=label_values,
-                                                                   oversample=oversample,
-                                                                   file_label=file_label,
-                                                                   n_jobs=n_jobs)
+            train_labels, files = self.create_memmapped(train_labels,
+                                                        variables = final_vars,
+                                                        train_or_test = 'train',
+                                                        num_rows=num_train_rows_per_file,
+                                                        batch=i,
+                                                        batch_size=batch_size,
+                                                        y_column=y_column,
+                                                        label_values=label_values,
+                                                        oversample=oversample,
+                                                        file_label=file_label,
+                                                        n_jobs=n_jobs)
             filenames.append(files)
             #with open(ml_path + 'remaining_labels_train.p', 'wb' ) as file:
             #    pickle.dump(remaining_labels_train, file)
 
 
+        #test files shouldn't use oversampling
+        oversample_test = {}
+        for k in oversample.keys():
+            oversample_test[k] = False
+
         #same process for test
         for i in range(0, num_test_files):
-            test_labels, files = self.create_memmapped( test_labels,
-                                                                  variables = final_vars,
-                                                                  train_or_test = 'test',
-                                                                  num_rows=num_test_rows_per_file,
-                                                                  batch=i,
-                                                                  batch_size=batch_size,
-                                                                  y_column=y_column,
-                                                                  label_values=label_values,
-                                                                  oversample=oversample,
-                                                                  file_label=file_label,
-                                                                  n_jobs=n_jobs)
+            test_labels, files = self.create_memmapped(test_labels,
+                                                       variables = final_vars,
+                                                       train_or_test = 'test',
+                                                       num_rows=num_test_rows_per_file,
+                                                       batch=i,
+                                                       batch_size=batch_size,
+                                                       y_column=y_column,
+                                                       label_values=label_values,
+                                                       oversample=oversample_test,
+                                                       file_label=file_label,
+                                                       n_jobs=n_jobs)
             filenames.append(files)
             #with open(ml_path + 'remaining_labels_test.p', 'wb' ) as file:
             #    pickle.dump(remaining_labels_test, file)
@@ -908,7 +903,7 @@ class PrepML:
         self.concat_memapped(filenames,
                              file_label=file_label,
                              dim_1_size=len(final_vars),
-                             destination_path=destination_path)
+                             temp_destination_path=temp_destination_path)
 
         return train_labels, test_labels
 

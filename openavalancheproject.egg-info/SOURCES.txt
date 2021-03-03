@@ -7,6 +7,7 @@ openavalancheproject/convert_to_zarr.py
 openavalancheproject/parse_gfs.py
 openavalancheproject/parse_gfs_batch.py
 openavalancheproject/prep_ml.py
+openavalancheproject/tsai_utilities.py
 openavalancheproject.egg-info/PKG-INFO
 openavalancheproject.egg-info/SOURCES.txt
 openavalancheproject.egg-info/dependency_links.txt

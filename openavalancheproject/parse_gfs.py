@@ -142,8 +142,7 @@ class ParseGFS:
         except OSError as err:
             print('Missing files for time: ' + t)
 
-    @staticmethod
-    def check_resample(dates):
+    def check_resample(self, dates):
         """
         method to check if there are any file open issues with the newly output files
 
@@ -153,10 +152,11 @@ class ParseGFS:
         dates_with_errors = []
         for t in dates.strftime('%Y%m%d'):
             try:
-                with xr.open_dataset(day_path + statePath + '_' + t + '.nc') as file:
+                with xr.open_dataset(self.day_path + self.state_path + '_' + t + '.nc') as file:
                     file.close()
                 continue
-            except:
+            except Exception as e:
+                #print(format(e))
                 dates_with_errors.append(t)
         return dates_with_errors
 
@@ -194,7 +194,7 @@ class ParseGFS:
                     redo2.append(b)
 
             #another pass to try and fix any file corruption issues
-            redo = self.check_resample(date_values_pd)
+            redo = self.check_resample(self.date_values_pd)
 
             results = Parallel(n_jobs=1, backend="multiprocessing")(map(delayed(self.resample), redo))
 

@@ -153,6 +153,7 @@ In the project root.  To install the modules in to your current conda environmen
     
 
 ```python
+#test_ignore
 from openavalancheproject.parse_gfs import ParseGFS
 from openavalancheproject.convert_to_zarr import ConvertToZarr
 from openavalancheproject.prep_ml import PrepML
@@ -176,7 +177,8 @@ OAPMLData\
 ## These parameters need to be set
 
 ```python
-season = '15-16'
+#test_ignore
+season = '17-18'
 state = 'Washington'
 
 interpolate = 1 #interpolation factor: whether we can to augment the data through lat/lon interpolation; 1 no interpolation, 4 is 4x interpolation
@@ -187,17 +189,19 @@ n_jobs = 4 #number of parallel processes, this processing is IO bound so don't s
 ```
 
 ```python
+#test_ignore
 pgfs = ParseGFS(season, state, data_root)
 ```
 
-    /media/scottcha/E1/Data/OAPMLData//1.RawWeatherData/gfs/15-16/Washington/ Is Input Directory
-    /media/scottcha/E1/Data/OAPMLData/2.GFSDaily1xInterpolation/15-16/ Is output directory and input to filtering
-    /media/scottcha/E1/Data/OAPMLData/3.GFSFiltered1xInterpolation/15-16/ Is output directory of filtering
+    /media/scottcha/E1/Data/OAPMLData//1.RawWeatherData/gfs/17-18/Washington/ Is Input Directory
+    /media/scottcha/E1/Data/OAPMLData/2.GFSDaily1xInterpolation/17-18/ Is output directory and input to filtering
+    /media/scottcha/E1/Data/OAPMLData/3.GFSFiltered1xInterpolation/17-18/ Is output directory of filtering
 
 
 ### The first step is to resample the GFS files 
 
 ```python
+#test_ignore
 #limiting this to 4 jobs as fileio is the bottleneck
 #n_jobs=4
 #CPU times: user 1.11 s, sys: 551 ms, total: 1.66 s
@@ -208,6 +212,12 @@ pgfs = ParseGFS(season, state, data_root)
 ### Then interpolate and filter those files
 
 ```python
+#test_ignore
+results
+```
+
+```python
+#test_ignore
 #it seems that n_jobs > 8 introdces a lot of errors in to the netcdf write
 #n_jobs = 6
 #CPU times: user 1.83 s, sys: 830 ms, total: 2.66 s
@@ -218,6 +228,7 @@ pgfs = ParseGFS(season, state, data_root)
 ### If interpolate and write returns errors you can retry them individually like:
 
 ```python
+#test_ignore
 #individually fix any potenital file write errors
 redo = ['20151103', '20151105']
 #fix any errors
@@ -232,6 +243,7 @@ for r in redo:
 ### Once the converstion is complete for a set of seasons and states we need to convert the batch to Zarr
 
 ```python
+#test_ignore
 #currently only have Washington regions and one season specified for the tutorial
 #uncomment regions and seasons if doing a larger transform
 regions = {
@@ -239,7 +251,7 @@ regions = {
            'WA Cascades East, Central', 'WA Cascades East, North', 'WA Cascades East, South',
            'WA Cascades West, Central', 'WA Cascades West, Mt Baker', 'WA Cascades West, South']
            }
-seasons = ['15-16']
+seasons = ['17-18']
 ```
 
 ### 4. ConvertToZarr
@@ -248,10 +260,12 @@ The next step in our data transformation pipeline is to transform the NetCDF fil
 
 
 ```python
+#test_ignore
 ctz = ConvertToZarr(seasons, regions, data_root)
 ```
 
 ```python
+#test_ignore
 ctz.convert_local()
 ```
 
@@ -288,14 +302,40 @@ In the tutorial the notebook produced one train batche of 1,000 rows and one tes
 ### At this point we can generate a train and test dataset from the Zarr data
 
 ```python
-pml = PrepML(data_root, interpolate, date_start='2015-11-01', date_end='2016-04-30', date_train_test_cutoff='2016-04-01')
+#test_ignore
+pml = PrepML(data_root, interpolate,  date_start='2015-11-01', date_end='2020-04-30', date_train_test_cutoff='2019-11-01')
 ```
 
 ```python
+#test_ignore
+pml.regions = {            
+            'Washington': ['Mt Hood', 'Olympics', 'Snoqualmie Pass', 'Stevens Pass',
+            'WA Cascades East, Central', 'WA Cascades East, North', 'WA Cascades East, South',
+            'WA Cascades West, Central', 'WA Cascades West, Mt Baker', 'WA Cascades West, South'
+            ]}
+```
+
+```python
+#test_ignore
 %time train_labels, test_labels = pml.prep_labels()
 ```
 
+    Mt Hood
+    Olympics
+    Snoqualmie Pass
+    Stevens Pass
+    WA Cascades East, Central
+    WA Cascades East, North
+    WA Cascades East, South
+    WA Cascades West, Central
+    WA Cascades West, Mt Baker
+    WA Cascades West, South
+    CPU times: user 19.6 s, sys: 531 ms, total: 20.2 s
+    Wall time: 20.4 s
+
+
 ```python
+#test_ignore
 train_labels = train_labels[train_labels['UnifiedRegion'].isin(['Mt Hood', 
                                                               'Olympics', 
                                                               'Snoqualmie Pass',
@@ -309,6 +349,7 @@ train_labels = train_labels[train_labels['UnifiedRegion'].isin(['Mt Hood',
 ```
 
 ```python
+#test_ignore
 test_labels = test_labels[test_labels['UnifiedRegion'].isin(['Mt Hood', 
                                                               'Olympics', 
                                                               'Snoqualmie Pass',
@@ -322,24 +363,220 @@ test_labels = test_labels[test_labels['UnifiedRegion'].isin(['Mt Hood',
 ```
 
 ```python
+#test_ignore
 train_labels.head()
 ```
+
+
+
+
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>UnifiedRegion</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>UnifiedRegionleft</th>
+      <th>Cornices_Likelihood</th>
+      <th>Cornices_MaximumSize</th>
+      <th>Cornices_MinimumSize</th>
+      <th>Cornices_OctagonAboveTreelineEast</th>
+      <th>Cornices_OctagonAboveTreelineNorth</th>
+      <th>Cornices_OctagonAboveTreelineNorthEast</th>
+      <th>...</th>
+      <th>image_types</th>
+      <th>image_urls</th>
+      <th>rose_url</th>
+      <th>BottomLineSummary</th>
+      <th>Day1WarningText</th>
+      <th>Day2WarningText</th>
+      <th>parsed_date</th>
+      <th>season</th>
+      <th>Day1DangerAboveTreelineValue</th>
+      <th>Day1DangerAboveTreelineWithTrend</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Mt Hood</td>
+      <td>45.25</td>
+      <td>-121.75</td>
+      <td>Mt Hood</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>...</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>2015-12-05</td>
+      <td>15-16</td>
+      <td>1.0</td>
+      <td>Moderate_Initial</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Mt Hood</td>
+      <td>45.25</td>
+      <td>-121.75</td>
+      <td>Mt Hood</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>...</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>2015-12-06</td>
+      <td>15-16</td>
+      <td>1.0</td>
+      <td>Moderate_Flat</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Mt Hood</td>
+      <td>45.25</td>
+      <td>-121.75</td>
+      <td>Mt Hood</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>...</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>2015-12-07</td>
+      <td>15-16</td>
+      <td>2.0</td>
+      <td>Considerable_Rising</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Mt Hood</td>
+      <td>45.25</td>
+      <td>-121.75</td>
+      <td>Mt Hood</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>...</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>2015-12-08</td>
+      <td>15-16</td>
+      <td>2.0</td>
+      <td>Considerable_Flat</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Mt Hood</td>
+      <td>45.25</td>
+      <td>-121.75</td>
+      <td>Mt Hood</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>...</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>no-data</td>
+      <td>2015-12-09</td>
+      <td>15-16</td>
+      <td>1.0</td>
+      <td>Moderate_Falling</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 302 columns</p>
+</div>
+
+
 
 ### Note the class imbalance and the test set not having all classes.  This isn't a good set for ML (one should use the entire 2015-2020 dataset but you need to ensure you have all the data from those dates available)
 
 ```python
+#test_ignore
 train_labels['Day1DangerAboveTreeline'].value_counts()
 ```
 
+
+
+
+    Moderate        27982
+    Considerable    25588
+    High             5715
+    Low              2289
+    no-data          1272
+    Extreme            59
+    Name: Day1DangerAboveTreeline, dtype: int64
+
+
+
 ```python
+#test_ignore
 test_labels['Day1DangerAboveTreeline'].value_counts()
 ```
+
+
+
+
+    Series([], Name: Day1DangerAboveTreeline, dtype: int64)
+
+
 
 ### This will generate local files sampling from the datasets (parameters can specify exactly the amount of data to store) in the ML folder which can be used for the next ML process
 
 Modifying the parameters so you don't run out of memory is important as its designed to append to the on disk files so as to stay within memory contraits: num_train_rows_per_file maxes out at around 50000 on my 48gb local machine.  If you want more data than then then use num_train_files parameter which will create multiple files num_train_rows_per_file and will append them in to one file at the end of the process. 
 
 ```python
+#test_ignore
 %time train_labels_remaining, test_labels_remaining = pml.generate_train_test_local(train_labels, test_labels, num_train_rows_per_file=1000, num_test_rows_per_file=500, num_variables=978)
 ```
 
