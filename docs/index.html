@@ -5218,63 +5218,6 @@ Name: Day1DangerAboveTreeline, dtype: int64</pre>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>    on label: Low with samplesize: 1
-    len: 2289
-    on label: Moderate with samplesize: 1
-    len: 27982
-    on label: Considerable with samplesize: 1
-    len: 25588
-    on label: High with samplesize: 1
-    len: 5715
-On 0 of 1000
-2020-12-12 09:06:25.364778 *On 0 of 500
-    on label: Low with samplesize: 125
-    len: 2289
-    on label: Moderate with samplesize: 125
-    len: 27982
-    on label: Considerable with samplesize: 125
-    len: 25588
-    on label: High with samplesize: 125
-    len: 5715
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-<div class="output_subarea output_text output_error">
-<pre>
-<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
-<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
-<span class="ansi-green-fg">&lt;timed exec&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
-
-<span class="ansi-green-fg">~/src/OpenAvalancheProject/openavalancheproject/prep_ml.py</span> in <span class="ansi-cyan-fg">generate_train_test_local</span><span class="ansi-blue-fg">(self, train_labels, test_labels, num_train_files, num_test_files, num_train_rows_per_file, num_test_rows_per_file, num_variables)</span>
-<span class="ansi-green-intense-fg ansi-bold">    669</span>         filenames <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
-<span class="ansi-green-intense-fg ansi-bold">    670</span>         <span class="ansi-green-fg">for</span> i <span class="ansi-green-fg">in</span> range<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">,</span> num_train_files<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
-<span class="ansi-green-fg">--&gt; 671</span><span class="ansi-red-fg">             </span>remaining_labels_train <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>create_memmapped<span class="ansi-blue-fg">(</span>train_labels<span class="ansi-blue-fg">,</span> train_or_test <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">&#39;train&#39;</span><span class="ansi-blue-fg">,</span> num_variables<span class="ansi-blue-fg">=</span>num_variables<span class="ansi-blue-fg">,</span> num_rows<span class="ansi-blue-fg">=</span>num_train_rows_per_file<span class="ansi-blue-fg">,</span> batch<span class="ansi-blue-fg">=</span>i<span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    672</span>             filenames<span class="ansi-blue-fg">.</span>append<span class="ansi-blue-fg">(</span>self<span class="ansi-blue-fg">.</span>ml_path <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;/Xtrain_batch_&#39;</span> <span class="ansi-blue-fg">+</span> str<span class="ansi-blue-fg">(</span>i<span class="ansi-blue-fg">)</span> <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;_on_disk.npy&#39;</span><span class="ansi-blue-fg">)</span>
-<span class="ansi-green-intense-fg ansi-bold">    673</span>             <span class="ansi-red-fg">#with open(ml_path + &#39;remaining_labels_train.p&#39;, &#39;wb&#39; ) as file:</span>
-
-<span class="ansi-green-fg">~/src/OpenAvalancheProject/openavalancheproject/prep_ml.py</span> in <span class="ansi-cyan-fg">create_memmapped</span><span class="ansi-blue-fg">(self, remaining_labels, train_or_test, num_variables, num_rows, lookback_days, batch, batch_size)</span>
-<span class="ansi-green-intense-fg ansi-bold">    590</span> 
-<span class="ansi-green-intense-fg ansi-bold">    591</span>             <span class="ansi-red-fg"># I now fill a slice of the np.memmap</span>
-<span class="ansi-green-fg">--&gt; 592</span><span class="ansi-red-fg">             </span>X<span class="ansi-blue-fg">[</span>start<span class="ansi-blue-fg">:</span>end<span class="ansi-blue-fg">]</span> <span class="ansi-blue-fg">=</span> X_df<span class="ansi-blue-fg">.</span>vars<span class="ansi-blue-fg">.</span>values<span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">:</span>batch_size<span class="ansi-blue-fg">]</span> <span class="ansi-red-fg">#sometimes the process will add a few extras, filter them</span>
-<span class="ansi-green-intense-fg ansi-bold">    593</span> 
-<span class="ansi-green-intense-fg ansi-bold">    594</span>             <span class="ansi-red-fg">#just save y as parquet</span>
-
-<span class="ansi-red-fg">ValueError</span>: could not broadcast input array from shape (500,1131,180) into shape (500,978,180)</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
     {% endraw %}
 

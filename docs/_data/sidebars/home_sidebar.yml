@@ -21,6 +21,9 @@ entries:
       title: This notebook is the primary notebook to take data in a per region format
         and transform it in to a format appropriate for ML problems
       url: 3.PrepMLData.html
+    - output: web,pdf
+      title: Title
+      url: 4.TSAIUtilities.html
     output: web
     title: openavalancheproject
   output: web

@@ -736,7 +736,7 @@ Olympics head
                                 <span class="n">y_column</span><span class="o">=</span><span class="n">col</span><span class="p">,</span>
                                 <span class="n">label_values</span><span class="o">=</span><span class="n">ws_label_values</span><span class="p">,</span>
                                 <span class="n">oversample</span><span class="o">=</span><span class="n">ws_oversample</span><span class="p">)</span>
-
+    
     <span class="c1">#validate shape</span>
     <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">1131</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">18</span>
@@ -900,52 +900,27 @@ have n_jobs -1
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Mt Hood
 Olympics
+Getting a batch for label WindSlab_Likelihood
     on label: no-data with samplesize: 3
     len: 130
     on label: 0-unlikely with samplesize: 3
     len: 0
+    No more values for label: 0-unlikely
     on label: 1-possible with samplesize: 3
     len: 44
     on label: 2-likely with samplesize: 3
     len: 24
     on label: 3-very likely with samplesize: 3
     len: 0
+    No more values for label: 3-very likely
 have n_jobs -1
 Filling remaining have 9
-    on label: no-data with samplesize: 1
+    on label: no-data with samplesize: 3
     len: 127
-    on label: 0-unlikely with samplesize: 1
-    len: 0
-    on label: 1-possible with samplesize: 1
+    on label: 1-possible with samplesize: 3
     len: 41
-    on label: 2-likely with samplesize: 1
+    on label: 2-likely with samplesize: 3
     len: 21
-    on label: 3-very likely with samplesize: 1
-    len: 0
-have n_jobs -1
-Filling remaining have 12
-    on label: no-data with samplesize: 1
-    len: 126
-    on label: 0-unlikely with samplesize: 1
-    len: 0
-    on label: 1-possible with samplesize: 1
-    len: 40
-    on label: 2-likely with samplesize: 1
-    len: 20
-    on label: 3-very likely with samplesize: 1
-    len: 0
-have n_jobs -1
-Filling remaining have 15
-    on label: no-data with samplesize: 1
-    len: 125
-    on label: 0-unlikely with samplesize: 1
-    len: 0
-    on label: 1-possible with samplesize: 1
-    len: 39
-    on label: 2-likely with samplesize: 1
-    len: 19
-    on label: 3-very likely with samplesize: 1
-    len: 0
 have n_jobs -1
 </pre>
 </div>
@@ -1015,22 +990,21 @@ have n_jobs -1
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">test_cache_batches_np</span><span class="p">():</span>
-    <span class="n">interpolate</span> <span class="o">=</span> <span class="mi">1</span> 
-    <span class="n">data_root</span> <span class="o">=</span> <span class="s1">&#39;../TestData/&#39;</span>
-    <span class="n">pml</span> <span class="o">=</span> <span class="n">PrepML</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">date_start</span><span class="o">=</span><span class="s1">&#39;2018-11-01&#39;</span><span class="p">,</span> <span class="n">date_end</span><span class="o">=</span><span class="s1">&#39;2019-04-30&#39;</span><span class="p">,</span> <span class="n">date_train_test_cutoff</span><span class="o">=</span><span class="s1">&#39;2019-04-01&#39;</span><span class="p">)</span>
-    <span class="n">pml</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">]}</span>
-    <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">pml</span><span class="o">.</span><span class="n">prep_labels</span><span class="p">()</span>
-    <span class="n">lookback</span> <span class="o">=</span> <span class="mi">7</span>
-    <span class="n">oversample</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Low&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Moderate&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Considerable&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
-    <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">pml</span><span class="o">.</span><span class="n">cache_batches_np</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">total_rows</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lookback_days</span><span class="o">=</span><span class="n">lookback</span><span class="p">,</span> <span class="n">oversample</span><span class="o">=</span><span class="n">oversample</span><span class="p">)</span>
-    <span class="n">X</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    
-    <span class="k">assert</span> <span class="n">X</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">())</span>
-    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#    interpolate = 1 </span>
+<span class="c1">#    data_root = &#39;../TestData/&#39;</span>
+<span class="c1">#    pml = PrepML(data_root, interpolate, date_start=&#39;2018-11-01&#39;, date_end=&#39;2019-04-30&#39;, date_train_test_cutoff=&#39;2019-04-01&#39;)</span>
+<span class="c1">#    pml.regions = {&#39;Washington&#39;: [&#39;Mt Hood&#39;, &#39;Olympics&#39;]}</span>
+<span class="c1">#    train, test = pml.prep_labels()</span>
+<span class="c1">#    lookback = 7</span>
+<span class="c1">#    oversample={&#39;Low&#39;:False, &#39;Moderate&#39;:False, &#39;Considerable&#39;:False, &#39;High&#39;:False}</span>
+<span class="c1">#    a, b = pml.cache_batches_np(train, batch_size=50, total_rows=100, lookback_days=lookback, oversample=oversample)</span>
+<span class="c1">#    X = a[0]</span>
+<span class="c1">#    y = a[1]</span>
+<span class="c1">#    </span>
+<span class="c1">#    assert X.vars.values.shape[0] == y.shape[0]</span>
+<span class="c1">#    assert len(train) == len(b) + len(y)</span>
+<span class="c1">#    assert len(y) == len(y.drop_duplicates())</span>
+<span class="c1">#    return X, y</span>
 </pre></div>
 
     </div>
@@ -1047,95 +1021,10 @@ have n_jobs -1
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">test_cache_batches_np</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Mt Hood
-Olympics
-2020-12-26 09:55:17.623062 *On 0 of 100
-    on label: Low with samplesize: 12
-    len: 40
-    on label: Moderate with samplesize: 12
-    len: 58
-    on label: Considerable with samplesize: 12
-    len: 50
-    on label: High with samplesize: 12
-    len: 2
-have n_jobs 14
-Filling remaining have 38
-    on label: Low with samplesize: 3
-    len: 28
-    on label: Moderate with samplesize: 3
-    len: 46
-    on label: Considerable with samplesize: 3
-    len: 38
-    on label: High with samplesize: 3
-    len: 0
-have n_jobs 14
-Filling remaining have 47
-    on label: Low with samplesize: 1
-    len: 25
-    on label: Moderate with samplesize: 1
-    len: 43
-    on label: Considerable with samplesize: 1
-    len: 35
-    on label: High with samplesize: 1
-    len: 0
-have n_jobs 14
-2020-12-26 09:55:19.205460 *On 50 of 100
-    on label: Low with samplesize: 12
-    len: 24
-    on label: Moderate with samplesize: 12
-    len: 42
-    on label: Considerable with samplesize: 12
-    len: 34
-    on label: High with samplesize: 12
-    len: 0
-have n_jobs 14
-Filling remaining have 36
-    on label: Low with samplesize: 3
-    len: 12
-    on label: Moderate with samplesize: 3
-    len: 30
-    on label: Considerable with samplesize: 3
-    len: 22
-    on label: High with samplesize: 3
-    len: 0
-have n_jobs 14
-Filling remaining have 45
-    on label: Low with samplesize: 1
-    len: 9
-    on label: Moderate with samplesize: 1
-    len: 27
-    on label: Considerable with samplesize: 1
-    len: 19
-    on label: High with samplesize: 1
-    len: 0
-have n_jobs 14
-Filling remaining have 48
-    on label: Low with samplesize: 1
-    len: 8
-    on label: Moderate with samplesize: 1
-    len: 26
-    on label: Considerable with samplesize: 1
-    len: 18
-    on label: High with samplesize: 1
-    len: 0
-have n_jobs 14
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -1346,22 +1235,468 @@ On 0 of 25
 have n_jobs 8
 Filling remaining have 22
     on label: Low with samplesize: 1
-    len: 12
+    len: 6
     on label: Moderate with samplesize: 1
     len: 6
     on label: Considerable with samplesize: 1
     len: 6
     on label: High with samplesize: 1
-    len: 4
+    len: 0
+    No more values for label: High
 have n_jobs 8
 start: 0 end: 25
-(26, 1131, 180)
+(25, 1131, 180)
 25
 [&#39;../TestData//5.MLData/Xtrain_batch_0__on_disk.npy&#39;, &#39;../TestData//5.MLData/Xtest_batch_0__on_disk.npy&#39;]
 On file 0 of 2
 On file 1 of 2
 </pre>
 </div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="c1">#test_ignore</span>
+
+
+<span class="c1">#serial Wall time: 500/500 4min 17s (seairal and jobs=1 parallel)</span>
+<span class="c1">#n+jobs=4: 2mins</span>
+<span class="c1">#8:1:40</span>
+<span class="c1">#15: 1:42</span>
+<span class="c1">#10000, 2500 48mins</span>
+
+<span class="n">interpolate</span> <span class="o">=</span> <span class="mi">1</span> 
+<span class="n">data_root</span> <span class="o">=</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData/&#39;</span>
+
+<span class="n">ws_label_values</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;no-data&#39;</span><span class="p">,</span> <span class="s1">&#39;0-unlikely&#39;</span><span class="p">,</span> <span class="s1">&#39;1-possible&#39;</span><span class="p">,</span> <span class="s1">&#39;2-likely&#39;</span><span class="p">,</span> <span class="s1">&#39;3-very likely&#39;</span><span class="p">]</span>
+<span class="n">ws_oversample</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;no-data&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span>  <span class="s1">&#39;0-unlikely&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;1-possible&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;2-likely&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;3-very likely&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+
+<span class="n">pml</span> <span class="o">=</span> <span class="n">PrepML</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">date_start</span><span class="o">=</span><span class="s1">&#39;2015-11-01&#39;</span><span class="p">,</span> <span class="n">date_end</span><span class="o">=</span><span class="s1">&#39;2020-04-30&#39;</span><span class="p">,</span> <span class="n">date_train_test_cutoff</span><span class="o">=</span><span class="s1">&#39;2019-11-01&#39;</span><span class="p">)</span>
+
+<span class="n">pml</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">,</span> <span class="s1">&#39;Snoqualmie Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Stevens Pass&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;WA Cascades East, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, North&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, South&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span><span class="p">]}</span>
+
+<span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">pml</span><span class="o">.</span><span class="n">prep_labels</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Mt Hood
+Olympics
+Snoqualmie Pass
+Stevens Pass
+WA Cascades East, Central
+WA Cascades East, North
+WA Cascades East, South
+WA Cascades West, Central
+WA Cascades West, Mt Baker
+WA Cascades West, South
+CPU times: user 14.2 s, sys: 595 ms, total: 14.7 s
+Wall time: 14.8 s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mt_hood</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;UnifiedRegion&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">]</span>
+<span class="n">mt_hood_15</span> <span class="o">=</span> <span class="n">mt_hood</span><span class="p">[</span><span class="n">mt_hood</span><span class="p">[</span><span class="s1">&#39;season&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;19-20&#39;</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mt_hood_15</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;parsed_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>UnifiedRegion</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>UnifiedRegionleft</th>
+      <th>Cornices_Likelihood</th>
+      <th>Cornices_MaximumSize</th>
+      <th>Cornices_MinimumSize</th>
+      <th>Cornices_OctagonAboveTreelineEast</th>
+      <th>Cornices_OctagonAboveTreelineNorth</th>
+      <th>Cornices_OctagonAboveTreelineNorthEast</th>
+      <th>...</th>
+      <th>WindSlab_OctagonNearTreelineSouthWest</th>
+      <th>WindSlab_OctagonNearTreelineWest</th>
+      <th>image_paths</th>
+      <th>image_types</th>
+      <th>image_urls</th>
+      <th>rose_url</th>
+      <th>BottomLineSummary</th>
+      <th>Day1WarningText</th>
+      <th>Day2WarningText</th>
+      <th>season</th>
+    </tr>
+    <tr>
+      <th>parsed_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<p>0 rows × 299 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mt_hood_test</span> <span class="o">=</span> <span class="n">test</span><span class="p">[</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;UnifiedRegion&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mt_hood_test</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;parsed_date&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>UnifiedRegion</th>
+      <th>latitude</th>
+      <th>longitude</th>
+      <th>UnifiedRegionleft</th>
+      <th>Cornices_Likelihood</th>
+      <th>Cornices_MaximumSize</th>
+      <th>Cornices_MinimumSize</th>
+      <th>Cornices_OctagonAboveTreelineEast</th>
+      <th>Cornices_OctagonAboveTreelineNorth</th>
+      <th>Cornices_OctagonAboveTreelineNorthEast</th>
+      <th>...</th>
+      <th>WindSlab_OctagonNearTreelineSouthWest</th>
+      <th>WindSlab_OctagonNearTreelineWest</th>
+      <th>image_paths</th>
+      <th>image_types</th>
+      <th>image_urls</th>
+      <th>rose_url</th>
+      <th>BottomLineSummary</th>
+      <th>Day1WarningText</th>
+      <th>Day2WarningText</th>
+      <th>season</th>
+    </tr>
+    <tr>
+      <th>parsed_date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2019-12-13</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2020-01-28</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2020-01-30</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2020-02-25</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2020-03-02</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2020-03-15</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>...</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+<p>6 rows × 299 columns</p>
+</div>
+</div>
+
 </div>
 
 </div>
@@ -1393,6 +1728,7 @@ On file 1 of 2
 
 <span class="n">pml</span> <span class="o">=</span> <span class="n">PrepML</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">date_start</span><span class="o">=</span><span class="s1">&#39;2015-11-01&#39;</span><span class="p">,</span> <span class="n">date_end</span><span class="o">=</span><span class="s1">&#39;2019-04-30&#39;</span><span class="p">,</span> <span class="n">date_train_test_cutoff</span><span class="o">=</span><span class="s1">&#39;2018-11-01&#39;</span><span class="p">)</span>
 
+
 <span class="n">pml</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">,</span> <span class="s1">&#39;Snoqualmie Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Stevens Pass&#39;</span><span class="p">,</span>
                <span class="s1">&#39;WA Cascades East, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, North&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, South&#39;</span><span class="p">,</span>
                <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span><span class="p">]}</span>
@@ -1410,7 +1746,7 @@ On file 1 of 2
                                               <span class="n">label_values</span><span class="o">=</span><span class="n">ws_label_values</span><span class="p">,</span> 
                                               <span class="n">oversample</span><span class="o">=</span><span class="n">ws_oversample</span><span class="p">,</span> 
                                               <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;windslab&#39;</span><span class="p">,</span> 
-                                              <span class="n">destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span><span class="p">,</span> 
+                                              <span class="n">temp_destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span><span class="p">,</span> 
                                               <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 
@@ -6100,14 +6436,14 @@ On file 5 of 6
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">interpolate</span> <span class="o">=</span> <span class="mi">1</span> 
 <span class="n">data_root</span> <span class="o">=</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData/&#39;</span>
 
-<span class="n">ws_label_values</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;no-data&#39;</span><span class="p">,</span> <span class="s1">&#39;0-unlikely&#39;</span><span class="p">,</span> <span class="s1">&#39;1-possible&#39;</span><span class="p">,</span> <span class="s1">&#39;2-likely&#39;</span><span class="p">,</span> <span class="s1">&#39;3-very likely&#39;</span><span class="p">]</span>
-<span class="n">ws_oversample</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;no-data&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span>  <span class="s1">&#39;0-unlikely&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;1-possible&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;2-likely&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;3-very likely&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">}</span>
+<span class="c1">#ws_label_values = [&#39;no-data&#39;, &#39;0-unlikely&#39;, &#39;1-possible&#39;, &#39;2-likely&#39;, &#39;3-very likely&#39;]</span>
+<span class="c1">#ws_oversample = {&#39;no-data&#39;:False,  &#39;0-unlikely&#39;:True, &#39;1-possible&#39;:False, &#39;2-likely&#39;:False, &#39;3-very likely&#39;:True}</span>
 
 <span class="n">pml</span> <span class="o">=</span> <span class="n">PrepML</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">date_start</span><span class="o">=</span><span class="s1">&#39;2015-11-01&#39;</span><span class="p">,</span> <span class="n">date_end</span><span class="o">=</span><span class="s1">&#39;2019-04-30&#39;</span><span class="p">,</span> <span class="n">date_train_test_cutoff</span><span class="o">=</span><span class="s1">&#39;2018-11-01&#39;</span><span class="p">)</span>
 
-<span class="n">pml</span><span class="o">.</span><span class="n">concat_memapped</span><span class="p">(</span><span class="n">to_concat_filenames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_0_windslab_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_1_windslab_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_2_windslab_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_3_windslab_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_4_windslab_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtest_batch_0_windslab_on_disk.npy&#39;</span><span class="p">],</span>
-                    <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;windslab&#39;</span><span class="p">,</span> <span class="n">dim_1_size</span><span class="o">=</span><span class="mi">978</span><span class="p">,</span> <span class="n">dim_2_size</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
-                    <span class="n">destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span>
+<span class="n">pml</span><span class="o">.</span><span class="n">concat_memapped</span><span class="p">(</span><span class="n">to_concat_filenames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_0_day1above_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_1_day1above_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_2_day1above_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_3_day1above_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_4_day1above_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtest_batch_0_day1above_on_disk.npy&#39;</span><span class="p">],</span>
+                    <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;day1above&#39;</span><span class="p">,</span> <span class="n">dim_1_size</span><span class="o">=</span><span class="mi">978</span><span class="p">,</span> <span class="n">dim_2_size</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+                    <span class="n">temp_destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span>
                    <span class="p">)</span>
 </pre></div>
 
@@ -6144,7 +6480,48 @@ On file 5 of 6
 
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;Day1DangerAboveTreeline&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>Moderate        27982
+Considerable    25588
+High             5715
+Low              2289
+no-data          1272
+Extreme            59
+Name: Day1DangerAboveTreeline, dtype: int64</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="c1">#test_ignore</span>
+
 
 <span class="c1">#serial Wall time: 500/500 4min 17s (seairal and jobs=1 parallel)</span>
 <span class="c1">#n+jobs=4: 2mins</span>
@@ -6157,21 +6534,69 @@ On file 5 of 6
 
 <span class="n">pml</span> <span class="o">=</span> <span class="n">PrepML</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">date_start</span><span class="o">=</span><span class="s1">&#39;2015-11-01&#39;</span><span class="p">,</span> <span class="n">date_end</span><span class="o">=</span><span class="s1">&#39;2019-04-30&#39;</span><span class="p">,</span> <span class="n">date_train_test_cutoff</span><span class="o">=</span><span class="s1">&#39;2018-11-01&#39;</span><span class="p">)</span>
 
-<span class="n">pml</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Washington&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Mt Hood&#39;</span><span class="p">,</span> <span class="s1">&#39;Olympics&#39;</span><span class="p">,</span> <span class="s1">&#39;Snoqualmie Pass&#39;</span><span class="p">,</span> <span class="s1">&#39;Stevens Pass&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;WA Cascades East, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, North&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades East, South&#39;</span><span class="p">,</span>
-               <span class="s1">&#39;WA Cascades West, Central&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, Mt Baker&#39;</span><span class="p">,</span> <span class="s1">&#39;WA Cascades West, South&#39;</span><span class="p">]}</span>
+<span class="n">pml</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Colorado&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Grand Mesa Zone&#39;</span><span class="p">,</span> <span class="s1">&#39;Sangre de Cristo Range&#39;</span><span class="p">,</span> <span class="s1">&#39;Steamboat Zone&#39;</span><span class="p">,</span> <span class="s1">&#39;Front Range Zone&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;Vail Summit Zone&#39;</span><span class="p">,</span> <span class="s1">&#39;Sawatch Zone&#39;</span><span class="p">,</span> <span class="s1">&#39;Aspen Zone&#39;</span><span class="p">,</span> 
+           <span class="s1">&#39;North San Juan Mountains&#39;</span><span class="p">,</span> <span class="s1">&#39;South San Juan Mountains&#39;</span><span class="p">,</span> <span class="s1">&#39;Gunnison Zone&#39;</span><span class="p">]}</span>
+
+<span class="c1">#pml.regions = {&#39;Washington&#39;: [&#39;Mt Hood&#39;, &#39;Olympics&#39;, &#39;Snoqualmie Pass&#39;, &#39;Stevens Pass&#39;,</span>
+<span class="c1">#               &#39;WA Cascades East, Central&#39;, &#39;WA Cascades East, North&#39;, &#39;WA Cascades East, South&#39;,</span>
+<span class="c1">#               &#39;WA Cascades West, Central&#39;, &#39;WA Cascades West, Mt Baker&#39;, &#39;WA Cascades West, South&#39;]}</span>
 
 <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">pml</span><span class="o">.</span><span class="n">prep_labels</span><span class="p">()</span>
+</pre></div>
 
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Grand Mesa Zone
+Sangre de Cristo Range
+Steamboat Zone
+Front Range Zone
+Vail Summit Zone
+Sawatch Zone
+Aspen Zone
+North San Juan Mountains
+South San Juan Mountains
+Gunnison Zone
+CPU times: user 18.4 s, sys: 965 ms, total: 19.4 s
+Wall time: 8h 19s
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">label_values</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Low&#39;</span><span class="p">,</span> <span class="s1">&#39;Moderate&#39;</span><span class="p">,</span> <span class="s1">&#39;Considerable&#39;</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">]</span>
+<span class="n">oversample</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;Low&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Moderate&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;Considerable&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;High&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
 <span class="n">train2</span><span class="p">,</span> <span class="n">test2</span> <span class="o">=</span> <span class="n">pml</span><span class="o">.</span><span class="n">generate_train_test_local</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> 
                                               <span class="n">test</span><span class="p">,</span> 
-                                              <span class="n">num_train_files</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> 
+                                              <span class="n">num_train_files</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
                                               <span class="n">num_test_files</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
-                                              <span class="n">num_train_rows_per_file</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> 
-                                              <span class="n">num_test_rows_per_file</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> 
+                                              <span class="n">num_train_rows_per_file</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> 
+                                              <span class="n">num_test_rows_per_file</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> 
                                               <span class="n">batch_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-                                              <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;day1above&#39;</span><span class="p">,</span> 
-                                              <span class="n">destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span><span class="p">,</span> 
+                                              <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;co_day1above_nooversample_small&#39;</span><span class="p">,</span> 
+                                              <span class="n">label_values</span><span class="o">=</span><span class="n">label_values</span><span class="p">,</span>
+                                              <span class="n">oversample</span><span class="o">=</span><span class="n">oversample</span><span class="p">,</span>
+                                              <span class="n">temp_destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span><span class="p">,</span> 
                                               <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 
@@ -6185,1387 +6610,167 @@ On file 5 of 6
 <div class="output_area">
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>Mt Hood
-Olympics
-Snoqualmie Pass
-Stevens Pass
-WA Cascades East, Central
-WA Cascades East, North
-WA Cascades East, South
-WA Cascades West, Central
-WA Cascades West, Mt Baker
-WA Cascades West, South
-*Opening file /media/scottcha/E1/Data/OAPMLData//4.GFSFiltered1xInterpolationZarr//15-16/Washington/Region_WA Cascades West, South.zarr
-*Opening file /media/scottcha/E1/Data/OAPMLData//4.GFSFiltered1xInterpolationZarr//16-17/Washington/Region_WA Cascades East, North.zarr
-*Opening file /media/scottcha/E1/Data/OAPMLData//4.GFSFiltered1xInterpolationZarr//17-18/Washington/Region_WA Cascades West, Mt Baker.zarr
-*Opening file /media/scottcha/E1/Data/OAPMLData//4.GFSFiltered1xInterpolationZarr//18-19/Washington/Region_WA Cascades West, South.zarr
-    on label: Low with samplesize: 1
-    len: 2289
+<pre>    on label: Low with samplesize: 1
+    len: 21834
     on label: Moderate with samplesize: 1
-    len: 27982
+    len: 46808
     on label: Considerable with samplesize: 1
-    len: 25588
+    len: 12791
     on label: High with samplesize: 1
-    len: 5715
+    len: 1740
 have n_jobs -1
-On 0 of 10000
+On 0 of 5000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 21834
     on label: Moderate with samplesize: 250
-    len: 27982
+    len: 46808
     on label: Considerable with samplesize: 250
-    len: 25588
+    len: 12791
     on label: High with samplesize: 250
-    len: 5715
+    len: 1740
 have n_jobs 8
 start: 0 end: 1000
 (1000, 978, 180)
 1000
-On 1000 of 10000
+On 1000 of 5000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 21584
     on label: Moderate with samplesize: 250
-    len: 27732
+    len: 46558
     on label: Considerable with samplesize: 250
-    len: 25338
+    len: 12541
     on label: High with samplesize: 250
-    len: 5715
+    len: 1490
 have n_jobs 8
 start: 1000 end: 2000
 (1000, 978, 180)
 1000
-On 2000 of 10000
+On 2000 of 5000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 21334
     on label: Moderate with samplesize: 250
-    len: 27482
+    len: 46308
     on label: Considerable with samplesize: 250
-    len: 25088
+    len: 12291
     on label: High with samplesize: 250
-    len: 5715
+    len: 1240
 have n_jobs 8
 start: 2000 end: 3000
 (1000, 978, 180)
 1000
-On 3000 of 10000
+On 3000 of 5000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 21084
     on label: Moderate with samplesize: 250
-    len: 27232
+    len: 46058
     on label: Considerable with samplesize: 250
-    len: 24838
+    len: 12041
     on label: High with samplesize: 250
-    len: 5715
+    len: 990
 have n_jobs 8
 start: 3000 end: 4000
 (1000, 978, 180)
 1000
-On 4000 of 10000
+On 4000 of 5000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 20834
     on label: Moderate with samplesize: 250
-    len: 26982
+    len: 45808
     on label: Considerable with samplesize: 250
-    len: 24588
+    len: 11791
     on label: High with samplesize: 250
-    len: 5715
+    len: 740
 have n_jobs 8
 start: 4000 end: 5000
 (1000, 978, 180)
 1000
-On 5000 of 10000
+On 0 of 1000
     on label: Low with samplesize: 250
-    len: 2289
+    len: 6378
     on label: Moderate with samplesize: 250
-    len: 26732
+    len: 16831
     on label: Considerable with samplesize: 250
-    len: 24338
+    len: 7709
     on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 5000 end: 6000
-(1000, 978, 180)
-1000
-On 6000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 26482
-    on label: Considerable with samplesize: 250
-    len: 24088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 6000 end: 7000
-(1000, 978, 180)
-1000
-On 7000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 26232
-    on label: Considerable with samplesize: 250
-    len: 23838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 7000 end: 8000
-(1000, 978, 180)
-1000
-On 8000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 25982
-    on label: Considerable with samplesize: 250
-    len: 23588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 8000 end: 9000
-(1000, 978, 180)
-1000
-On 9000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 25732
-    on label: Considerable with samplesize: 250
-    len: 23338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 9000 end: 10000
-(1000, 978, 180)
-1000
-On 0 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 25482
-    on label: Considerable with samplesize: 250
-    len: 23088
-    on label: High with samplesize: 250
-    len: 5715
+    len: 1479
 have n_jobs 8
 start: 0 end: 1000
 (1000, 978, 180)
 1000
-On 1000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 25232
-    on label: Considerable with samplesize: 250
-    len: 22838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 1000 end: 2000
-(1000, 978, 180)
-1000
-On 2000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 24982
-    on label: Considerable with samplesize: 250
-    len: 22588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 2000 end: 3000
-(1000, 978, 180)
-1000
-On 3000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 24732
-    on label: Considerable with samplesize: 250
-    len: 22338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 3000 end: 4000
-(1000, 978, 180)
-1000
-On 4000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 24482
-    on label: Considerable with samplesize: 250
-    len: 22088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 4000 end: 5000
-(1000, 978, 180)
-1000
-On 5000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 24232
-    on label: Considerable with samplesize: 250
-    len: 21838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 5000 end: 6000
-(1000, 978, 180)
-1000
-On 6000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 23982
-    on label: Considerable with samplesize: 250
-    len: 21588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 6000 end: 7000
-(1000, 978, 180)
-1000
-On 7000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 23732
-    on label: Considerable with samplesize: 250
-    len: 21338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 7000 end: 8000
-(1000, 978, 180)
-1000
-On 8000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 23482
-    on label: Considerable with samplesize: 250
-    len: 21088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 8000 end: 9000
-(1000, 978, 180)
-1000
-On 9000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 23232
-    on label: Considerable with samplesize: 250
-    len: 20838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 9000 end: 10000
-(1000, 978, 180)
-1000
-On 0 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 22982
-    on label: Considerable with samplesize: 250
-    len: 20588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 0 end: 1000
-(1000, 978, 180)
-1000
-On 1000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 22732
-    on label: Considerable with samplesize: 250
-    len: 20338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 1000 end: 2000
-(1000, 978, 180)
-1000
-On 2000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 22482
-    on label: Considerable with samplesize: 250
-    len: 20088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 2000 end: 3000
-(1000, 978, 180)
-1000
-On 3000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 22232
-    on label: Considerable with samplesize: 250
-    len: 19838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 3000 end: 4000
-(1000, 978, 180)
-1000
-On 4000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 21982
-    on label: Considerable with samplesize: 250
-    len: 19588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 4000 end: 5000
-(1000, 978, 180)
-1000
-On 5000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 21732
-    on label: Considerable with samplesize: 250
-    len: 19338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 5000 end: 6000
-(1000, 978, 180)
-1000
-On 6000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 21482
-    on label: Considerable with samplesize: 250
-    len: 19088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 6000 end: 7000
-(1000, 978, 180)
-1000
-On 7000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 21232
-    on label: Considerable with samplesize: 250
-    len: 18838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 7000 end: 8000
-(1000, 978, 180)
-1000
-On 8000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 20982
-    on label: Considerable with samplesize: 250
-    len: 18588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 8000 end: 9000
-(1000, 978, 180)
-1000
-On 9000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 20732
-    on label: Considerable with samplesize: 250
-    len: 18338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 9000 end: 10000
-(1000, 978, 180)
-1000
-On 0 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 20482
-    on label: Considerable with samplesize: 250
-    len: 18088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 0 end: 1000
-(1000, 978, 180)
-1000
-On 1000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 20232
-    on label: Considerable with samplesize: 250
-    len: 17838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 1000 end: 2000
-(1000, 978, 180)
-1000
-On 2000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 19982
-    on label: Considerable with samplesize: 250
-    len: 17588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 2000 end: 3000
-(1000, 978, 180)
-1000
-On 3000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 19732
-    on label: Considerable with samplesize: 250
-    len: 17338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 3000 end: 4000
-(1000, 978, 180)
-1000
-On 4000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 19482
-    on label: Considerable with samplesize: 250
-    len: 17088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 4000 end: 5000
-(1000, 978, 180)
-1000
-On 5000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 19232
-    on label: Considerable with samplesize: 250
-    len: 16838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 5000 end: 6000
-(1000, 978, 180)
-1000
-On 6000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 18982
-    on label: Considerable with samplesize: 250
-    len: 16588
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 6000 end: 7000
-(1000, 978, 180)
-1000
-On 7000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 18732
-    on label: Considerable with samplesize: 250
-    len: 16338
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 7000 end: 8000
-(1000, 978, 180)
-1000
-On 8000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 18482
-    on label: Considerable with samplesize: 250
-    len: 16088
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 8000 end: 9000
-(1000, 978, 180)
-1000
-On 9000 of 10000
-    on label: Low with samplesize: 250
-    len: 2289
-    on label: Moderate with samplesize: 250
-    len: 18232
-    on label: Considerable with samplesize: 250
-    len: 15838
-    on label: High with samplesize: 250
-    len: 5715
-have n_jobs 8
-start: 9000 end: 10000
-(1000, 978, 180)
-1000
-On 0 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 1183
-    on label: Considerable with samplesize: 250
-    len: 1302
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 967
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 933
-    on label: Considerable with samplesize: 8
-    len: 1052
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 925
-    on label: Considerable with samplesize: 1
-    len: 1044
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 0 end: 1000
-(1003, 978, 180)
-1000
-On 1000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 924
-    on label: Considerable with samplesize: 250
-    len: 1043
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 967
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 674
-    on label: Considerable with samplesize: 8
-    len: 793
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 666
-    on label: Considerable with samplesize: 1
-    len: 785
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 1000 end: 2000
-(1003, 978, 180)
-1000
-On 2000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 665
-    on label: Considerable with samplesize: 250
-    len: 784
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 967
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 415
-    on label: Considerable with samplesize: 8
-    len: 534
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 407
-    on label: Considerable with samplesize: 1
-    len: 526
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 2000 end: 3000
-(1003, 978, 180)
-1000
-On 3000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 406
-    on label: Considerable with samplesize: 250
-    len: 525
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 967
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 156
-    on label: Considerable with samplesize: 8
-    len: 275
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 148
-    on label: Considerable with samplesize: 1
-    len: 267
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 3000 end: 4000
-(1003, 978, 180)
-1000
-On 4000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 147
-    on label: Considerable with samplesize: 250
-    len: 266
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 864
-    on label: Low with samplesize: 34
-    len: 423
-    on label: Moderate with samplesize: 34
-    len: 0
-    on label: Considerable with samplesize: 34
-    len: 16
-    on label: High with samplesize: 34
-    len: 217
-have n_jobs 8
-Filling remaining have 948
-    on label: Low with samplesize: 13
-    len: 423
-    on label: Moderate with samplesize: 13
-    len: 0
-    on label: Considerable with samplesize: 13
-    len: 0
-    on label: High with samplesize: 13
-    len: 217
-have n_jobs 8
-Filling remaining have 974
-    on label: Low with samplesize: 6
-    len: 423
-    on label: Moderate with samplesize: 6
-    len: 0
-    on label: Considerable with samplesize: 6
-    len: 0
-    on label: High with samplesize: 6
-    len: 217
-have n_jobs 8
-Filling remaining have 986
-    on label: Low with samplesize: 3
-    len: 423
-    on label: Moderate with samplesize: 3
-    len: 0
-    on label: Considerable with samplesize: 3
-    len: 0
-    on label: High with samplesize: 3
-    len: 217
-have n_jobs 8
-Filling remaining have 992
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 996
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 998
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 4000 end: 5000
-(1000, 978, 180)
-1000
-On 5000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 0
-    on label: Considerable with samplesize: 250
-    len: 0
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 467
-    on label: Low with samplesize: 133
-    len: 423
-    on label: Moderate with samplesize: 133
-    len: 0
-    on label: Considerable with samplesize: 133
-    len: 0
-    on label: High with samplesize: 133
-    len: 217
-have n_jobs 8
-Filling remaining have 733
-    on label: Low with samplesize: 66
-    len: 423
-    on label: Moderate with samplesize: 66
-    len: 0
-    on label: Considerable with samplesize: 66
-    len: 0
-    on label: High with samplesize: 66
-    len: 217
-have n_jobs 8
-Filling remaining have 865
-    on label: Low with samplesize: 33
-    len: 423
-    on label: Moderate with samplesize: 33
-    len: 0
-    on label: Considerable with samplesize: 33
-    len: 0
-    on label: High with samplesize: 33
-    len: 217
-have n_jobs 8
-Filling remaining have 931
-    on label: Low with samplesize: 17
-    len: 423
-    on label: Moderate with samplesize: 17
-    len: 0
-    on label: Considerable with samplesize: 17
-    len: 0
-    on label: High with samplesize: 17
-    len: 217
-have n_jobs 8
-Filling remaining have 965
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 0
-    on label: Considerable with samplesize: 8
-    len: 0
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 981
-    on label: Low with samplesize: 4
-    len: 423
-    on label: Moderate with samplesize: 4
-    len: 0
-    on label: Considerable with samplesize: 4
-    len: 0
-    on label: High with samplesize: 4
-    len: 217
-have n_jobs 8
-Filling remaining have 989
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 993
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 995
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 997
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 5000 end: 6000
-(1001, 978, 180)
-1000
-On 6000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 0
-    on label: Considerable with samplesize: 250
-    len: 0
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 467
-    on label: Low with samplesize: 133
-    len: 423
-    on label: Moderate with samplesize: 133
-    len: 0
-    on label: Considerable with samplesize: 133
-    len: 0
-    on label: High with samplesize: 133
-    len: 217
-have n_jobs 8
-Filling remaining have 733
-    on label: Low with samplesize: 66
-    len: 423
-    on label: Moderate with samplesize: 66
-    len: 0
-    on label: Considerable with samplesize: 66
-    len: 0
-    on label: High with samplesize: 66
-    len: 217
-have n_jobs 8
-Filling remaining have 865
-    on label: Low with samplesize: 33
-    len: 423
-    on label: Moderate with samplesize: 33
-    len: 0
-    on label: Considerable with samplesize: 33
-    len: 0
-    on label: High with samplesize: 33
-    len: 217
-have n_jobs 8
-Filling remaining have 931
-    on label: Low with samplesize: 17
-    len: 423
-    on label: Moderate with samplesize: 17
-    len: 0
-    on label: Considerable with samplesize: 17
-    len: 0
-    on label: High with samplesize: 17
-    len: 217
-have n_jobs 8
-Filling remaining have 965
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 0
-    on label: Considerable with samplesize: 8
-    len: 0
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 981
-    on label: Low with samplesize: 4
-    len: 423
-    on label: Moderate with samplesize: 4
-    len: 0
-    on label: Considerable with samplesize: 4
-    len: 0
-    on label: High with samplesize: 4
-    len: 217
-have n_jobs 8
-Filling remaining have 989
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 993
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 995
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 997
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 6000 end: 7000
-(1001, 978, 180)
-1000
-On 7000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 0
-    on label: Considerable with samplesize: 250
-    len: 0
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 467
-    on label: Low with samplesize: 133
-    len: 423
-    on label: Moderate with samplesize: 133
-    len: 0
-    on label: Considerable with samplesize: 133
-    len: 0
-    on label: High with samplesize: 133
-    len: 217
-have n_jobs 8
-Filling remaining have 733
-    on label: Low with samplesize: 66
-    len: 423
-    on label: Moderate with samplesize: 66
-    len: 0
-    on label: Considerable with samplesize: 66
-    len: 0
-    on label: High with samplesize: 66
-    len: 217
-have n_jobs 8
-Filling remaining have 865
-    on label: Low with samplesize: 33
-    len: 423
-    on label: Moderate with samplesize: 33
-    len: 0
-    on label: Considerable with samplesize: 33
-    len: 0
-    on label: High with samplesize: 33
-    len: 217
-have n_jobs 8
-Filling remaining have 931
-    on label: Low with samplesize: 17
-    len: 423
-    on label: Moderate with samplesize: 17
-    len: 0
-    on label: Considerable with samplesize: 17
-    len: 0
-    on label: High with samplesize: 17
-    len: 217
-have n_jobs 8
-Filling remaining have 965
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 0
-    on label: Considerable with samplesize: 8
-    len: 0
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 981
-    on label: Low with samplesize: 4
-    len: 423
-    on label: Moderate with samplesize: 4
-    len: 0
-    on label: Considerable with samplesize: 4
-    len: 0
-    on label: High with samplesize: 4
-    len: 217
-have n_jobs 8
-Filling remaining have 989
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 993
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 995
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 997
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 7000 end: 8000
-(1001, 978, 180)
-1000
-On 8000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 0
-    on label: Considerable with samplesize: 250
-    len: 0
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 467
-    on label: Low with samplesize: 133
-    len: 423
-    on label: Moderate with samplesize: 133
-    len: 0
-    on label: Considerable with samplesize: 133
-    len: 0
-    on label: High with samplesize: 133
-    len: 217
-have n_jobs 8
-Filling remaining have 733
-    on label: Low with samplesize: 66
-    len: 423
-    on label: Moderate with samplesize: 66
-    len: 0
-    on label: Considerable with samplesize: 66
-    len: 0
-    on label: High with samplesize: 66
-    len: 217
-have n_jobs 8
-Filling remaining have 865
-    on label: Low with samplesize: 33
-    len: 423
-    on label: Moderate with samplesize: 33
-    len: 0
-    on label: Considerable with samplesize: 33
-    len: 0
-    on label: High with samplesize: 33
-    len: 217
-have n_jobs 8
-Filling remaining have 931
-    on label: Low with samplesize: 17
-    len: 423
-    on label: Moderate with samplesize: 17
-    len: 0
-    on label: Considerable with samplesize: 17
-    len: 0
-    on label: High with samplesize: 17
-    len: 217
-have n_jobs 8
-Filling remaining have 965
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 0
-    on label: Considerable with samplesize: 8
-    len: 0
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 981
-    on label: Low with samplesize: 4
-    len: 423
-    on label: Moderate with samplesize: 4
-    len: 0
-    on label: Considerable with samplesize: 4
-    len: 0
-    on label: High with samplesize: 4
-    len: 217
-have n_jobs 8
-Filling remaining have 989
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 993
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 995
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 997
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 8000 end: 9000
-(1001, 978, 180)
-1000
-On 9000 of 10000
-    on label: Low with samplesize: 250
-    len: 423
-    on label: Moderate with samplesize: 250
-    len: 0
-    on label: Considerable with samplesize: 250
-    len: 0
-    on label: High with samplesize: 250
-    len: 217
-have n_jobs 8
-Filling remaining have 467
-    on label: Low with samplesize: 133
-    len: 423
-    on label: Moderate with samplesize: 133
-    len: 0
-    on label: Considerable with samplesize: 133
-    len: 0
-    on label: High with samplesize: 133
-    len: 217
-have n_jobs 8
-Filling remaining have 733
-    on label: Low with samplesize: 66
-    len: 423
-    on label: Moderate with samplesize: 66
-    len: 0
-    on label: Considerable with samplesize: 66
-    len: 0
-    on label: High with samplesize: 66
-    len: 217
-have n_jobs 8
-Filling remaining have 865
-    on label: Low with samplesize: 33
-    len: 423
-    on label: Moderate with samplesize: 33
-    len: 0
-    on label: Considerable with samplesize: 33
-    len: 0
-    on label: High with samplesize: 33
-    len: 217
-have n_jobs 8
-Filling remaining have 931
-    on label: Low with samplesize: 17
-    len: 423
-    on label: Moderate with samplesize: 17
-    len: 0
-    on label: Considerable with samplesize: 17
-    len: 0
-    on label: High with samplesize: 17
-    len: 217
-have n_jobs 8
-Filling remaining have 965
-    on label: Low with samplesize: 8
-    len: 423
-    on label: Moderate with samplesize: 8
-    len: 0
-    on label: Considerable with samplesize: 8
-    len: 0
-    on label: High with samplesize: 8
-    len: 217
-have n_jobs 8
-Filling remaining have 981
-    on label: Low with samplesize: 4
-    len: 423
-    on label: Moderate with samplesize: 4
-    len: 0
-    on label: Considerable with samplesize: 4
-    len: 0
-    on label: High with samplesize: 4
-    len: 217
-have n_jobs 8
-Filling remaining have 989
-    on label: Low with samplesize: 2
-    len: 423
-    on label: Moderate with samplesize: 2
-    len: 0
-    on label: Considerable with samplesize: 2
-    len: 0
-    on label: High with samplesize: 2
-    len: 217
-have n_jobs 8
-Filling remaining have 993
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 995
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 997
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-Filling remaining have 999
-    on label: Low with samplesize: 1
-    len: 423
-    on label: Moderate with samplesize: 1
-    len: 0
-    on label: Considerable with samplesize: 1
-    len: 0
-    on label: High with samplesize: 1
-    len: 217
-have n_jobs 8
-start: 9000 end: 10000
-(1001, 978, 180)
-1000
-[&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_0_day1above_on_disk.npy&#39;, &#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_1_day1above_on_disk.npy&#39;, &#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_2_day1above_on_disk.npy&#39;, &#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_3_day1above_on_disk.npy&#39;, &#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtest_batch_0_day1above_on_disk.npy&#39;]
-On file 0 of 5
-On file 1 of 5
-On file 2 of 5
-On file 3 of 5
-On file 4 of 5
-CPU times: user 25min 27s, sys: 14min 18s, total: 39min 46s
-Wall time: 1h 44min 35s
+[&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_0_co_day1above_nooversample_small_on_disk.npy&#39;, &#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtest_batch_0_co_day1above_nooversample_small_on_disk.npy&#39;]
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">FileNotFoundError</span>                         Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-5-be7323005327&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-intense-fg ansi-bold">     12</span>                                               oversample<span class="ansi-blue-fg">=</span>oversample<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">     13</span>                                               temp_destination_path<span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">---&gt; 14</span><span class="ansi-red-fg">                                               n_jobs=8)
+</span>
+<span class="ansi-green-fg">&lt;ipython-input-3-a65a9d7e3942&gt;</span> in <span class="ansi-cyan-fg">generate_train_test_local</span><span class="ansi-blue-fg">(self, train_labels, test_labels, num_train_files, num_test_files, num_train_rows_per_file, num_test_rows_per_file, batch_size, y_column, label_values, oversample, file_label, temp_destination_path, n_jobs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    900</span>                              file_label<span class="ansi-blue-fg">=</span>file_label<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    901</span>                              dim_1_size<span class="ansi-blue-fg">=</span>len<span class="ansi-blue-fg">(</span>final_vars<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 902</span><span class="ansi-red-fg">                              temp_destination_path=temp_destination_path)
+</span><span class="ansi-green-intense-fg ansi-bold">    903</span> 
+<span class="ansi-green-intense-fg ansi-bold">    904</span>         <span class="ansi-green-fg">return</span> train_labels<span class="ansi-blue-fg">,</span> test_labels
+
+<span class="ansi-green-fg">&lt;ipython-input-3-a65a9d7e3942&gt;</span> in <span class="ansi-cyan-fg">concat_memapped</span><span class="ansi-blue-fg">(self, to_concat_filenames, file_label, dim_1_size, dim_2_size, temp_destination_path)</span>
+<span class="ansi-green-intense-fg ansi-bold">    777</span> 
+<span class="ansi-green-intense-fg ansi-bold">    778</span>         X_temp_fn <span class="ansi-blue-fg">=</span> temp_destination_path <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;/temp_X.npy&#39;</span>
+<span class="ansi-green-fg">--&gt; 779</span><span class="ansi-red-fg">         </span>np<span class="ansi-blue-fg">.</span>save<span class="ansi-blue-fg">(</span>X_temp_fn<span class="ansi-blue-fg">,</span> np<span class="ansi-blue-fg">.</span>empty<span class="ansi-blue-fg">(</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    780</span>         X_fn <span class="ansi-blue-fg">=</span> self<span class="ansi-blue-fg">.</span>ml_path <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;/X_all&#39;</span> <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;_&#39;</span> <span class="ansi-blue-fg">+</span> file_label <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;.npy&#39;</span>
+<span class="ansi-green-intense-fg ansi-bold">    781</span>         X <span class="ansi-blue-fg">=</span> np<span class="ansi-blue-fg">.</span>memmap<span class="ansi-blue-fg">(</span>X_temp_fn<span class="ansi-blue-fg">,</span> dtype<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">&#39;float32&#39;</span><span class="ansi-blue-fg">,</span> shape<span class="ansi-blue-fg">=</span><span class="ansi-blue-fg">(</span>dim_0_size<span class="ansi-blue-fg">,</span> dim_1_size<span class="ansi-blue-fg">,</span> dim_2_size<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">&lt;__array_function__ internals&gt;</span> in <span class="ansi-cyan-fg">save</span><span class="ansi-blue-fg">(*args, **kwargs)</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/pangeo_small3/lib/python3.7/site-packages/numpy/lib/npyio.py</span> in <span class="ansi-cyan-fg">save</span><span class="ansi-blue-fg">(file, arr, allow_pickle, fix_imports)</span>
+<span class="ansi-green-intense-fg ansi-bold">    539</span>         <span class="ansi-green-fg">if</span> <span class="ansi-green-fg">not</span> file<span class="ansi-blue-fg">.</span>endswith<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">&#39;.npy&#39;</span><span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    540</span>             file <span class="ansi-blue-fg">=</span> file <span class="ansi-blue-fg">+</span> <span class="ansi-blue-fg">&#39;.npy&#39;</span>
+<span class="ansi-green-fg">--&gt; 541</span><span class="ansi-red-fg">         </span>fid <span class="ansi-blue-fg">=</span> open<span class="ansi-blue-fg">(</span>file<span class="ansi-blue-fg">,</span> <span class="ansi-blue-fg">&#34;wb&#34;</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    542</span>         own_fid <span class="ansi-blue-fg">=</span> <span class="ansi-green-fg">True</span>
+<span class="ansi-green-intense-fg ansi-bold">    543</span> 
+
+<span class="ansi-red-fg">FileNotFoundError</span>: [Errno 2] No such file or directory: &#39;/media/scottcha/4A1E51311E5116F3/Temp//temp_X.npy&#39;</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pml</span><span class="o">.</span><span class="n">concat_memapped</span><span class="p">(</span><span class="n">to_concat_filenames</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtrain_batch_0_co_day1above_nooversample_small_on_disk.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;/media/scottcha/E1/Data/OAPMLData//5.MLData/Xtest_batch_0_co_day1above_nooversample_small_on_disk.npy&#39;</span><span class="p">],</span>
+                    <span class="n">file_label</span><span class="o">=</span><span class="s1">&#39;co_day1above_nooversample_small&#39;</span><span class="p">,</span> <span class="n">dim_1_size</span><span class="o">=</span><span class="mi">978</span><span class="p">,</span> <span class="n">dim_2_size</span><span class="o">=</span><span class="mi">180</span><span class="p">,</span>
+                    <span class="n">temp_destination_path</span><span class="o">=</span> <span class="s1">&#39;/media/scottcha/4A1E51311E5116F3/Temp/&#39;</span>
+                   <span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>On file 0 of 2
+On file 1 of 2
 </pre>
 </div>
 </div>
