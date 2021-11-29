@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2005 rel. 3 U (http://www.altova.com) by Pascal Haegeli (Avisualanche Consulting) -->
+<schema xmlns:display="http://caaml.org/Schemas/V5.0/Profiles/BulletinCAC/Display" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink" targetNamespace="http://caaml.org/Schemas/V5.0/Profiles/BulletinCAC/Display" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.0.1">
+	<element name="DangerRatingDisplay">
+		<annotation>
+			<documentation>Additional elements for display of danger ratings</documentation>
+		</annotation>
+		<complexType>
+			<sequence>
+				<element name="mainLabel">
+					<annotation>
+						<documentation>Element for danger rating label</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="string">
+							<enumeration value="n/a"/>
+							<enumeration value="Low"/>
+							<enumeration value="Faible"/>
+							<enumeration value="Moderate"/>
+							<enumeration value="Modéré"/>
+							<enumeration value="Considerable"/>
+							<enumeration value="Considérable"/>
+							<enumeration value="High"/>
+							<enumeration value="Élevé"/>
+							<enumeration value="Extreme"/>
+							<enumeration value="Extrême"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="mainForeground">
+					<annotation>
+						<documentation>Element for html color code of  foreground</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="string">
+							<enumeration value="000000"/>
+							<enumeration value="FFFFFF"/>
+						</restriction>
+					</simpleType>
+				</element>
+				<element name="mainBackground">
+					<annotation>
+						<documentation>Element for html color code of background</documentation>
+					</annotation>
+					<simpleType>
+						<restriction base="string">
+							<enumeration value="000000"/>
+							<enumeration value="FFFFFF"/>
+							<enumeration value="F79218"/>
+							<enumeration value="52BA4A"/>
+							<enumeration value="EF1C29"/>
+							<enumeration value="FFF300"/>
+						</restriction>
+					</simpleType>
+				</element>
+			</sequence>
+		</complexType>
+	</element>
+	<element name="AvProblemDisplay">
+		<annotation>
+			<documentation>Additional elements for display of avalanche problems</documentation>
+		</annotation>
+		<complexType>
+			<sequence>
+				<element name="aspectsBitmap">
+					<annotation>
+						<documentation>Binary representation of icon used for aspects</documentation>
+					</annotation>
+				</element>
+				<element name="aspectsBitmapURL" type="anyURI">
+					<annotation>
+						<documentation>URL of icon used for aspects</documentation>
+					</annotation>
+				</element>
+				<element name="elevationsBitmap">
+					<annotation>
+						<documentation>Binary representation of icon used for elevation</documentation>
+					</annotation>
+				</element>
+				<element name="elevationsBitmapURL" type="anyURI">
+					<annotation>
+						<documentation>URL of icon used for elevations</documentation>
+					</annotation>
+				</element>
+				<element name="expectedAvSizeBitmap">
+					<annotation>
+						<documentation>Binary representation of icon used for expected avalanche size</documentation>
+					</annotation>
+				</element>
+				<element name="expectedAvSizeBitmapURL" type="anyURI">
+					<annotation>
+						<documentation>URL of icon used for expected avalanche size</documentation>
+					</annotation>
+				</element>
+				<element name="likelihoodOfTriggeringBitmap">
+					<annotation>
+						<documentation>Binary representation of icon used for likelihood of triggering</documentation>
+					</annotation>
+				</element>
+				<element name="likelihoodOfTriggeringBitmapURL" type="anyURI">
+					<annotation>
+						<documentation>URL of icon used for likelihood of triggering</documentation>
+					</annotation>
+				</element>
+			</sequence>
+		</complexType>
+	</element>
+	<element name="AspectDisplay">
+		<annotation>
+			<documentation>Additional elements for display of aspects</documentation>
+		</annotation>
+		<complexType>
+			<sequence>
+				<element name="label">
+					<simpleType>
+						<restriction base="string">
+							<enumeration value="N"/>
+							<enumeration value="NE"/>
+							<enumeration value="E"/>
+							<enumeration value="SE"/>
+							<enumeration value="S"/>
+							<enumeration value="SW"/>
+							<enumeration value="W"/>
+							<enumeration value="NW"/>
+						</restriction>
+					</simpleType>
+				</element>
+			</sequence>
+		</complexType>
+	</element>
+</schema>
