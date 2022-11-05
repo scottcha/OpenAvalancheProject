@@ -31,8 +31,10 @@ class ParseGFS:
             return '2018-11-01'
         elif season == '19-20':
             return '2019-11-01'
+        elif season == '20-21':
+            return '2020-11-01'
 
-    def __init__(self, season, state, data_root, interpolate=1):
+    def __init__(self, season, state, data_root, interpolate=1, resample_length='1d'):
         """Initialize the class
 
         Keyword arguments:
@@ -40,6 +42,7 @@ class ParseGFS:
         state: the name of the state or country we are processing
         data_root: the root path of the data folders which contains the 1.RawWeatherData folder
         interpolate: the degree of interpolation (1x and 4x have been tested, 1x is default)
+        resample_length: the timeframe to resample to
         """
         self.season = season
         self.snow_start_date = ParseGFS.season_to_snow_start_date(season)
@@ -47,10 +50,11 @@ class ParseGFS:
         self.interpolate = interpolate
         self.data_root = data_root
         self.state_path = None
+        self.resample_length = resample_length
 
         #make sure these are correct, but these generally don't need to change
-        if state == 'Washington':
-            self.state_path = 'Washington'
+        if state == 'Washington' or state == 'Canada':
+            self.state_path = state
         else:
             self.state_path = 'ColoradoUtah' #the nc file which contains the weather data contains both utah and colorado
 
@@ -59,10 +63,11 @@ class ParseGFS:
         self.region_path = '../Data'
         #path to the gfs netcdf files for input
         self.dataset_path = data_root + '/1.RawWeatherData/gfs/' + season + '/' + self.state_path + '/'
+        self.precip_dataset_path = data_root + '/1.RawWeatherData/gfs/' + season + '/' + self.state_path + 'AccumulationGrib/'
         #output path for the result of the interpolation
-        self.day_path = data_root + '2.GFSDaily' + str(interpolate) + 'xInterpolation/'+ season + '/'
+        self.day_path = data_root + '2.GFSDaily' + str(interpolate) + 'xInterpolation' + resample_length + '/' + season + '/'
 
-        self.filtered_path = data_root + '3.GFSFiltered' + str(interpolate) + 'xInterpolation/'+ season + '/'
+        self.filtered_path = data_root + '3.GFSFiltered' + str(interpolate) + 'xInterpolation' + resample_length + '/' + season + '/'
 
         #input file pattern as we'll read a full winter season in one pass
         self.file_pattern2 = '00.f0[0-2]*.nc'
@@ -71,15 +76,15 @@ class ParseGFS:
         if season in ['15-16', '19-20']:
             p = 182 #leap years
 
-        self.date_values_pd = pd.date_range(self.snow_start_date, periods=p, freq="D")
+        self.date_values_pd = pd.date_range(self.snow_start_date, periods=p, freq="D")#[:24]
 
         print(self.dataset_path + ' Is Input Directory')
         print(self.day_path + ' Is output directory and input to filtering')
         print(self.filtered_path + ' Is output directory of filtering')
 
         #check dates end on April 30 which is the last day we support
-        assert(self.date_values_pd[-1].month == 4)
-        assert(self.date_values_pd[-1].day == 30)
+        #assert(self.date_values_pd[-1].month == 4)
+        #assert(self.date_values_pd[-1].day == 30)
 
         if not os.path.exists(self.day_path):
             os.makedirs(self.day_path)
@@ -87,6 +92,73 @@ class ParseGFS:
         if not os.path.exists(self.filtered_path):
             os.makedirs(self.filtered_path)
 
+        #Read in all avy region shapes and metadata
+        regions_df = None
+        if self.state == 'Canada':
+            regions_df = gpd.read_file(self.region_path + '/CAAvalancheRegions.geojson')
+        else:
+            regions_df = gpd.read_file(self.region_path + '/USAvalancheRegions.geojson')
+        #filter to just the ones where we have lables for training
+        self.training_regions_df = regions_df[regions_df['is_training']==True].copy()
+
+        #TODO: this needs to not rely on a code change to add a region
+        if self.state == 'Washington':
+            self.training_regions_df = self.training_regions_df[self.training_regions_df['center']=='Northwest Avalanche Center']
+        elif self.state == 'Utah':
+            self.training_regions_df = self.training_regions_df[self.training_regions_df['center']=='Utah Avalanche Center']
+        elif self.state == 'Colorado':
+            self.training_regions_df = self.training_regions_df[self.training_regions_df['center']=='Colorado Avalanche Information Center']
+        elif self.state == 'Canada':
+            #include everything
+            pass
+
+        self.training_regions_df.reset_index(drop=True, inplace=True)
+        #self.training_regions_df = self.training_regions_df[:2]
+
+    def interpolate_and_write(self, tmp_ds):
+        """
+        interpolate and filter each day
+        don't use dask for this, much faster to process the files in parallel
+
+        Keyword arguments:
+        tmp_ds: the dataframe to process
+        """
+
+        new_lon = np.linspace(tmp_ds.longitude[0], tmp_ds.longitude[-1], tmp_ds.dims['longitude'] * self.interpolate)
+        new_lat = np.linspace(tmp_ds.latitude[0], tmp_ds.latitude[-1], tmp_ds.dims['latitude'] * self.interpolate)
+        interpolated_ds = tmp_ds.interp(latitude=new_lat, longitude=new_lon)
+
+        subsets = []
+        filenames = []
+        errors = []
+        redo_date = []
+        date = tmp_ds.time.dt.strftime('%Y%m%d').values[0]
+        for _, row in self.training_regions_df.iterrows():
+            print("Calculating region: " + row['name'])
+            f = self.filtered_path + 'Region_' + row['name'] + '_' + date + '.nc'
+            try:
+                if self.interpolate == 1:
+                    tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry'])
+                else:
+                    tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry']).salem.roi(geometry=row['geometry'])
+            except ValueError:
+                errors.append('Value Error: Ensure the correct training regions have been provided')
+                del tmp_subset
+                continue
+
+            try:
+                comp = dict(zlib=True, complevel=7)
+                encoding = {var: comp for var in tmp_subset.data_vars}
+                tmp_subset.to_netcdf(f, encoding=encoding )
+            except Exception as err:
+                os.remove(f)
+                errors.append(f + ' -- ' + format(err))
+                redo_date.append(date)
+                del tmp_subset
+                continue
+
+
+        return (errors, redo_date)
 
     def resample(self, t):
         """
@@ -97,16 +169,45 @@ class ParseGFS:
 
         Keyword arguments:
         t: the pandas datetime to process
+
         """
 
         print('On time: ' + str(t) + '\n')
+        precip_ds = None
+        pd_t = pd.to_datetime(t)
+        with xr.open_mfdataset(self.precip_dataset_path + 'gfs.0p25.' + t + self.file_pattern2, combine='nested', concat_dim='time', parallel=False) as precip_ds:
+            #3-hour Accumulation (initial+0 to initial+3)
+            #6-hour Accumulation (initial+0 to initial+6)
+            #3-hour Accumulation (initial+6 to initial+9)
+            #6-hour Accumulation (initial+6 to initial+12)
+            #3-hour Accumulation (initial+12 to initial+15)
+            #6-hour Accumulation (initial+12 to initial+18)
+            #3-hour Accumulation (initial+18 to initial+21)
+            #6-hour Accumulation (initial+18 to initial+24)
+            #correct the values to all be 3 hour accumulations
+            corrected_dses = []
+            for i in range(0,len(precip_ds.time.values)):
+                if i % 2 == 0:
+                    corrected_dses.append(precip_ds.isel(time=i))
+                else:
+                    tmp_ds = precip_ds.isel(time=i) - precip_ds.isel(time=i-1)
+                    corrected_dses.append(precip_ds.isel(time=i).assign(tmp_ds))
+            precip_ds = xr.concat(corrected_dses, dim='time')
 
+            #resample
+            total_name_dict = {}
+            for k in precip_ds.data_vars.keys():
+                total_name_dict[k] = k + '_sum'
+            resampled_precip_ds = precip_ds.resample(time=self.resample_length)
+            sum_resample = resampled_precip_ds.sum().rename(total_name_dict)
+
+
+        ret_value = None
         try:
             with xr.open_mfdataset(self.dataset_path + 'gfs.0p25.' + t + self.file_pattern2, combine='nested', concat_dim='time', parallel=False) as ds:
 
                 #make sure we are just getting the first 24 hours
-                pd_t = pd.to_datetime(t)
-                ds = ds.where(ds.time.dt.day == pd_t.day, drop=True)
+                #ds = ds.where(ds.time.dt.day == pd_t.day, drop=True)
 
                 min_name_dict = {}
                 max_name_dict = {}
@@ -118,29 +219,37 @@ class ParseGFS:
                     avg_name_dict[k] = k + '_avg'
 
                 #print("Reampling")
-                resampled_ds = ds.resample(time='1d')
-                min_1day = resampled_ds.min().rename(min_name_dict)
-                max_1day= resampled_ds.max().rename(max_name_dict)
-                avg_1day = resampled_ds.mean().rename(avg_name_dict)
+                resampled_ds = ds.resample(time=self.resample_length)
+                min_resample = resampled_ds.min().rename(min_name_dict)
+                max_resample = resampled_ds.max().rename(max_name_dict)
+                avg_resample = resampled_ds.mean().rename(avg_name_dict)
+
 
                 #print("Merging")
-                merged_ds = xr.merge([min_1day, max_1day, avg_1day])
+                merged_ds = xr.merge([min_resample, max_resample, avg_resample, sum_resample])
                 try:
-                    file = self.day_path + self.state_path + '_' + t + '.nc'
-                    try:
-                        if os.path.exists(file):
-                            os.remove(file)
-                    except OSError as e:
-                        #can likely ignore
-                        print('had remove error ' + format(e))
-                        time.sleep(1)
-                    merged_ds.to_netcdf(file)
-                    merged_ds.close()
+                    ret_value = self.interpolate_and_write(merged_ds)
+                #    file = self.day_path + self.state_path + '_' + t + '.nc'
+                #    try:
+                #        if os.path.exists(file):
+                #            os.remove(file)
+                #    except OSError as e:
+                #        #can likely ignore
+                #        print('had remove error ' + format(e))
+                #        time.sleep(1)
+                #    comp = dict(zlib=True, complevel=8)
+                #    encoding = {var: comp for var in merged_ds.data_vars}
+                #    merged_ds.to_netcdf(file, encoding=encoding)
+                #    merged_ds.close()
                 except Exception as err:
                     return self.day_path + self.state_path + '_' + t + '.nc' + ' -- ' + format(err)
+                    ds.close()
                     merged_ds.close()
+                del merged_ds
         except OSError as err:
             print('Missing files for time: ' + t)
+        return ret_value
+
 
     def check_resample(self, dates):
         """
@@ -170,6 +279,8 @@ class ParseGFS:
         jobs: number of parallel processs to use (default = 4)
         """
         results = Parallel(n_jobs=jobs, backend="multiprocessing")(map(delayed(self.resample), self.date_values_pd.strftime('%Y%m%d')))
+        #the new code seems to largely prevent corruption, truncating for now
+        return results
 
         redo = None
         if not any(results):
@@ -201,90 +312,30 @@ class ParseGFS:
         return results
 
 
-    def interpolate_and_write(self, t):
-        """
-        interpolate and filter each day
-        don't use dask for this, much faster to process the files in parallel
 
-        Keyword arguments:
-        t: the pandas datetime to process
-        """
-        #Read in all avy region shapes and metadata
-        regions_df = gpd.read_file(self.region_path + '/USAvalancheRegions.geojson')
-        #filter to just the ones where we have lables for training
-        training_regions_df = regions_df[regions_df['is_training']==True].copy()
 
-        #TODO: this needs to not rely on a code change to add a region
-        if self.state == 'Washington':
-            training_regions_df = training_regions_df[training_regions_df['center']=='Northwest Avalanche Center']
-        elif self.state == 'Utah':
-            training_regions_df = training_regions_df[training_regions_df['center']=='Utah Avalanche Center']
-        elif self.state == 'Colorado':
-            training_regions_df = training_regions_df[training_regions_df['center']=='Colorado Avalanche Information Center']
-
-        training_regions_df.reset_index(drop=True, inplace=True)
-        #open files which were previously resampled to a single day per file
-        try:
-            with xr.open_dataset(self.day_path + self.state_path + '_' + t + '.nc') as tmp_ds:
-                print('On time: ' + str(t))
-
-                new_lon = np.linspace(tmp_ds.longitude[0], tmp_ds.longitude[-1], tmp_ds.dims['longitude'] * self.interpolate)
-                new_lat = np.linspace(tmp_ds.latitude[0], tmp_ds.latitude[-1], tmp_ds.dims['latitude'] * self.interpolate)
-                interpolated_ds = tmp_ds.interp(latitude=new_lat, longitude=new_lon)
-
-                subsets = []
-                filenames = []
-                errors = []
-                redo_date = []
-                date = tmp_ds.time.dt.strftime('%Y%m%d').values[0]
-                for _, row in training_regions_df.iterrows():
-                    #print("Calculating region: " + row['name'])
-                    f = self.filtered_path + 'Region_' + row['name'] + '_' + date + '.nc'
-                    try:
-                        if self.interpolate == 1:
-                            tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry'])
-                        else:
-                            tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry']).salem.roi(geometry=row['geometry'])
-                    except ValueError:
-                        errors.append('Value Error: Ensure the correct training regions have been provided')
-
-                        continue
-
-                    try:
-                        tmp_subset.to_netcdf(f)
-                    except Exception as err:
-                        os.remove(f)
-                        errors.append(f + ' -- ' + format(err))
-                        redo_date.append(date)
-                        continue
-        except OSError as err:
-            print('Missing files for time: ' + t + 'with error ' + format(err))
-            return None
-
-        return (errors, redo_date)
-
-    def interpolate_and_write_local(self, jobs=6):
-        """
-        Executes the interpolate and write process on the local machine.
-        Process is IO bound so don't overallocate n_jobs
-
-        Keyword arguments:
-        jobs: number of parallel processs to use (default = 6)
-        """
-
-        results = Parallel(n_jobs=6, backend="multiprocessing")(map(delayed(self.interpolate_and_write), self.date_values_pd.strftime('%Y%m%d')))
-
-        all_none = True
-        for x in results:
-            if x[0] == [] and x[1] == []:
-                continue
-            else:
-                all_none = False
-                break
-
-        if all_none:
-            print('No Errors, go to ConvertToZarr')
-        else:
-            print('errors in some files, redo those by calling interpolate_and_write on those specific files')
-
-        return results
+    #def interpolate_and_write_local(self, jobs=6):
+    #    """
+    #    Executes the interpolate and write process on the local machine.
+    #    Process is IO bound so don't overallocate n_jobs
+    #
+    #    Keyword arguments:
+    #    jobs: number of parallel processs to use (default = 6)
+    #    """
+    #
+    #    results = Parallel(n_jobs=jobs, backend="multiprocessing")(map(delayed(self.interpolate_and_write), self.date_values_pd.strftime('%Y%m%d')))
+    #
+    #    all_none = True
+    #    for x in results:
+    #        if x[0] == [] and x[1] == []:
+    #            continue
+    #        else:
+    #            all_none = False
+    #            break
+    #
+    #    if all_none:
+    #        print('No Errors, go to ConvertToZarr')
+    #    else:
+    #        print('errors in some files, redo those by calling interpolate_and_write on those specific files')
+    #
+    #    return results

@@ -4,6 +4,8 @@ __all__ = ["index", "modules", "custom_doc_links", "git_url"]
 
 index = {"ParseGFS": "1.ParseGFS.ipynb",
          "ConvertToZarr": "2.ConvertToZarr.ipynb",
+         "debug": "3.PrepMLData.ipynb",
+         "numcodecs.blosc.use_threads": "3.PrepMLData.ipynb",
          "PrepML": "3.PrepMLData.ipynb",
          "TSAIUtilities": "4.TSAIUtilities.ipynb"}
 

@@ -1731,6 +1731,7 @@
         "forecastUrl": "/api/forecasts/little-yoho.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "parks-canada",
+        "is_training": true,
         "centroid": [
           -116.50157110775542,
           51.501457954569304
@@ -8088,6 +8089,7 @@
         "forecastUrl": "/api/forecasts/banff-yoho-kootenay.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "parks-canada",
+        "is_training": true,
         "centroid": [
           -116.1400038397089,
           51.36555750662057
@@ -12976,6 +12978,7 @@
         "forecastUrl": "/api/forecasts/northwest-coastal.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -129.77716219345095,
           55.70031480370605
@@ -15428,6 +15431,7 @@
         "forecastUrl": "/api/forecasts/northwest-inland.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -128.09818375478335,
           56.02527117554631
@@ -18752,6 +18756,7 @@
         "forecastUrl": "/api/forecasts/sea-to-sky.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -123.65123888299217,
           50.29177995807873
@@ -21788,6 +21793,7 @@
         "forecastUrl": "/api/forecasts/south-coast-inland.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -121.94249814131982,
           50.08743390300431
@@ -24110,6 +24116,7 @@
         "forecastUrl": "/api/forecasts/south-coast.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -122.854766,
           49.539782
@@ -27482,6 +27489,7 @@
         "forecastUrl": "/api/forecasts/north-rockies.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -121.46146611671585,
           54.668562861981286
@@ -29334,6 +29342,7 @@
         "forecastUrl": "/api/forecasts/cariboos.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -120.59147394000628,
           52.72093721460341
@@ -36042,6 +36051,7 @@
         "forecastUrl": "/api/forecasts/north-columbia.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -118.94184604081414,
           51.49843693367862
@@ -44406,6 +44416,7 @@
         "forecastUrl": "/api/forecasts/south-columbia.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -118.05424655063185,
           50.41985055690335
@@ -50314,6 +50325,7 @@
         "forecastUrl": "/api/forecasts/purcells.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -116.33758681603456,
           50.00947807537003
@@ -52950,6 +52962,7 @@
         "forecastUrl": "/api/forecasts/kootenay-boundary.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -118.34159986996538,
           49.48152292779692
@@ -55766,6 +55779,7 @@
         "forecastUrl": "/api/forecasts/south-rockies.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -114.92044888786461,
           49.860633347746415
@@ -57470,6 +57484,7 @@
         "forecastUrl": "/api/forecasts/lizard-range.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -114.8136882697502,
           49.315573019227465
@@ -58882,6 +58897,7 @@
         "forecastUrl": "/api/forecasts/vancouver-island.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -126.003280753802,
           49.84695178083094
@@ -62379,6 +62395,7 @@
         "forecastUrl": "/api/forecasts/jasper.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "parks-canada",
+        "is_training": true,
         "centroid": [
           -117.618371264123,
           52.4455576019423
@@ -93871,6 +93888,7 @@
         "forecastUrl": "/api/forecasts/kananaskis.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -115.18983408000474,
           50.768253102477274
@@ -94784,6 +94802,7 @@
         "forecastUrl": "/api/forecasts/waterton.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "parks-canada",
+        "is_training": true,
         "centroid": [
           -113.9763377422614,
           49.08133839179955
@@ -95262,12 +95281,13 @@
         "type": "Polygon"
       },
       "properties": {
-        "name": "Chic Chocs, Avalanche Québec",
+        "name": "Chic Chocs, Avalanche Quebec",
         "type": "avalx",
         "url": "https://avalanche.ca/forecasts/chic-chocs",
         "forecastUrl": "/api/forecasts/chic-chocs.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "avalanche-canada",
+        "is_training": true,
         "centroid": [
           -66.08685578290087,
           48.909684297640375
@@ -109389,6 +109409,7 @@
         "forecastUrl": "/api/forecasts/glacier.json",
         "dangerIconUrl": "/api/forecasts/graphics/install-new-app.svg",
         "owner": "parks-canada",
+        "is_training": true,
         "centroid": [
           -117.52623359552976,
           51.26915594273211

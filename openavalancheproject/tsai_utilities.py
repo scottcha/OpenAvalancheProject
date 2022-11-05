@@ -4,10 +4,13 @@ __all__ = ['TSAIUtilities']
 
 # Cell
 from pandas.api.types import CategoricalDtype
-#from tsai.all import *
 from joblib import Parallel, delayed
 import os.path
 import numpy as np
+import pandas as pd
+from tsai.all import *
+from .tsai_simple_transforms import *
+from .prep_ml import *
 
 # Cell
 class TSAIUtilities:
@@ -16,40 +19,54 @@ class TSAIUtilities:
         self.num_features = X.shape[1]
         self.label = label
 
-    def _calculate_feature_mean(self, feature_index, num_samples_to_use=5000):
-        return np.nanmean(self.X[0:num_samples_to_use,feature_index,:])
+    def numba_calcs(self, np_data):
+        feature_stds = np.std(np_data, axis=(0,2))
+        feature_means = np.mean(np_data, axis=(0,2))
+        return feature_stds, feature_means
 
-    def _calculate_feature_std(self, feature_index, num_samples_to_use=5000):
-        return np.nanstd(self.X[0:num_samples_to_use,feature_index,:])
+    def calc_std_and_mean(self, data, sample_lower_bound, sample_upper_bound):
+        feature_stds = []
+        feature_means = []
+        num = 10
+        for i in range(0, data.shape[1], num):
+            print('on ' + str(i))
+            upper = i + num
+            if upper > data.shape[1]:
+                upper = data.shape[1]
+            np_data = data[sample_lower_bound:sample_upper_bound,i:upper,:]
+            np_data = np.nan_to_num(np_data)
+            tmp_stds, tmp_means = self.numba_calcs(np_data)
+            feature_stds.extend(tmp_stds)
+            feature_means.extend(tmp_means)
+        return feature_stds, feature_means
 
-    def get_feature_means(self, from_cache=None):
-        if not os.path.isfile(from_cache):
-            feature_means = Parallel(n_jobs=4)(map(delayed(self._calculate_feature_mean), range(0,self.num_features)))
-
-            if from_cache is not None:
-                np.save(from_cache, np.asarray(feature_means))
-        else:
-            feature_means = np.load(from_cache)
-
-        return feature_means
-
-    def get_feature_std(self, from_cache=None):
-        if not os.path.isfile(from_cache):
-            feature_std = Parallel(n_jobs=4)(map(delayed(self._calculate_feature_std), range(0,self.num_features)))
-
-            if from_cache is not None:
-                np.save(from_cache, np.asarray(feature_std))
-
-        else:
-            feature_std = np.load(from_cache)
-
-        return feature_std
+    def calc_min_max(self, data, sample_lower_bound, sample_upper_bound):
+        feature_mins = []
+        feature_maxs = []
+        num = 10
+        for i in range(0, data.shape[1], num):
+            print('on ' + str(i))
+            upper = i + num
+            if upper > data.shape[1]:
+                upper = data.shape[1]
+            np_data = data[sample_lower_bound:sample_upper_bound,i:upper,:]
+            np_data = np.nan_to_num(np_data)
+            tmp_min = np.min(np_data, axis=(0,2))
+            tmp_max = np.max(np_data, axis=(0,2))
+            feature_mins.extend(tmp_min)
+            feature_maxs.extend(tmp_max)
+        return feature_mins, feature_maxs
 
     def get_y_as_cat(self, y_df):
         #convert the labels to encoded values
         labels = y_df[self.label].unique()
         if 'Low' in labels:
             labels = ['Low', 'Moderate', 'Considerable', 'High']
+        elif 'Low_Falling' in labels:
+            lables = ['Low_Falling', 'Low_Flat',
+                      'Moderate_Falling', 'Moderate_Flat', 'Moderate_Rising',
+                      'Considerable_Falling', 'Considerable_Flat', 'Considerable_Rising',
+                      'High_Falling', 'High_Flat', 'High_Rising']
         else:
             labels.sort()
         cat_type = CategoricalDtype(categories=labels, ordered=True)
@@ -59,49 +76,175 @@ class TSAIUtilities:
         cat_dict = dict( enumerate(y_df[self.label + '_Cat'].cat.categories ) )
         return y, cat_dict
 
+    def filter_features(self, feature_list, only_var=False):
+        #remove any prefixed with var
+        feature_list = set([x for x in feature_list if 'var' not in x])
+        feature_list = set([x for x in feature_list if 'ABSV' not in x])
+        feature_list = set([x for x in feature_list if 'CLMR' not in x])
+        feature_list = set([x for x in feature_list if 'HGT' not in x])
+        feature_list = set([x for x in feature_list if 'PRES' not in x])
+        feature_list = set([x for x in feature_list if 'CPOFP' not in x])
+        feature_list = set([x for x in feature_list if 'HLCY' not in x])
+        feature_list = set([x for x in feature_list if 'PV_EQ' not in x])
+        feature_list = set([x for x in feature_list if 'ICEC' not in x])
+        feature_list = set([x for x in feature_list if 'LAND' not in x])
+        feature_list = set([x for x in feature_list if 'SPFH' not in x])
+        feature_list = set([x for x in feature_list if 'DPT' not in x])
+        feature_list = set([x for x in feature_list if 'TCDC' not in x])
+        feature_list = set([x for x in feature_list if 'HINDEX' not in x])
+        feature_list = set([x for x in feature_list if 'mabovemeansealevel' not in x])
+        feature_list = set([x for x in feature_list if 'tropopause' not in x])
+        if not only_var:
+            #operate only on avg and sum
+            feature_list = set([x for x in feature_list if 'min' not in x])
+            feature_list = set([x for x in feature_list if 'max' not in x])
+
+            #get cloud cover
+            cloud_features = set([x for x in feature_list if 'TCDC' in x])
+            feature_list -= cloud_features
+
+            #get any surface levels
+            surface_features = set([x for x in feature_list if 'surface' in x])
+            feature_list = feature_list - surface_features
+
+            #get all wind
+            ugrd_wind_features = set([x for x in feature_list if 'UGRD' in x])
+            vgrd_wind_features = set([x for x in feature_list if 'VGRD' in x])
+            wind_features = set(list(ugrd_wind_features) + list(vgrd_wind_features))
+            feature_list -= wind_features
+            wind_features = set([x for x in wind_features if 'aboveground' not in x])
+
+            #get any relative to ground (except wind)
+            aboveground_features = set([x for x in feature_list if 'aboveground' in x])
+            feature_list = feature_list - aboveground_features
+
+            feature_prefix = set([x.split('_')[0] for x in feature_list])
+            pressure_features = []
+            for p in feature_prefix:
+                #get a random subset for the features defined by pressure level
+                tmp = [x for x in feature_list if p in x]
+                tmp2 = pd.Series(tmp).sample(frac=.1)
+                #return tmp2
+                pressure_features.extend(list(tmp2))
+
+            l = list(surface_features) + list(aboveground_features) + list(pressure_features) + list(cloud_features) + list(wind_features)
+
+            feature_list = l
+        feature_list = list(feature_list)
+        feature_list.sort()
+        return feature_list
+
+    def create_dls(self, X, y, feature_mins, feature_maxs, feature_indexes = None, num_test_files = 11, num_days=28, splits=None, sample_frac = 1):
+        #index file which indicates which rows in X are train or test
+        #be carful these don't overlap
+        num_test = num_test_files * 3000
+        train_test_split = y.shape[0]-num_test
+        #can use a smaller train subset to make development faster
+        if splits == None:
+            splits_2 = (L(list(pd.Series([i for i in range(0,train_test_split)]).sample(frac=sample_frac).values)).shuffle(), L(list(pd.Series([i for i in range(train_test_split,train_test_split+num_test)]).sample(frac=sample_frac).values)).shuffle())
+        else:
+            splits_2 = (L(list(pd.Series(splits[0]).sample(frac=sample_frac).values)), L(list(pd.Series(splits[1]).sample(frac=sample_frac).values)))
+        #splits_2 = (L([i for i in range(0,train_test_split)]), L([i for i in range(train_test_split,train_test_split+num_test)]))
+        #splits_3 = (L([i for i in range(0*64,12*64)]), L([i for i in range(train_test_split,train_test_split+8*64)]))
+        #create the dataset
+        tfms = [None, [Categorize()]]
+        dsets = TSDatasets(X, y, tfms=tfms, splits=splits_2, inplace=False)
+
+        #create the dataloader
+        #batch_tfms = [TSStandardize(mean=torch.tensor(feature_mean), std=torch.tensor(feature_std), by_var=True),
+        #              Nan2Value()]
+        #batch_tfms = [TSFilter(filtered_feature_indexes), TSSimpleStandardize(mean=np.array([feature_means[x] for x in filtered_feature_indexes]).astype(np.float32), std=np.array([feature_stds[x] for x in filtered_feature_indexes]).astype(np.float32)), Nan2Value()]
+        #m = (feature_means[filtered_feature_indexes]).astype(np.float32)
+        #s = (feature_stds[filtered_feature_indexes]).astype(np.float32)
+        mins = feature_mins.astype(np.float32)
+        maxs = feature_maxs.astype(np.float32)
+        #batch_tfms = [TSFilter(), TSSimpleStandardize(mean=m, std=s), Nan2Value()]
+        batch_tfms = [TSFilter(), TSSimpleNormalize(mins=mins, maxs=maxs), Nan2Value()]
+        #batch_tfms = [TSFilter(filtered_feature_indexes, days=num_days), TSSimpleStandardize(mean=np.array(feature_means).astype(np.float32), std=np.array(feature_stds).astype(np.float32)), Nan2Value()]
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[64], batch_tfms=batch_tfms, num_workers=4, inplace=False)
+        return splits_2, dls
+
+    def create_different_splits(self, y_df, valid_season = '18-19'):
+        a = y_df[y_df['season']!=valid_season].index
+        b = y_df[y_df['season']==valid_season].index
+        splits = (L(list(pd.Series(a))).shuffle(), L(list(pd.Series(b))).shuffle())
+        return splits
 
 
-# Cell
+    def augment_labels_with_trends(self, all_label_file, labels, label_to_add_trend_info='Day1DangerAboveTreeline'):
+        #note this removes labels from labels, ensure you reindex X and reset the labels index after running this
+        #add extra labels which also allow us to have labels which indicate the trend in the avy direction
+        #the thought here is that predicting a rise or flat danger is usually easier than predicting when
+        #to lower the danger so seperating these in to seperate clases
 
-#class TSStandardizeNanMeanReplaceNan(Transform):
-#    #method to standardize each batch while also replacing any nans with the mean value before standarization
-#    "Standardize/destd batch of `NumpyTensor` or `TSTensor`"
-#    parameters, order = L('mean', 'std'), 99
-#    def __init__(self, mean=None, feature_means=None, std=None, feature_std=None, by_sample=False, by_var=False, verbose=False):
-#        self.mean = tensor(mean) if mean is not None else None
-#        self.std = tensor(std) if std is not None else None
-#        self.feature_means = feature_means
-#        self.feature_std = feature_std
-#        self.by_sample, self.by_var = by_sample, by_var
-#        if by_sample and by_var: self.axes = (2)
-#        elif by_sample: self.axes = (1, 2)
-#        elif by_var: self.axes = (0, 2)
-#        else: self.axes = ()
-#        self.verbose = verbose
+        all_labels = pd.read_csv(all_label_file, low_memory=False,
+                        dtype={'Day1Danger_OctagonAboveTreelineEast': 'object',
+                                'Day1Danger_OctagonAboveTreelineNorth': 'object',
+                                'Day1Danger_OctagonAboveTreelineNorthEast': 'object',
+                                'Day1Danger_OctagonAboveTreelineNorthWest': 'object',
+                                'Day1Danger_OctagonAboveTreelineSouth': 'object',
+                                'Day1Danger_OctagonAboveTreelineSouthEast': 'object',
+                                'Day1Danger_OctagonAboveTreelineSouthWest': 'object',
+                                'Day1Danger_OctagonAboveTreelineWest': 'object',
+                                'Day1Danger_OctagonBelowTreelineEast': 'object',
+                                'Day1Danger_OctagonBelowTreelineNorth': 'object',
+                                'Day1Danger_OctagonBelowTreelineNorthEast': 'object',
+                                'Day1Danger_OctagonBelowTreelineNorthWest': 'object',
+                                'Day1Danger_OctagonBelowTreelineSouth': 'object',
+                                'Day1Danger_OctagonBelowTreelineSouthEast': 'object',
+                                'Day1Danger_OctagonBelowTreelineSouthWest': 'object',
+                                'Day1Danger_OctagonBelowTreelineWest': 'object',
+                                'Day1Danger_OctagonNearTreelineEast': 'object',
+                                'Day1Danger_OctagonNearTreelineNorth': 'object',
+                                'Day1Danger_OctagonNearTreelineNorthEast': 'object',
+                                'Day1Danger_OctagonNearTreelineNorthWest': 'object',
+                                'Day1Danger_OctagonNearTreelineSouth': 'object',
+                                'Day1Danger_OctagonNearTreelineSouthEast': 'object',
+                                'Day1Danger_OctagonNearTreelineSouthWest': 'object',
+                                'Day1Danger_OctagonNearTreelineWest': 'object',
+                                'SpecialStatement': 'object',
+                                'image_paths': 'object',
+                                'image_types': 'object',
+                                'image_urls': 'object'})
 
-#    @classmethod
-#    def from_stats(cls, mean, std): return cls(mean, std)
+        all_labels = all_labels[all_labels[label_to_add_trend_info] != 'no-data']
+        all_labels['parsed_date'] = pd.to_datetime(all_labels['Day1Date'], format='%Y%m%d')
 
-#    def setups(self, dl: DataLoader):
-#        if self.mean is None or self.std is None:
-#            pv(f'{self.__class__.__name__} setup mean={self.mean}, std={self.std}, by_sample={self.by_sample}, by_var={self.by_var}', self.verbose)
-#            x, *_ = dl.one_batch()
-#            x = torch.where(torch.isnan(x), torch.zeros_like(x), x)
-#            self.mean, self.std = x.mean(self.axes, keepdim=self.axes!=()), x.std(self.axes, keepdim=self.axes!=()) + 1e-7
-#            pv(f'mean: {self.mean}  std: {self.std}\n', self.verbose)
+        #ensure we are only using label data for regions we are looking at
+        #return region_zones
+        all_labels['UnifiedRegion'] = all_labels.apply(lambda x : PrepML.lookup_forecast_region(x['UnifiedRegion']), axis=1)
 
-#    def encodes(self, x:(NumpyTensor, TSTensor)):
-#        fill_values = torch.zeros_like(x)
-#        std_values = torch.zeros_like(x)
-#        for i in range(0,x.shape[1]):
-#            fill_values[:,i,:] = torch.full_like(x[:,i,:], self.feature_means[i])
-#            std_values[:,i,:] = torch.full_like(x[:,i,:], self.feature_std[i])
-#
-#        x = torch.where(torch.isnan(x), fill_values, x)
-#
-#        if self.by_sample:
-#            self.mean, self.std = x.mean(self.axes, keepdim=self.axes!=()), x.std(self.axes, keepdim=self.axes!=()) + 1e-7
-#
-#        t = (x - fill_values) / std_values
-#        del fill_values, std_values
-#        return torch.where(torch.isnan(t), torch.zeros_like(t), t)
+        all_labels = all_labels[all_labels['UnifiedRegion']!='Unknown region']
+
+        #add a season column
+        tmp = pd.DataFrame.from_records(all_labels['parsed_date'].apply(PrepML.date_to_season).reset_index(drop=True))
+        all_labels.reset_index(drop=True, inplace=True)
+        all_labels['season'] = tmp[1]
+
+        labels_trends = pd.DataFrame()
+        for r in labels['UnifiedRegion'].unique():
+            region_df = all_labels[all_labels['UnifiedRegion']==r]
+            season_labels = labels[labels['UnifiedRegion']==r]
+            for s in labels['season'].unique():
+                region_season_df = region_df[region_df['season']==s]
+                region_season_labels = season_labels[season_labels['season']==s]
+                for i, row in region_season_labels.iterrows():
+                    d = row['parsed_date']
+
+                    prev_label_row = region_season_df[region_season_df['parsed_date'] == d - pd.Timedelta(days=1)]
+                    if(len(prev_label_row) == 0):
+                        #print('Couldnt find prev for ' + r + ' ' + s + ' ' + str(d) + ' len ' + str(len(prev_label_row)) + ' ' + str(region_season_df['parsed_date'] - pd.Timedelta(days=1)))
+                        continue
+                    lookup = {'Low':0, 'Moderate':1, 'Considerable':2, 'High':3, 'Extreme': 4}
+                    prev = lookup[prev_label_row[label_to_add_trend_info].iloc[0]]
+                    cur = lookup[row[label_to_add_trend_info]]
+                    trend = '_Unknown'
+                    if prev == cur:
+                        trend = '_Flat'
+                    elif prev < cur:
+                        trend = '_Rising'
+                    elif prev >  cur:
+                        trend = '_Falling'
+
+                    labels.loc[i, label_to_add_trend_info + 'WithTrend'] = row[label_to_add_trend_info] + trend
+
