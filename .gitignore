@@ -5,6 +5,14 @@
 
 #data csv files
 Data/*.csv
+#numpy data files
+*.npy 
+#zarr multiprocessing sync files
+*.sync
+#netcdf files
+*.nc
+#zarr files
+*.zarr
 
 # User-specific files
 *.suo

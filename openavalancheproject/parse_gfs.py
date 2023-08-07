@@ -111,6 +111,7 @@ class ParseGFS:
         elif self.state == 'Canada':
             #include everything
             pass
+        #self.training_regions_df = self.training_regions_df[self.training_regions_df['name']=='Northwest Coastal']
 
         self.training_regions_df.reset_index(drop=True, inplace=True)
         #self.training_regions_df = self.training_regions_df[:2]
@@ -138,8 +139,10 @@ class ParseGFS:
             f = self.filtered_path + 'Region_' + row['name'] + '_' + date + '.nc'
             try:
                 if self.interpolate == 1:
-                    tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry'])
+                    tmp_subset = tmp_ds.salem.subset(geometry=row['geometry'])
                 else:
+                    #TODO: I've noticed that this might set a few vars, like snowdepth, to nan even when
+                    #interpolate == 1; need to investigate before using.
                     tmp_subset = interpolated_ds.salem.subset(geometry=row['geometry']).salem.roi(geometry=row['geometry'])
             except ValueError:
                 errors.append('Value Error: Ensure the correct training regions have been provided')
@@ -147,6 +150,7 @@ class ParseGFS:
                 continue
 
             try:
+                #return tmp_subset
                 comp = dict(zlib=True, complevel=7)
                 encoding = {var: comp for var in tmp_subset.data_vars}
                 tmp_subset.to_netcdf(f, encoding=encoding )
@@ -227,6 +231,7 @@ class ParseGFS:
 
                 #print("Merging")
                 merged_ds = xr.merge([min_resample, max_resample, avg_resample, sum_resample])
+                #return merged_ds
                 try:
                     ret_value = self.interpolate_and_write(merged_ds)
                 #    file = self.day_path + self.state_path + '_' + t + '.nc'

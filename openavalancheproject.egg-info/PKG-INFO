@@ -7,7 +7,6 @@ Author: Scott Chamberlin
 Author-email: scott@snowymountainworks.com
 License: MIT License
 Keywords: openavalancheproject
-Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License
@@ -612,5 +611,3 @@ This notebook also depends on a different conda environment in the _Environments
 
 ## Citations
 National Centers for Environmental Prediction/National Weather Service/NOAA/U.S. Department of Commerce. 2015, updated daily. NCEP GFS 0.25 Degree Global Forecast Grids Historical Archive. Research Data Archive at the National Center for Atmospheric Research, Computational and Information Systems Laboratory. https://doi.org/10.5065/D65D8PWK. Accessed April, 2020
-
-
