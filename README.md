@@ -198,7 +198,7 @@ for s in seasons:
 
 ### 4. ConvertToZarr
 #### Reformat data in to efficient Zarr format
-The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible. This process can be run entirely end to end once you are sure the parameters are set correctly.  It does take about 6 hours on my workstation using all cores.  The imporant item about this notebook is that we are essentially indexing the data to be accessed efficiently when we create our ML datasets. 
+The next step in our data transformation pipeline is to transform the NetCDF files to Zarr files which are indexed in such a way to make access to specific dates and lat/lon pairs as efficient as possible. This process can be run entirely end to end once you are sure the parameters are set correctly.  It does take about 2 hours for one season for all regions in Colorado on my workstation (12 core 3900X with data on Gen3 NVME drive) using all cores.  The imporant item about this notebook is that we are essentially indexing the data to be accessed efficiently when we create our ML datasets. 
 
 
 ```python
