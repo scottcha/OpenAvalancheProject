@@ -1,0 +1,11 @@
+{
+    "Conventions": "COARDS",
+    "GRIB2_grid_template": 0,
+    "History": "created by wgrib2",
+    "_ARRAY_DIMENSIONS": [
+        "variable",
+        "time",
+        "latitude",
+        "longitude"
+    ]
+}
