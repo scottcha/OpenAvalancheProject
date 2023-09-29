@@ -1,0 +1,2 @@
+[nbdev]
+openavalancheproject = openavalancheproject._modidx:d

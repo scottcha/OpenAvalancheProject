@@ -1,0 +1,8 @@
+website:
+  sidebar:
+    contents:
+      - 1.ParseGFS.ipynb
+      - 1.ParseGFS_julia.ipynb
+      - 2.ConvertToZarr.ipynb
+      - 3.PrepMLData.ipynb
+      - 4.TSAIUtilities.ipynb

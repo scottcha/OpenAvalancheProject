@@ -2,6 +2,7 @@ LICENSE
 README.md
 setup.py
 openavalancheproject/__init__.py
+openavalancheproject/_modidx.py
 openavalancheproject/_nbdev.py
 openavalancheproject/convert_to_zarr.py
 openavalancheproject/oap_stats.py
@@ -12,6 +13,7 @@ openavalancheproject/tsai_utilities.py
 openavalancheproject.egg-info/PKG-INFO
 openavalancheproject.egg-info/SOURCES.txt
 openavalancheproject.egg-info/dependency_links.txt
+openavalancheproject.egg-info/entry_points.txt
 openavalancheproject.egg-info/not-zip-safe
 openavalancheproject.egg-info/requires.txt
 openavalancheproject.egg-info/top_level.txt
