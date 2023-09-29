@@ -314,8 +314,8 @@ ML/azure_storage_config.py
 .tar.gz
 
 #nbdev
-build/
-dist/
+_docs/
+_proc/
 
 #test data
 TestData/5.MLData/
