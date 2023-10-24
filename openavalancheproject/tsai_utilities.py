@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from tsai.all import * 
 from .tsai_simple_transforms import * 
-from .prep_ml import *
+#from openavalancheproject.prep_ml import *
 
 # %% ../DataPipelineNotebooks/4.TSAIUtilities.ipynb 3
 class TSAIUtilities:
@@ -76,8 +76,9 @@ class TSAIUtilities:
 
         cat_dict = dict( enumerate(y_df[self.label + '_Cat'].cat.categories ) )
         return y, cat_dict
-    
-    def filter_features(self, feature_list, only_var=False):
+
+    @staticmethod 
+    def filter_features(feature_list, only_var=False):
         #remove any prefixed with var
         feature_list = set([x for x in feature_list if 'var' not in x])
         feature_list = set([x for x in feature_list if 'ABSV' not in x])
@@ -135,34 +136,16 @@ class TSAIUtilities:
         feature_list.sort()
         return feature_list
     
-    def create_dls(self, X, y, feature_mins, feature_maxs, feature_indexes = None, num_test_files = 11, num_days=28, splits=None, sample_frac = 1):
-        #index file which indicates which rows in X are train or test
-        #be carful these don't overlap
-        num_test = num_test_files * 3000
-        train_test_split = y.shape[0]-num_test
-        #can use a smaller train subset to make development faster
-        if splits == None:
-            splits_2 = (L(list(pd.Series([i for i in range(0,train_test_split)]).sample(frac=sample_frac).values)).shuffle(), L(list(pd.Series([i for i in range(train_test_split,train_test_split+num_test)]).sample(frac=sample_frac).values)).shuffle())
-        else:
-            splits_2 = (L(list(pd.Series(splits[0]).sample(frac=sample_frac).values)), L(list(pd.Series(splits[1]).sample(frac=sample_frac).values)))
-        #splits_2 = (L([i for i in range(0,train_test_split)]), L([i for i in range(train_test_split,train_test_split+num_test)]))
-        #splits_3 = (L([i for i in range(0*64,12*64)]), L([i for i in range(train_test_split,train_test_split+8*64)]))
+    def create_dls(self, X, y, feature_mins, feature_maxs, splits, sample_frac = 1, batch_size=64):
+        splits_2 = (L(list(pd.Series(splits[0]).sample(frac=sample_frac).values)), L(list(pd.Series(splits[1]).sample(frac=sample_frac).values)))
         #create the dataset
         tfms = [None, [Categorize()]]
         dsets = TSDatasets(X, y, tfms=tfms, splits=splits_2, inplace=False)
         
-        #create the dataloader
-        #batch_tfms = [TSStandardize(mean=torch.tensor(feature_mean), std=torch.tensor(feature_std), by_var=True), 
-        #              Nan2Value()]
-        #batch_tfms = [TSFilter(filtered_feature_indexes), TSSimpleStandardize(mean=np.array([feature_means[x] for x in filtered_feature_indexes]).astype(np.float32), std=np.array([feature_stds[x] for x in filtered_feature_indexes]).astype(np.float32)), Nan2Value()]
-        #m = (feature_means[filtered_feature_indexes]).astype(np.float32)
-        #s = (feature_stds[filtered_feature_indexes]).astype(np.float32)
         mins = feature_mins.astype(np.float32)
         maxs = feature_maxs.astype(np.float32)
-        #batch_tfms = [TSFilter(), TSSimpleStandardize(mean=m, std=s), Nan2Value()]
         batch_tfms = [TSFilter(), TSSimpleNormalize(mins=mins, maxs=maxs), Nan2Value()]
-        #batch_tfms = [TSFilter(filtered_feature_indexes, days=num_days), TSSimpleStandardize(mean=np.array(feature_means).astype(np.float32), std=np.array(feature_stds).astype(np.float32)), Nan2Value()]
-        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[64], batch_tfms=batch_tfms, num_workers=4, inplace=False)
+        dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[batch_size], batch_tfms=batch_tfms, num_workers=4, inplace=False)
         return splits_2, dls
     
     def create_different_splits(self, y_df, valid_season = '18-19'):

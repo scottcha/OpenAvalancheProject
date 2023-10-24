@@ -4,6 +4,6 @@ project:
 website:
   title: "openavalancheproject"
   site-url: "https://scottcha.github.io/openavalancheproject/"
-  description: ""Data Pipeline Processing for Open Avalanche Project from global GFS to ML Data""
+  description: "Data Pipeline Processing for Open Avalanche Project from global GFS to ML Data"
   repo-branch: master
   repo-url: "https://github.com/scottcha/openavalancheproject/tree/master/"

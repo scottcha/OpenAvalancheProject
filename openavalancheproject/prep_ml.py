@@ -18,6 +18,7 @@ import dask
 dask.config.set(**{'array.slicing.split_large_chunks': False})
 debug = False
 numcodecs.blosc.use_threads = False
+from .tsai_utilities import *
 
 # %% ../DataPipelineNotebooks/3.PrepMLData.ipynb 5
 class PrepML:
@@ -201,6 +202,10 @@ class PrepML:
         
         returns season indicator
         """
+        #if type of pandas timestamp convert to datetime64
+        if isinstance(d, pd.Timestamp):
+            d = d.to_datetime64()
+
         if d >= np.datetime64('2014-11-01') and d <= np.datetime64('2015-04-30'):
             return (np.datetime64('2014-11-01'), '14-15')
         elif d >= np.datetime64('2015-11-01') and d <= np.datetime64('2016-04-30'):
@@ -232,8 +237,28 @@ class PrepML:
                 return k
 
         raise Exception('No region with name ' + region)
-    
-    def prep_labels(self, overwrite_cache=True):
+
+    def remove_overlap(self, df, label_column='Day1DangerAboveTreeline', lookback_days=14, overlap_percent=1.0): 
+        """
+        Removes overlap_percent of labels from the lat/lon/date/danger tuple based on the lookback_days 
+        """
+        #give df an index so we can use it to remove rows
+        df.reset_index(inplace=True)
+        #for each lat/lon/season tuple select only overlap_percent of those dates
+        #this is to minimized the data leakage where timeseries overlap
+        #find a list of lat/lon/season from df
+        lat_lon_season = df[['latitude', 'longitude', 'season', label_column]].drop_duplicates().copy()
+        #for each lat/lon/season tuple select only overlap_percent of those dates
+        for index, row in lat_lon_season.iterrows():
+            #find the rows in df corresponding to this lat/lon/season/label_column
+            overlap_df = df[(df['season']==row['season']) & (df['latitude']==row['latitude']) & (df['longitude']==row['longitude']) & (df[label_column]==row[label_column])]
+            #find the number of rows to save 
+            num_to_drop = int(len(overlap_df) * (1-overlap_percent))
+            #remove the rows
+            df.drop(overlap_df.sample(num_to_drop, random_state=42).index, inplace=True)
+        return df
+        
+    def prep_labels(self, overwrite_cache=True, lookback_days=14, overlap_percent=1.0):
         """
         Preps the data and lable sets in to two sets, train & test
         
@@ -305,7 +330,6 @@ class PrepML:
         self.labels = self.labels[self.labels['season'].isin(['15-16', '16-17', '17-18', '18-19', '19-20', '20-21'])]
         self.labels = self.labels[~self.labels.index.isin(self.labels[(self.labels['season']=='15-16') & (self.labels[self.region_col]=='Steamboat Zone')].index)]
         self.labels = self.labels[~self.labels.index.isin(self.labels[(self.labels['season']=='16-17') & (self.labels[self.region_col]=='Front Range Zone')].index)]               
-        
         lat_lon_union = pd.DataFrame()
         lat_lon_path = self.processed_path + 'lat_lon_union.csv'
         if overwrite_cache or not os.path.exists(lat_lon_path):   
@@ -331,8 +355,12 @@ class PrepML:
             #load the cached data
             lat_lon_union = pd.read_csv(lat_lon_path,float_precision='round_trip')
         #join in with the labels so we have a label per lat/lon pair
-        lat_lon_union = lat_lon_union.set_index(self.region_col, drop=False).join(self.labels.set_index(self.region_col, drop=False), how='left', lsuffix='left', rsuffix='right')
-     
+        lat_lon_union = lat_lon_union.drop(columns=['Unnamed: 0'], inplace=False).set_index(self.region_col, drop=False).join(self.labels.drop(columns=['Unnamed: 0'], inplace=False).set_index(self.region_col, drop=False), how='left', lsuffix='left', rsuffix='right')
+        lat_lon_union.reset_index(inplace=True, drop=False)
+
+        if overlap_percent < 1.0:
+            lat_lon_union = self.remove_overlap(lat_lon_union, lookback_days=lookback_days, overlap_percent=overlap_percent)
+
         #define the split between train and test
         date_min = np.datetime64(self.date_start)
         date_max = np.datetime64(self.date_end)
@@ -344,9 +372,18 @@ class PrepML:
         #copy so we can delete the overall data and only keep the filtered
         labels_data_train = labels_data_union[labels_data_union[self.parsed_date_col] <= train_date_cutoff].copy()
         labels_data_test = labels_data_union[labels_data_union[self.parsed_date_col] > train_date_cutoff].copy()
-        labels_data_train.reset_index(inplace=True)
-        labels_data_test.reset_index(inplace=True)
-        
+        labels_data_train.reset_index(inplace=True, drop=True)
+        labels_data_test.reset_index(inplace=True, drop=True)
+
+        #verify we aren't missing anything    
+        tmp = [self.regions[x] for x in self.regions.keys()]
+        #transform temp in to a flat list from a list of lists
+        regions = [item for sublist in tmp for item in sublist]
+        #check that all regions are in the train set (2 are usually missing so only assert is more are missing)
+        assert len(set(labels_data_train['UnifiedRegion'].unique()) ^ set(regions)) < 3, 'Expected all regions to be in train set, got ' + str(set(labels_data_train['UnifiedRegion'].unique()) ^ set(regions))
+        #check that all regions are in the test set
+        assert len(set(labels_data_test['UnifiedRegion'].unique()) ^ set(regions)) < 3, 'Expected all regions to be in test set, got ' + str(set(labels_data_test['UnifiedRegion'].unique()) ^ set(regions))
+
         return labels_data_train, labels_data_test
     
     
@@ -437,9 +474,7 @@ class PrepML:
         
         state = self.get_state_for_region(region)
         
-
         path = self.processed_path + '/' + season + '/' + state + '/Region_' + region + '.zarr'
-        #print('*Opening file ' + path)
         
         #finds the minimal set of values for the single zarr collection and then appends
         #the individaul data to results
@@ -466,10 +501,7 @@ class PrepML:
             start_day = date - np.timedelta64(lookback_days-1, 'D')
             
             result_df = loaded_df.sel(latitude=d['latitude'], longitude=d['longitude']).sel(time=slice(start_day, date + np.timedelta64(24, 'h')))
-            #print(str(d['latitude']) + ' ' + str(d['longitude']) + ' ' + str(start_day) + ' ' + str(date))
-            #return result_df
             date_values_pd = pd.date_range(start=start_day, end=date + np.timedelta64(24, 'h'), freq=self.resample_length)
-            #date_values_pd = pd.date_range(start_day, periods=lookback_days, freq='D')
             #reindex should fill missing values with NA
             result_df = result_df.reindex({'time': date_values_pd})
             result_df = result_df.assign_coords({'sample': date.strftime('%Y%m%d') + ' ' + region}).expand_dims('sample')
@@ -562,7 +594,7 @@ class PrepML:
                     
                 label_slice = labels_data[labels_data[y_column]==l]
                 
-                #ensure the propose sample is larger than the available values
+                #ensure the proposed sample is larger than the available values
                 pick_size = size
                 if len(label_slice) < pick_size:
                     pick_size = len(label_slice)
@@ -575,23 +607,18 @@ class PrepML:
 
 
 
-            #sample frac=1 causes the data to be shuffled
             if len(batch_lookups) == 0:
                 #no more data left
                 break
                 
             batch_lookup = pd.concat(batch_lookups).sample(frac=1, random_state=random_state)
-            #print('lookup shape: ' + str(batch_lookup.shape))
+            
             batch_lookup.reset_index(inplace=True, drop=True)
             if debug: print('have n_jobs ' + str(n_jobs))
        
             tuples = batch_lookup[['UnifiedRegion', 'season']].drop_duplicates()
             func = partial(self.process_sample2, df=batch_lookup, lookback_days=lookback_days, variables=variables)        
             data2 = Parallel(n_jobs=n_jobs, backend="loky")(map(delayed(func), tuples.iterrows())) 
-            #data2 = []
-            #for r in tuples.iterrows():      
-            #    print('foo')
-            #    data2.append(self.process_sample2(r, df=batch_lookup, lookback_days=lookback_days, variables=variables))
             
             data = [item for sublist in data2 for item in sublist]
             
@@ -601,7 +628,7 @@ class PrepML:
                 first = False            
             elif not first and len(data) > 0:    
                 X_t = xr.concat(data, dim='sample')
-                X = xr.concat([X, X_t], dim='sample')#, coords='all', compat='override') 
+                X = xr.concat([X, X_t], dim='sample')
                 y = pd.concat([y, batch_lookup], axis=0)
 
             num_in_place = y.shape[0]
@@ -656,8 +683,6 @@ class PrepML:
         y = pd.DataFrame()
         for i in range(0, num_rows, batch_size):
             if debug: print('On ' + str(i) + ' of ' + str(num_rows))
-            # You now grab a chunk of your data that fits in memory
-            # This could come from a pandas dataframe for example        
             X_df, y_df, remaining_labels = self.get_xr_batch(remaining_labels, 
                                                        lookback_days=lookback_days, 
                                                        batch_size=batch_size, 
@@ -687,8 +712,6 @@ class PrepML:
             # I now fill a slice of the zarr file            
             zarr_file[offset + start:offset + end] = X_df.vars.values[:batch_size] #sometimes the process will add a few extras, filter them
 
-            
-            #y_df[:batch_size].to_parquet(self.ml_path + '/y_' + train_or_test + '_batch_' + str(batch) + '_' + file_label + '_' + str(i/batch_size) + '.parquet')
             y = pd.concat([y, y_df[:batch_size]])
             start = end
             del X_df, y_df
@@ -843,37 +866,11 @@ class PrepML:
         del to_concat
     
 
-    
     def filter_features(self, feature_list):
         """
         Filter list of variable names to a smaller set based on name heuristics
         """
-        #remove any prefixed with var
-        feature_list = set([x for x in feature_list if 'var' not in x])
-
-        #operate only on avg and sum
-        feature_list = set([x for x in feature_list if 'min' not in x])
-        feature_list = set([x for x in feature_list if 'max' not in x])
-
-        #get any surface levels
-        surface_features = set([x for x in feature_list if 'surface' in x])
-        feature_list = feature_list - surface_features
-
-        #get any relative to ground
-        aboveground_features = set([x for x in feature_list if 'aboveground' in x])
-        feature_list = feature_list - aboveground_features
-
-        feature_prefix = set([x.split('_')[0] for x in feature_list])
-        pressure_features = []
-        for p in feature_prefix:
-            #get a random subset for the features defined by pressure level
-            tmp = [x for x in feature_list if p in x]
-            tmp2 = pd.Series(tmp).sample(frac=.1)
-            #return tmp2
-            pressure_features.extend(list(tmp2))
-
-        l = list(surface_features) + list(aboveground_features) + list(pressure_features)
-        l.sort()
+        l = TSAIUtilities.filter_features(set(feature_list), only_var=False)
         return l
 
     #TODO: add the ability to restart from a cached label file
