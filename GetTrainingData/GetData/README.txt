@@ -1,0 +1,2 @@
+xsd to cs files generated with
+"C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.8 Tools\xsd.exe" CAAMLv5_BulletinCAC_GML.xsd  xlink.xsd CAAMLv5_BulletinCAC.xsd CAAMLv5_BulletinCAC_Display.xsd /c

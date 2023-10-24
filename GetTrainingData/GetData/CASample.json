@@ -1,0 +1,77 @@
+{
+  "id": "bid_65338",
+  "region": "sea-to-sky",
+  "dateIssued": "2015-12-31T02:07:00.000Z",
+  "validUntil": "2016-01-01T06:00:00.000Z",
+  "forecaster": "jlammers",
+  "bulletinTitle": "Avalanche Forecast - Sea-to-Sky",
+  "highlights": "<style type=\"text/css\">\n.p_91E506DB { margin: 0px 0px 12px 0px;text-align: center;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_7571B427 { font-family: 'Arial';font-style: Normal;font-weight: bold;font-size: 18.6666666666667px;color: #000000; } \n</style><p class=\"p_91E506DB\"><span class=\"s_7571B427\">Solar radiation and warm alpine temperatures may increase the Avalanche Danger over the next few days.</span></p>",
+  "confidence": "Moderate - Timing or intensity of solar radiation is uncertain",
+  "avalancheSummary": "<style type=\"text/css\">\n.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_A8FEC758 { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 16px;color: #000000; } \n</style><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">On Tuesday a size 1-1.5 skier-triggered wind slab avalanche was observed in Body Bag Bowl in the Spearhead Range. The rider went for a 30m ride and lost a pole, but did not sustain any injuries. On the same day, a size 1.5 slab avalanche was triggered on Rainbow Mountain. The avalanche, which occurred on a lower-elevation northeast facing slope, is thought to have failed on the mid-December surface hoar. For great photos of these slides, check-out Wayne Flann's Avalanche Blog at: http://www.wayneflannavalancheblog.com/2015/12/december-30-2015.html </span></p><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">On Wednesday, there was a report of a rider-triggered size 1 wind slab avalanche near Adit Lakes in the Fitzsimmons Range. The avalanche occurred on a northwest facing slope at 1950m. Small solar-induced loose wet avalanches have also been reported. The size and likelihood of loose wet avalanches will increase with warmer alpine temperatures expected during the forecast period.</span></p>",
+  "snowpackSummary": "<style type=\"text/css\">\n.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_A8FEC758 { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 16px;color: #000000; } \n</style><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">Last weekend, the region received 15-20cm of low-density snow. At higher elevations, generally moderate winds have redistributed these accumulations into soft wind slabs in exposed lee terrain. Due to continued cool temperatures, these wind slabs have likely required more time than usual to settle and gain strength. Solar radiation has also come into play, and depending on the time of day, steep solar aspects may be moist or refrozen.</span></p><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">In the upper 70cm of the snowpack you may find a layer of weak surface hoar which was buried in mid-December. Reports indicate this layer is spotty in its distribution, but may be something to watch as the overlying slab gets deeper and gains cohesion through settlement, warming and wind pressing.</span></p><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">The mid and lower snowpack are generally considered to be strong and well-settled.</span></p>",
+  "weatherForecast": "<style type=\"text/css\">\n.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_A8FEC758 { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 16px;color: #000000; } \n</style><p class=\"p_CC664AAA\"><span class=\"s_A8FEC758\">The current ridge of high pressure will persist for the foreseeable future bringing clear skies for the forecast period. Ridgetop winds will remain mainly light to moderate from the south. An inversion is forecast for all 3 days with above-freezing temperatures expected in the alpine.</span></p>",
+  "dangerRatings": [
+    {
+      "date": "2016-01-01T02:07:00.000Z",
+      "dangerRating": {
+        "alp": "2:Moderate",
+        "tln": "1:Low",
+        "btl": "1:Low"
+      }
+    },
+    {
+      "date": "2016-01-02T02:07:00.000Z",
+      "dangerRating": {
+        "alp": "2:Moderate",
+        "tln": "1:Low",
+        "btl": "1:Low"
+      }
+    },
+    {
+      "date": "2016-01-03T02:07:00.000Z",
+      "dangerRating": {
+        "alp": "1:Low",
+        "tln": "1:Low",
+        "btl": "1:Low"
+      }
+    }
+  ],
+  "problems": [
+    {
+      "type": "Wind Slabs",
+      "likelihood": "Possible",
+      "travelAndTerrainAdvice": "<ul><li>Stay off recent wind loaded areas until the slope has had a chance to stabilize.</><li>Be alert to conditions that change with elevation.</><li>Avoid exposure to terrain traps where the consequences of a small avalanche could be serious.</></ul>",
+      "comment": "<style type=\"text/css\">\n.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } \n</style><p class=\"p_CC664AAA\"><span class=\"s_AA239A9B\">A few human-triggered avalanches over the past few days indicate that wind slabs may still be sensitive to light loads. Even a small avalanche can have nasty consequences when combined with cliffs, rocks and terrain traps.</span></p>",
+      "expectedSize": {
+        "min": "1",
+        "max": "2"
+      },
+      "aspects": [ "N", "NE", "E", "SE", "S", "SW", "W", "NW" ],
+      "icons": {
+        "likelihood": "https://www.avalanche.ca/assets/images/Likelihood/Likelihood-3_EN.png",
+        "expectedSize": "https://www.avalanche.ca/assets/images/size/Size-10-20_EN.png",
+        "aspects": "https://www.avalanche.ca/assets/images/Compass/compass-1-1-1-1-1-1-1-1_EN.png",
+        "elevations": "https://www.avalanche.ca/assets/images/Elevation/Elevation-1-0-0_EN.png"
+      },
+      "elevations": [ "Alp" ]
+    },
+    {
+      "type": "Loose Wet",
+      "likelihood": "Possible",
+      "travelAndTerrainAdvice": "<ul><li>Be alert to conditions that change with aspect, elevation and time of day.</><li>Watch for clues, like sluffing off of cliffs, that the snowpack is warming up. </></ul>",
+      "comment": "<style type=\"text/css\">\n.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } \n.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } \n</style><p class=\"p_CC664AAA\"><span class=\"s_AA239A9B\">Temperature inversions and solar radiation forecast for the next few days will promote loose wet avalanche activity, especially on steep, sun-exposed slopes</span></p>",
+      "expectedSize": {
+        "min": "1",
+        "max": "2"
+      },
+      "aspects": [ "SE", "S", "SW" ],
+      "icons": {
+        "likelihood": "https://www.avalanche.ca/assets/images/Likelihood/Likelihood-3_EN.png",
+        "expectedSize": "https://www.avalanche.ca/assets/images/size/Size-10-20_EN.png",
+        "aspects": "https://www.avalanche.ca/assets/images/Compass/compass-0-0-0-1-1-1-0-0_EN.png",
+        "elevations": "https://www.avalanche.ca/assets/images/Elevation/Elevation-1-1-0_EN.png"
+      },
+      "elevations": [ "Alp", "Tln" ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2005 rel. 3 U (http://www.altova.com) by Pascal Haegeli (Avisualanche Consulting) -->
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gml="http://www.opengis.net/gml" targetNamespace="http://www.opengis.net/gml" elementFormDefault="qualified" version="3.2.0">
+	<!-- ================================================= -->
+	<attribute name="id" type="ID">
+		<annotation>
+			<documentation>The attribute gml:id supports provision of a handle for the XML element representing a GML Object. Its use is mandatory for all GML objects. It is of XML type ID, so is constrained to be unique in the XML document within which it occurs.</documentation>
+		</annotation>
+	</attribute>
+	<!-- ================================================= -->
+	<complexType name="TimePositionType" final="#all">
+		<simpleContent>
+			<extension base="gml:TimePositionUnion"/>
+		</simpleContent>
+	</complexType>
+	<!-- ================================================= -->
+	<simpleType name="NilReasonEnumeration">
+		<union>
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="inapplicable"/>
+					<enumeration value="missing"/>
+					<enumeration value="template"/>
+					<enumeration value="unknown"/>
+					<enumeration value="withheld"/>
+				</restriction>
+			</simpleType>
+			<simpleType>
+				<restriction base="string">
+					<pattern value="other:\w{2,}"/>
+				</restriction>
+			</simpleType>
+		</union>
+	</simpleType>
+	<!-- ================================================= -->
+	<simpleType name="TimePositionUnion">
+		<annotation>
+			<documentation>The simple type gml:TimePositionUnion is a union of XML Schema simple types which instantiate the subtypes for temporal position described in ISO 19108.
+ An ordinal era may be referenced via URI.  A decimal value may be used to indicate the distance from the scale origin .  time is used for a position that recurs daily (see ISO 19108:2002 5.4.4.2).
+ Finally, calendar and clock forms that support the representation of time in systems based on years, months, days, hours, minutes and seconds, in a notation following ISO 8601, are assembled by gml:CalDate</documentation>
+		</annotation>
+		<union memberTypes="date dateTime"/>
+	</simpleType>
+	<!-- ================================================= -->
+</schema>

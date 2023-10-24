@@ -1,3 +1,2 @@
-[console_scripts]
-
-
+[nbdev]
+openavalancheproject = openavalancheproject._modidx:d

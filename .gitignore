@@ -5,6 +5,14 @@
 
 #data csv files
 Data/*.csv
+#numpy data files
+*.npy 
+#zarr multiprocessing sync files
+*.sync
+#netcdf files
+*.nc
+#zarr files
+*.zarr
 
 # User-specific files
 *.suo
@@ -306,9 +314,10 @@ ML/azure_storage_config.py
 .tar.gz
 
 #nbdev
-build/
-dist/
+_docs/
+_proc/
 
 #test data
 TestData/5.MLData/
 TestData/4.GFSFiltered1xInterpolationZarr/lat_lon_union.csv
+study.pkl

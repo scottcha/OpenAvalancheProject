@@ -1,0 +1,431 @@
+<?xml version="1.0"?>
+<CaamlData xmlns:gml="http://www.opengis.net/gml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://caaml.org/Schemas/V5.0/Profiles/BulletinCAC http://caaml.org/Schemas/V5.0/Profiles/BulletinCAC/CAAMLv5_BulletinCAC.xsd" xmlns="http://caaml.org/Schemas/V5.0/Profiles/BulletinCAC">
+  <metaDataProperty>
+    <MetaData>
+      <dateTimeReport>2015-01-02T00:00:00</dateTimeReport>
+      <srcRef>
+        <Operation gml:id="PCA">
+          <name>Parks Canada</name>
+          <contactPerson>
+            <Person gml:id="bw-13">
+              <name>brian webster</name>
+            </Person>
+          </contactPerson>
+        </Operation>
+      </srcRef>
+      <srcURL>http://avalanche.pc.gc.ca/bulletin-eng.aspx?r=1&amp;d=2015-01-02</srcURL>
+      <language>en-CA</language>
+    </MetaData>
+  </metaDataProperty>
+  <aspects>
+    <AspectRange gml:id="AspectRange_N">
+      <beginPosition>337.5</beginPosition>
+      <endPosition>22.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>N</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_NE">
+      <beginPosition>22.5</beginPosition>
+      <endPosition>67.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>NE</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_E">
+      <beginPosition>67.5</beginPosition>
+      <endPosition>112.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>E</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_SE">
+      <beginPosition>112.5</beginPosition>
+      <endPosition>157.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>SE</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_S">
+      <beginPosition>157.5</beginPosition>
+      <endPosition>202.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>S</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_SW">
+      <beginPosition>202.5</beginPosition>
+      <endPosition>247.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>SW</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_W">
+      <beginPosition>247.5</beginPosition>
+      <endPosition>292.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>W</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+    <AspectRange gml:id="AspectRange_NW">
+      <beginPosition>292.5</beginPosition>
+      <endPosition>337.5</endPosition>
+      <customData>
+        <AspectDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+          <label>NW</label>
+        </AspectDisplay>
+      </customData>
+    </AspectRange>
+  </aspects>
+  <elevations>
+    <ElevationLabel gml:id="ElevationLabel_Alp">
+      <description>Alpine</description>
+    </ElevationLabel>
+    <ElevationLabel gml:id="ElevationLabel_Tln">
+      <description>Treeline</description>
+    </ElevationLabel>
+    <ElevationLabel gml:id="ElevationLabel_Btl">
+      <description>Below Treeline</description>
+    </ElevationLabel>
+  </elevations>
+  <observations>
+    <Bulletin gml:id="PC-1_2015-01-02T0000_bc2f7f7f-6018-4244-a46f-4f5097589114">
+      <validTime>
+        <TimePeriod>
+          <beginPosition>2015-01-02T00:00:00</beginPosition>
+          <endPosition>2015-01-03T00:00:00</endPosition>
+        </TimePeriod>
+      </validTime>
+      <bulletinResultsOf>
+        <BulletinMeasurements>
+          <highlights>!_!&lt;style type="text/css"&gt;
+.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } 
+.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } 
+&lt;/style&gt;&lt;p class="p_CC664AAA"&gt;&lt;span class="s_AA239A9B"&gt;We are starting to see some tracks in steeper terrain, however our confidence in the strength of the snowpack is low given it's weak basal structure and inconsistent field test results.&lt;/span&gt;&lt;/p&gt;</highlights>
+          <bulletinTitle>Avalanche Bulletin - Banff, Yoho, and Kootenay National Parks</bulletinTitle>
+          <bulletinConfidence>
+            <Components>
+              <confidenceLevel>Moderate</confidenceLevel>
+              <comment>Timing of incoming weather systems is uncertain on Friday</comment>
+            </Components>
+          </bulletinConfidence>
+          <dangerMode>Regular season</dangerMode>
+          <dangerRatings>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-02T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Alp" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-03T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Alp" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-04T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Alp" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-02T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Tln" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-03T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Tln" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-04T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Tln" />
+              <mainValue>2</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Moderate</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>FFF300</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-02T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Btl" />
+              <mainValue>1</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Low</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>52BA4A</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-03T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Btl" />
+              <mainValue>1</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Low</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>52BA4A</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+            <DangerRating>
+              <validTime>
+                <TimeInstant>
+                  <timePosition>2015-01-04T00:00:00</timePosition>
+                </TimeInstant>
+              </validTime>
+              <validElevation xlink:href="ElevationLabel_Btl" />
+              <mainValue>1</mainValue>
+              <customData>
+                <DangerRatingDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <mainLabel>Low</mainLabel>
+                  <mainForeground>000000</mainForeground>
+                  <mainBackground>52BA4A</mainBackground>
+                </DangerRatingDisplay>
+              </customData>
+            </DangerRating>
+          </dangerRatings>
+          <avProblems>
+            <AvProblem>
+              <type>Deep Persistent Slabs</type>
+              <validAspect xlink:href="AspectRange_N" />
+              <validAspect xlink:href="AspectRange_NE" />
+              <validAspect xlink:href="AspectRange_E" />
+              <validAspect xlink:href="AspectRange_SE" />
+              <validAspect xlink:href="AspectRange_S" />
+              <validAspect xlink:href="AspectRange_SW" />
+              <validAspect xlink:href="AspectRange_W" />
+              <validAspect xlink:href="AspectRange_NW" />
+              <validElevation xlink:href="ElevationLabel_Alp" />
+              <validElevation xlink:href="ElevationLabel_Tln" />
+              <expectedAvSize>
+                <Values>
+                  <min>1.0</min>
+                  <typical>2.0</typical>
+                  <max>2.5</max>
+                </Values>
+              </expectedAvSize>
+              <likelihoodOfTriggering>
+                <Values>
+                  <min>Unlikely</min>
+                  <typical>Possible - Unlikely</typical>
+                  <max>Possible</max>
+                </Values>
+              </likelihoodOfTriggering>
+              <travelAdvisoryComment />
+              <comment>&lt;style type="text/css"&gt;
+.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } 
+.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } 
+&lt;/style&gt;&lt;p class="p_CC664AAA"&gt;&lt;span class="s_AA239A9B"&gt;The overall structure of the snowpack remains weak and not very confidence inspiring. Big features and steep terrain at treeline and above are still suspect and should be approached with caution.&lt;/span&gt;&lt;/p&gt;</comment>
+              <customData>
+                <AvProblemDisplay xmlns="http://avalanche.pc.gc.ca/CAAML/xsd/CAAMLv5_BulletinCAC_Display.xsd">
+                  <aspectsBitmap />
+                  <aspectsBitmapURL />
+                  <elevationsBitmap />
+                  <elevationsBitmapURL />
+                  <expectedAvSizeBitmap />
+                  <expectedAvSizeBitmapURL />
+                  <likelihoodOfTriggeringBitmap />
+                  <likelihoodOfTriggeringBitmapURL />
+                </AvProblemDisplay>
+              </customData>
+            </AvProblem>
+          </avProblems>
+          <wxSynopsisComment>&lt;style type="text/css"&gt;
+.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } 
+.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } 
+&lt;/style&gt;&lt;p class="p_CC664AAA"&gt;&lt;span class="s_AA239A9B"&gt;A weak system will push in from the west overnight bringing isolated flurries east of the divide through to Saturday. Forecasted winds are light to moderate from the west. Temperatures will cool down significantly on Saturday afternoon.&lt;/span&gt;&lt;/p&gt;</wxSynopsisComment>
+          <avActivityComment>&lt;style type="text/css"&gt;
+.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } 
+.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } 
+&lt;/style&gt;&lt;p class="p_CC664AAA"&gt;&lt;span class="s_AA239A9B"&gt;No new avalanches were observed or reported today.&lt;/span&gt;&lt;/p&gt;</avActivityComment>
+          <snowpackStructureComment>&lt;style type="text/css"&gt;
+.p_CC664AAA { margin: 0px 0px 12px 0px;text-align: left;text-indent: 0pt;padding: 0px 0px 0px 0px; } 
+.s_AA239A9B { font-family: 'Arial';font-style: Normal;font-weight: normal;font-size: 13px;color: #000000; } 
+&lt;/style&gt;&lt;p class="p_CC664AAA"&gt;&lt;span class="s_AA239A9B"&gt;70-110 cm of snowpack exists across the region. The main weakness is at the base of the snowpack, where facets and depth hoar produce inconsistent test results 15 cm above the ground. Overall we believe the snowpack is gaining strength, but our confidence in this assessment is low. The Dec 18 layer of SH found further west is not prominent here.&lt;/span&gt;&lt;/p&gt;</snowpackStructureComment>
+          <travelAdvisoryComment />
+        </BulletinMeasurements>
+      </bulletinResultsOf>
+      <locRef>
+        <Region gml:id="BanffYohoandKootenay-1">
+          <name>Banff, Yoho and Kootenay</name>
+          <regionSubType>Forecast Region</regionSubType>
+        </Region>
+      </locRef>
+      <linkedObservations>
+        <WxObs gml:id="WXObsID001">
+          <validTime>
+            <TimePeriod>
+              <beginPosition>2015-01-02T00:00:00</beginPosition>
+              <endPosition>2015-01-02T23:59:59</endPosition>
+            </TimePeriod>
+          </validTime>
+          <wxObsResultsOf>
+            <WxObsMeasurements>
+              <airTempMin uom="degC" />
+              <airTempMax uom="degC" />
+              <hN24>
+                <Components>
+                  <snowHeight uom="cm" />
+                </Components>
+              </hN24>
+              <hS uom="cm">116</hS>
+              <wind>
+                <Components>
+                  <speed uom="n/a" />
+                  <direction />
+                </Components>
+              </wind>
+            </WxObsMeasurements>
+          </wxObsResultsOf>
+          <locRef>
+            <LocRefString>Simpson 2115/2320m</LocRefString>
+          </locRef>
+        </WxObs>
+        <WxObs gml:id="WXObsID002">
+          <validTime>
+            <TimePeriod>
+              <beginPosition>2015-01-02T00:00:00</beginPosition>
+              <endPosition>2015-01-02T23:59:59</endPosition>
+            </TimePeriod>
+          </validTime>
+          <wxObsResultsOf>
+            <WxObsMeasurements>
+              <airTempMin uom="degC">-11</airTempMin>
+              <airTempMax uom="degC">-2</airTempMax>
+              <hN24>
+                <Components>
+                  <snowHeight uom="cm">0</snowHeight>
+                </Components>
+              </hN24>
+              <hS uom="cm">67</hS>
+              <wind>
+                <Components>
+                  <speed uom="n/a">L</speed>
+                  <direction>E</direction>
+                </Components>
+              </wind>
+            </WxObsMeasurements>
+          </wxObsResultsOf>
+          <locRef>
+            <LocRefString>Bow Summit 2040m</LocRefString>
+          </locRef>
+        </WxObs>
+        <WxObs gml:id="WXObsID003">
+          <validTime>
+            <TimePeriod>
+              <beginPosition>2015-01-02T00:00:00</beginPosition>
+              <endPosition>2015-01-02T23:59:59</endPosition>
+            </TimePeriod>
+          </validTime>
+          <wxObsResultsOf>
+            <WxObsMeasurements>
+              <airTempMin uom="degC">-8</airTempMin>
+              <airTempMax uom="degC">-3</airTempMax>
+              <hN24>
+                <Components>
+                  <snowHeight uom="cm">0</snowHeight>
+                </Components>
+              </hN24>
+              <hS uom="cm">91</hS>
+              <wind>
+                <Components>
+                  <speed uom="n/a">M</speed>
+                  <direction>W</direction>
+                </Components>
+              </wind>
+            </WxObsMeasurements>
+          </wxObsResultsOf>
+          <locRef>
+            <LocRefString>Sunshine 2200m</LocRefString>
+          </locRef>
+        </WxObs>
+      </linkedObservations>
+    </Bulletin>
+  </observations>
+</CaamlData>
