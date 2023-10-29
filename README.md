@@ -524,9 +524,14 @@ Modifying the parameters so you don't run out of memory is important as its desi
 
 ### 6.TimeseriesAI
 #### Demonstrate using the data as the input to a deep learning training process
-Now that our data is in the right format we can try and do some machine learning on it.  The 4.TimeseriesAi notebook in the ML folder is only to demonstrate the process to do this as today the results are a proof of concept and not sophisticated at all.  This area has only had minimal investment to date and is where focus is now being applied.  The current issue is overfitting and that will need to be addresssed before both exapnding the dataset size or training for additional epochs.
-
 The Notebook [5.TimeseriesAI](/ML/5.TimeseriesAI.ipynb) leverages the Timeseries Deep Learning library https://github.com/timeseriesAI/tsai based on FastAI https://github.com/fastai/fastai and it realitvely straightforward to understand especially if you are familiar with FastAI.  As progress is made here this notbook will be updated to reflect the current state.
+
+I am maintaining a leaderboard of SOA results for the project.
+
+|Date|User|Accuracy Score|Balanced Accuracy Score|Time To Train (mins on my 1080Ti)|Batch Size|LR|Model Class|Model Instantiation|Learner Instantiation|
+|---|---|---|---|---|---|---|---|---|---|
+|10/29/2023|scottcha|57%|58.44%|700|96|1.00E-05|Time Series Transformer|model = TSTPlus(dls.vars, dls.c, seq_len=X.shape[3], d_model=27, n_heads=27, d_k=1, d_v=2, d_ff=128, dropout=.2, n_layers=16, fc_dropout=.8, attn_dropout=.4, store_attn=False)|learn = Learner(dls, model, loss_func=LabelSmoothingCrossEntropy(), metrics=[accuracy, BalancedAccuracy()],  opt_func=partial(Adam, decouple_wd=False),cbs=[ShowGraphCallback2(), PredictionDynamics()])|
+|10/24/2023|scottcha|50.55%|51.32%|553|100|1.00E-05|Time Series Transformer|model = TSTPlus(dls.vars, dls.c, seq_len=X.shape[2], d_model=128, n_heads=1, d_k=48, d_v=48, d_ff=128, dropout=.6, n_layers=1, fc_dropout=.8, store_attn=False)|learn = Learner(dls, model, loss_func=LabelSmoothingCrossEntropyFlat(), metrics=[accuracy, BalancedAccuracy()], opt_func=partial(Adam, decouple_wd=False),cbs=[CutMix1d(), ShowGraphCallback2(), PredictionDynamics()])|
 
 This notebook also depends on a different conda environment in the _Environments_ folder.  Create and activate the environment from the timeseriesai.yml file to use this notebook.
 
