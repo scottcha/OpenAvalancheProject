@@ -1,0 +1,49 @@
+name: Deploy to Ubuntu Server
+
+on:
+  push:
+    branches:
+      - main
+      - ppe
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GHCR_TOKEN_OAP}}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/oap_website:latest
+        file: Dockerfile
+    - name: SSH into server and deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SSH_PORT}}
+        script: |
+          echo "${{ secrets.GHCR_TOKEN}}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            if [ ${{ github.ref }} = 'refs/heads/main' ]
+            then
+              docker stop oap_website_prod || true
+              docker rm oap_website_prod || true
+              docker pull ghcr.io/${{ github.repository_owner }}/oap_website:latest
+              docker run -d --name oap_website_prod -p 82:80 ghcr.io/${{ github.repository_owner }}/oap_website:latest
+            elif [ ${{ github.ref }} = 'refs/heads/ppe' ]
+            then
+              docker stop oap_website_ppe || true
+              docker rm oap_website_ppe || true
+              docker pull ghcr.io/${{ github.repository_owner }}/oap_website:latest
+              docker run -d --name oap_website_ppe -p 8082:80 ghcr.io/${{ github.repository_owner }}/oap_website:latest
+            fi
