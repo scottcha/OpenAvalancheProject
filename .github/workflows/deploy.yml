@@ -34,7 +34,7 @@ jobs:
         port: ${{ secrets.SSH_PORT}}
         script: |
           echo "${{ secrets.GHCR_TOKEN}}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            if [ ${{ github.ref }} = 'refs/heads/main' ]
+            if [ ${{ github.ref }} = 'refs/heads/master' ]
             then
               docker stop oap_website_prod || true
               docker rm oap_website_prod || true
