@@ -1,4 +1,4 @@
-name: Deploy to Ubuntu Server
+name: Deploy Blog to Ubuntu Server
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         context: .
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/oap_blog:latest
-        file: Dockerfile
+        file: Blog/Dockerfile
     - name: SSH into server and deploy
       uses: appleboy/ssh-action@master
       with:

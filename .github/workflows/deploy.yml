@@ -1,4 +1,4 @@
-name: Deploy to Ubuntu Server
+name: Deploy Website to Ubuntu Server
 
 on:
   push:
