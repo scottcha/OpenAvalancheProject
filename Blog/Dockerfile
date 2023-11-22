@@ -1,3 +1,7 @@
+# Start from the Ubuntu image and name this stage as 'builder'
+# Note: alpine linux isn't compatible with the hugo command (without hacks around glibc)
+FROM ubuntu:latest AS builder
+
 # Install Hugo and Git
 RUN apt-get update && \
     apt-get install -y wget ca-certificates git && \
