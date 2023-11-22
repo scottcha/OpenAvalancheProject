@@ -11,7 +11,7 @@ RUN apt-get update && \
     rm -r hugo_extended_0.120.4_Linux-64bit.tar.gz
 
 # Copy your Hugo site source into the Docker container
-COPY ./Blog /src
+COPY ./ /src
 
 # Set the working directory
 WORKDIR /src
@@ -21,10 +21,10 @@ RUN git init && \
     git submodule update --init --recursive
 
 # Build your Hugo site
-RUN hugo --minify --config hugo.toml
+RUN hugo --minify --config /src/Blog/hugo.toml
 
 # Use an Apache HTTP Server Docker image to serve your Hugo site
 FROM httpd:2.4-alpine
 
 # Copy the built Hugo site from the builder container to the Apache HTTP Server container
-COPY --from=builder /src/public/ /usr/local/apache2/htdocs/
+COPY --from=builder /src/Blog/public/ /usr/local/apache2/htdocs/
