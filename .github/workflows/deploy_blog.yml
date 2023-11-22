@@ -24,7 +24,7 @@ jobs:
         context: .
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/oap_blog:latest
-        file: Blog/Dockerfile
+        file: Dockerfile
     - name: SSH into server and deploy
       uses: appleboy/ssh-action@master
       with:

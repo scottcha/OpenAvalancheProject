@@ -7,7 +7,7 @@ RUN apt-get update && \
     rm -r hugo_extended_0.120.4_Linux-64bit.tar.gz
 
 # Copy your Hugo site source into the Docker container
-COPY ./Blog/ /src
+COPY ./Blog /src
 
 # Set the working directory
 WORKDIR /src
