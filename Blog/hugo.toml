@@ -1,4 +1,3 @@
-baseURL = 'https://openavalancheproject.org/'
 theme = 'LoveIt'
 languageCode = 'en-us'
 title = 'Open Avalanche Project News'
