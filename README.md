@@ -55,7 +55,7 @@ Directories are organized as follows:
 
 This aspect of the tutorial will cover how you can obtain new weather input data for a new date range or region.  This part assumes you have avalanche forecast labels for the dates and region (OAP currently has historical forecast labels for three avalanche centers in the US from the 15-16 season through the 20-21 season and is working on expanding that).
 
-Due to the large size of the input GFS data and the fact that its already hosted by NCAR, OAP isn't currently providing copies of this data.  If you want to start a data processing pipeline from the original data you can start with this process here.  If you aren't interested in the data processing steps and only in the ML steps you can download the labels here: https://oapstorageprod.blob.core.windows.net/oap-training-data/Data/CleanedForecastsNWAC_CAIC_UAC_CAC.V1.2013-2021.zip and a subset of training data here: [TODO: replace with current link] and skip to the fourth notebook 4.TimeseriesAi
+Due to the large size of the input GFS data and the fact that its already hosted by NCAR, OAP isn't currently providing copies of this data.  If you want to start a data processing pipeline from the original data you can start with this process here.  If you aren't interested in the data processing steps and only in the ML steps you can download the labels here: https://github.com/scottcha/OpenAvalancheProject/blob/master/Data/CleanedForecastsNWAC_CAIC_UAC_CAC.V1.2013-2021.zip and a subset of training data here: [TODO: replace with current link] and skip to the fourth notebook 4.TimeseriesAi
 
 The input data is derived from the .25 degree GFS model hosted by NCAR hosted at this site: https://rda.ucar.edu/datasets/ds084.1/
 
@@ -164,7 +164,7 @@ And then this is what it looks like when filtered to only the Olympics avalanche
 # Files on disk structure
 
 Training labels can be downloaded here:
-https://oapstorageprod.blob.core.windows.net/oap-training-data/Data/CleanedForecastsNWAC_CAIC_UAC_CAC.V1.2013-2021.zip 
+https://github.com/scottcha/OpenAvalancheProject/blob/master/Data/CleanedForecastsNWAC_CAIC_UAC_CAC.V1.2013-2021.zip
 
     1.RawWeatherData/
         gfs/
