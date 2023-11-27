@@ -322,3 +322,10 @@ TestData/5.MLData/
 TestData/4.GFSFiltered1xInterpolationZarr/lat_lon_union.csv
 study.pkl
 DataPipelineNotebooks/.last_checked
+
+# Hugo
+/Blog/public/
+/Blog/resources/_gen/
+/Blog/hugo_stats.json
+/Blog/themes/*/node_modules/
+/Blog/themes/*/dist/

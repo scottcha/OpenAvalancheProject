@@ -1,4 +1,4 @@
-name: Deploy Website to Ubuntu Server
+name: Deploy Blog to Ubuntu Server
 
 on:
   push:
@@ -23,8 +23,8 @@ jobs:
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/oap_website:latest
-        file: Website/Dockerfile
+        tags: ghcr.io/${{ github.repository_owner }}/oap_blog:latest
+        file: Blog/Dockerfile
     - name: SSH into server and deploy
       uses: appleboy/ssh-action@master
       with:
@@ -36,14 +36,14 @@ jobs:
           echo "${{ secrets.GHCR_TOKEN}}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             if [ ${{ github.ref }} = 'refs/heads/master' ]
             then
-              docker stop oap_website_prod || true
-              docker rm oap_website_prod || true
-              docker pull ghcr.io/${{ github.repository_owner }}/oap_website:latest
-              docker run -d --name oap_website_prod -p 82:80 ghcr.io/${{ github.repository_owner }}/oap_website:latest
+              docker stop oap_blog_prod || true
+              docker rm oap_blog_prod || true
+              docker pull ghcr.io/${{ github.repository_owner }}/oap_blog:latest
+              docker run -d --name oap_blog_prod -p 83:80 ghcr.io/${{ github.repository_owner }}/oap_blog:latest
             elif [ ${{ github.ref }} = 'refs/heads/ppe' ]
             then
-              docker stop oap_website_ppe || true
-              docker rm oap_website_ppe || true
-              docker pull ghcr.io/${{ github.repository_owner }}/oap_website:latest
-              docker run -d --name oap_website_ppe -p 8082:80 ghcr.io/${{ github.repository_owner }}/oap_website:latest
+              docker stop oap_blog_ppe || true
+              docker rm oap_blog_ppe || true
+              docker pull ghcr.io/${{ github.repository_owner }}/oap_blog:latest
+              docker run -d --name oap_blog_ppe -p 8083:80 ghcr.io/${{ github.repository_owner }}/oap_blog:latest
             fi
