@@ -41,10 +41,10 @@ class TSAIUtilities:
             feature_means.extend(tmp_means)
         return feature_stds, feature_means
 
-    def calc_min_max(self, data, sample_lower_bound, sample_upper_bound):
+    def calc_min_max(self, data, sample_lower_bound, sample_upper_bound, num_to_process=10):
         feature_mins = []
         feature_maxs = []
-        num = 10
+        num = num_to_process
         for i in range(0, data.shape[1], num):
             print('on ' + str(i))
             upper = i + num
@@ -136,15 +136,29 @@ class TSAIUtilities:
         feature_list.sort()
         return feature_list
     
-    def create_dls(self, X, y, feature_mins, feature_maxs, splits, sample_frac = 1, batch_size=64):
-        splits_2 = (L(list(pd.Series(splits[0]).sample(frac=sample_frac).values)), L(list(pd.Series(splits[1]).sample(frac=sample_frac).values)))
+    def create_dls(self, X, y, splits, feature_mins = None, feature_maxs = None, feature_std = None, feature_mean = None,  sample_frac = 1, batch_size=64):
+        #assert either mins/maxes are not none or std/mean are not none
+        assert (feature_mins is not None and feature_maxs is not None) or (feature_std is not None and feature_mean is not None)
+        if sample_frac < 1:
+            print("Splits order will change since sample_frac < 1")
+            splits_2 = (L(list(pd.Series(splits[0]).sample(frac=sample_frac).values)), L(list(pd.Series(splits[1]).sample(frac=sample_frac).values)))
+        else:
+            splits_2 = splits
+
         #create the dataset
         tfms = [None, [Categorize()]]
         dsets = TSDatasets(X, y, tfms=tfms, splits=splits_2, inplace=False)
-        
-        mins = feature_mins.astype(np.float32)
-        maxs = feature_maxs.astype(np.float32)
-        batch_tfms = [TSFilter(), TSSimpleNormalize(mins=mins, maxs=maxs), Nan2Value()]
+
+        if(feature_std is not None and feature_mean is not None):
+            stds = feature_std.astype(np.float32)
+            means = feature_mean.astype(np.float32)
+            batch_tfms = [TSFilter(), TSSimpleStandardize(mean=means, std=stds), Nan2Value()]
+        elif(feature_mins is not None and feature_maxs is not None):
+            mins = feature_mins.astype(np.float32)
+            maxs = feature_maxs.astype(np.float32)
+            batch_tfms = [TSFilter(), TSSimpleNormalize(mins=mins, maxs=maxs), Nan2Value()]
+        else:
+            raise Exception('Must provide either mins/maxs or std/mean')
         dls = TSDataLoaders.from_dsets(dsets.train, dsets.valid, bs=[batch_size], batch_tfms=batch_tfms, num_workers=4, inplace=False)
         return splits_2, dls
     

@@ -355,7 +355,11 @@ class PrepML:
             #load the cached data
             lat_lon_union = pd.read_csv(lat_lon_path,float_precision='round_trip')
         #join in with the labels so we have a label per lat/lon pair
-        lat_lon_union = lat_lon_union.drop(columns=['Unnamed: 0'], inplace=False).set_index(self.region_col, drop=False).join(self.labels.drop(columns=['Unnamed: 0'], inplace=False).set_index(self.region_col, drop=False), how='left', lsuffix='left', rsuffix='right')
+        if 'Unnamed: 0' in lat_lon_union.columns:
+            lat_lon_union.drop(columns=['Unnamed: 0'], inplace=True)
+        if 'Unnamed: 0' in self.labels.columns:
+            self.labels.drop(columns=['Unnamed: 0'], inplace=True)
+        lat_lon_union = lat_lon_union.set_index(self.region_col, drop=False).join(self.labels.set_index(self.region_col, drop=False), how='left', lsuffix='left', rsuffix='right')
         lat_lon_union.reset_index(inplace=True, drop=False)
 
         if overlap_percent < 1.0:
@@ -933,9 +937,14 @@ class PrepML:
             v.append(set(data[d].variable.values))
         final_vars = list(set.intersection(*v))
         if debug: print("Len of vars: " + str(len(final_vars))) 
-        if filter_vars:
-            final_vars = self.filter_features(final_vars)
+        #if filter_vars is a boolean then call filter_features if its a list then use that list as final_vars
         
+        if isinstance(filter_vars, bool):
+            if filter_vars:
+                final_vars = self.filter_features(final_vars)
+        else:
+            final_vars = filter_vars
+
         #get a sample so we can dump the feature labels
         X, _, _ = self.get_xr_batch(train_labels, variables=final_vars, lookback_days=lookback_days, batch_size=4, n_jobs=n_jobs)   
         if debug: print("Shape of X.time is: " + str(len(X.time.data)))
