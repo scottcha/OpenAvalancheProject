@@ -15,7 +15,7 @@ rdams-client.py -get_control_file_template <dsnnn.n>
 rdams-client.py -help
 ```
 """
-__version__ = '2.0.1'
+__version__ = '3.0.0'
 __author__ = 'Doug Schuster (schuster@ucar.edu), Riley Conroy (rpconroy@ucar.edu)'
 
 import sys
@@ -28,9 +28,8 @@ import codecs
 import pdb
 
 
-BASE_URL = 'https://rda.ucar.edu/json_apps/'
-USE_NETRC = False
-DEFAULT_AUTH_FILE = './rdamspw.txt'
+BASE_URL = 'https://rda.ucar.edu/api/'
+DEFAULT_AUTH_FILE = './rdams_token.txt'
 
 # Python 2 compatibility
 try:
@@ -58,10 +57,11 @@ def query(args=None):
     if args is None or len(args) == 0:
         parser.parse_args(['-h'])
     args = parser.parse_args(args)
-    if args.use_netrc:
-        USE_NETRC = True
     args_dict = args.__dict__
     func,params = get_selected_function(args_dict)
+    if args_dict['outdir'] and func==download:
+        out_dir = args_dict['outdir']
+        return func(params, out_dir)
     result = func(params)
     if not args.noprint:
         print(json.dumps(result, indent=3))
@@ -79,44 +79,30 @@ def add_ds_str(ds_num):
         sys.exit()
     return ds_num
 
-def obfuscate(string):
-    """Obfuscate string."""
-    return codecs.encode(string, 'rot_13')
-def unobfuscate(string):
-    """Decode obfuscated string."""
-    return codecs.decode(string, 'rot_13')
-
 def get_userinfo():
-    """Get username and password from the command line."""
-    user = input("Enter your RDA username or email: ")
-    pasw = getpass.getpass("Enter your RDA password: ")
-    #try:
-    write_pw_file(user, pasw)
-    #except Exception as e:
-    #    print("Error writing password file: " + str(e))
-    return(user, pasw)
+    """Get token from command line."""
+    print('Please visit https://rda.ucar.edu/accounts/profile/ to access token.')
+    token = input("Paste that token here: ")
+    write_token_file(token)
+    return token
 
-def write_pw_file(username, password, pwfile=DEFAULT_AUTH_FILE):
-    """Write out file with user information."""
-    with open(pwfile, "w") as fo:
-        npwstring = username + ',' + password
-        ob_str = obfuscate(npwstring)
-        fo.write(ob_str)
+def write_token_file(token, token_file=DEFAULT_AUTH_FILE):
+    """Write token to a file."""
+    with open(token_file, "w") as fo:
+        fo.write(token)
 
-def read_pw_file(pwfile):
-    """Read user information from pw file.
+def read_token_file(token_file):
+    """Read user information from token file.
 
     Args:
-        pwfile (str): location of password file.
+        token_file (str): location of token file.
 
     Returns:
-        (tuple): (username,password)
+        (str): token
     """
-    with open(pwfile, 'r') as f:
-        pwstring = unobfuscate(f.read())
-        (username, password) = pwstring.split(',', 2)
-    return(username, password)
-
+    with open(token_file, 'r') as f:
+        token = f.read()
+    return token.strip()
 
 def read_control_file(control_file):
     """Reads control file, and return python dict.
@@ -165,10 +151,10 @@ def get_parser():
             action='store_true',
             required=False,
             help="Do not print result of queries.")
-    parser.add_argument('-use_netrc', '-un',
-            action='store_true',
+    parser.add_argument('-outdir', '-od',
+            nargs='?',
             required=False,
-            help="Use your .netrc file for authentication.")
+            help="Change the output directory of downloaded files")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('-get_summary', '-gsum',
             type=str,
@@ -224,22 +210,20 @@ def get_parser():
             help="Purge a request.")
     return parser
 
-def check_status(ret, pwfile=DEFAULT_AUTH_FILE):
+def check_status(ret, token_file=DEFAULT_AUTH_FILE):
     """Checks that status of return object.
 
     Exits if a 401 status code.
 
     Args:
         ret (response.Response): Response of a request.
-        pwfile (str) : password file. Will remove if auth incorrect
+        token_file (str) : password file. Will remove if auth incorrect
 
     Returns:
         None
     """
     if ret.status_code == 401: # Not Authorized
         print(ret.content)
-        if not USE_NETRC:
-            os.remove(pwfile)
         exit(1)
 
 def check_file_status(filepath, filesize):
@@ -269,14 +253,13 @@ def download_files(filelist, out_dir='./', cookie_file=None):
     Returns:
         None
     """
-    if cookie_file is None:
-        cookies = get_cookies()
     for _file in filelist:
         file_base = os.path.basename(_file)
         out_file = out_dir + file_base
         print('Downloading',file_base)
-        req = requests.get(_file, cookies=cookies, allow_redirects=True, stream=True)
-        filesize = int(req.headers['Content-length'])
+        header = requests.head(_file, allow_redirects=True, stream=True)
+        filesize = int(header.headers['Content-Length'])
+        req = requests.get(_file, allow_redirects=True, stream=True)
         with open(out_file, 'wb') as outfile:
             chunk_size=1048576
             for chunk in req.iter_content(chunk_size=chunk_size):
@@ -286,47 +269,22 @@ def download_files(filelist, out_dir='./', cookie_file=None):
         check_file_status(out_file, filesize)
         print()
 
-def get_authentication(pwfile=DEFAULT_AUTH_FILE):
+def encode_url(url, token):
+    return url + '?token=' + token
+
+def get_authentication(token_file=DEFAULT_AUTH_FILE):
     """Attempts to get authentication.
 
     Args:
-        pwfile (str): location of password file.
+        token_file (str): location of password file.
 
     Returns:
-        (tuple): username, passord
-        (None): If using .netrc file
+        (tuple): token
     """
-    if USE_NETRC:
-        return None
-    if os.path.isfile(pwfile) and os.path.getsize(pwfile) > 0:
-        return read_pw_file(pwfile)
+    if os.path.isfile(token_file) and os.path.getsize(token_file) > 0:
+        return read_token_file(token_file)
     else:
         return get_userinfo()
-
-def get_cookies(username=None, password=None):
-    """Authenticates with RDA and returns authentication cookies.
-
-    The user must authenticate with
-    authentication cookies per RDA policy.
-
-    Args:
-        username (str): RDA username. Typically the user's email.
-        password (str): RDA password.
-
-    Returns:
-        requests.cookies.RequestsCookieJar: Login request's cookies.
-    """
-    if username is None and password is None:
-        username,password = get_authentication()
-
-    login_url = "https://rda.ucar.edu/cgi-bin/login"
-    values = {'email' : username, 'passwd' : password, 'action' : 'login'}
-    ret = requests.post(login_url, data=values)
-    if ret.status_code != 200:
-        print('Bad Authentication')
-        print(ret.text)
-        exit(1)
-    return ret.cookies
 
 
 def get_summary(ds):
@@ -341,8 +299,8 @@ def get_summary(ds):
     url = BASE_URL + 'summary/'
     url += ds
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -359,8 +317,8 @@ def get_metadata(ds):
     url = BASE_URL + 'metadata/'
     url += ds
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -375,7 +333,7 @@ def get_all_params(ds):
         set: All unique params in dataset.
     """
     res = get_param_summary(ds)
-    res_data = res['result']['data']
+    res_data = res['data']['data']
     param_names = set()
     for param in res_data:
         param_names.add(param['param'])
@@ -394,8 +352,8 @@ def get_param_summary(ds):
     url = BASE_URL + 'paramsummary/'
     url += ds
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -420,10 +378,10 @@ def submit_json(json_file):
         assert type(json_file) is dict
         control_dict = json_file
 
-    url = BASE_URL + 'request/'
+    url = BASE_URL + 'submit/'
 
-    user_auth = get_authentication()
-    ret = requests.post(url, data=control_dict, auth=user_auth)
+    token = get_authentication()
+    ret = requests.post(encode_url(url,token), json=control_dict)
 
     check_status(ret)
     return ret.json()
@@ -454,12 +412,12 @@ def get_status(request_idx=None):
     """
     if request_idx is None:
         request_idx = 'ALL'
-    url = BASE_URL + 'request/'
+    url = BASE_URL + 'status/'
     url += str(request_idx)
 
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -473,19 +431,18 @@ def get_filelist(request_idx):
     Returns:
         dict: JSON decoded result of the query.
     """
-    url = BASE_URL + 'request/'
+    url = BASE_URL + 'get_req_files/'
     url += str(request_idx)
-    url += '/filelist_json'
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
 
     return ret.json()
 
 
-def download(request_idx):
+def download(request_idx, out_dir='./'):
     """Download files given request Index
 
     Args:
@@ -495,20 +452,17 @@ def download(request_idx):
         None
     """
     ret = get_filelist(request_idx)
-    if ret['status'] != 'ok':
+    if len(ret['data']) == 0:
         return ret
 
-    filelist = ret['result']['web_files']
+    filelist = ret['data']['web_files']
 
-    user_auth = get_authentication()
-
-    username, password = user_auth
-    cookies = get_cookies(username,password)
+    token = get_authentication()
 
     web_files = list(map(lambda x: x['web_path'], filelist))
 
     # Only download unique files.
-    download_files(set(web_files))
+    download_files(set(web_files), out_dir)
     return ret
 
 def globus_download(request_idx):
@@ -524,8 +478,8 @@ def globus_download(request_idx):
     url += request_idx
     url += '-globus_download'
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -539,11 +493,11 @@ def get_control_file_template(ds):
     Returns:
         dict: JSON decoded result of the query.
     """
-    url = BASE_URL + 'template/'
+    url = BASE_URL + 'control_file_template/'
     url += ds
 
-    user_auth = get_authentication()
-    ret = requests.get(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.get(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
@@ -560,7 +514,7 @@ def write_control_file_template(ds, write_location='./'):
         dict: JSON decoded result of the query.
     """
     _json = get_control_file_template(ds)
-    control_str = _json['result']['template']
+    control_str = _json['data']['template']
 
     template_filename = write_location + add_ds_str(ds) + '_control.ctl'
     if os.path.exists(template_filename):
@@ -582,11 +536,11 @@ def purge_request(request_idx):
     Returns:
         None
     """
-    url = BASE_URL + 'request/'
+    url = BASE_URL + 'purge/'
     url += request_idx
 
-    user_auth = get_authentication()
-    ret = requests.delete(url, auth=user_auth)
+    token = get_authentication()
+    ret = requests.delete(encode_url(url,token))
 
     check_status(ret)
     return ret.json()
