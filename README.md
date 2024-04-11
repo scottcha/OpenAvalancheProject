@@ -1,15 +1,15 @@
 # Open Avalanche Project
 
+### Open source project to bring data and ml to avalanche forecasting
 
+### Webpage is https://openavalancheproject.org
+### Docs are located at https://scottcha.github.io/OpenAvalancheProject/
 
-Open source project to bring data and ml to avalanche forecasting
+### Guiding Principles
+1. Use data which is in the public domain and which can be applied to forecasts around the world.
+2. Only publish inference data if/when we can both improve upon existing human capabilities while also augmenting them.
 
-
-Webpage is https://openavalancheproject.org
-Docs are located at https://scottcha.github.io/OpenAvalancheProject/
-
-
-Directories are organized as follows:
+#### Directories are organized as follows:
 - Data
 
     Contains files associated with data inputs, such as geojson definitions of avalanche regions.  Training and label data are linked in the README there as they are too large to host in git.
