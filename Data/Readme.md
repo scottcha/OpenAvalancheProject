@@ -12,3 +12,16 @@ e.	“Day1DangerNearTreeline” is the forecast at the mid elevation provided fo
 f.	“Day1DangerBelowTreeline” is the forecast at the lower elevation provided for the region
 g.	“ForecastUrl” the archived url where I pulled the forecast in case the data needs to be checked against the source.
 4.	There are many other columns meant to encode avy-rose values, avy-rose avalanche problems and other elements of the forecast.  Most of the column names should be self explanatory.
+
+The bounding boxes I've used for GFS downloads are
+Colorado:
+TBD
+
+Canada:
+template_dict['nlat'] = 59.0
+template_dict['slat'] = 48.0
+template_dict['wlon'] = -132.0
+template_dict['elon'] = -113.0
+
+Utah: 
+TBD
