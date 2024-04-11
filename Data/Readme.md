@@ -18,9 +18,13 @@ Colorado:
 TBD
 
 Canada:
+
 template_dict['nlat'] = 59.0
+
 template_dict['slat'] = 48.0
+
 template_dict['wlon'] = -132.0
+
 template_dict['elon'] = -113.0
 
 Utah: 
