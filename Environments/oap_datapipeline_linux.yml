@@ -163,6 +163,7 @@ dependencies:
   - tzdata=2023c=h04d1e81_0
   - unicodedata2=15.1.0=py310h2372a71_0
   - urllib3=2.0.5=pyhd8ed1ab_0
+  - wgrib2
   - wheel=0.41.2=py310h06a4308_0
   - xarray=2023.6.0=py310h06a4308_0
   - xerces-c=3.2.4=hac6953d_3
